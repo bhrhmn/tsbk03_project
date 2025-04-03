@@ -1,3 +1,9 @@
+==2025-04-03==
+Jorunn kollar blender
+Hannah kollar Glas, kollar på att implemnetera bättre kamera
+Bassen kollar väggar och tak
+
+
 Modeller: 
 - Cabin
 - Fireplace
@@ -17,4 +23,30 @@ Eld:
 - Partiklar
     - Gör research! Animation? Bara partiklar eller stort också?
 - Ljus
-    - 
+
+
+
+Projektplan: 
+Project idea:
+A cabin in the woods. There is going to be a fire in the cabin lighting up the room and
+creating shadows. There is also going to be a window with moonlight that also creates lights
+and shadow in the room. Basically, we want to work a lot with light and shadows and make
+the room look good in that regard.
+Will do:
+- Axis aligned billboard with view from window
+- Models (furnitures, walls, decoration)
+- Textures
+- Particles from the fire
+- Shadows
+- Flat shadow if not raytracing
+- First person view
+- Camera movement
+- Collision on walls (camera cannot go outside the cabin)
+
+
+Might do:
+- Ray tracing
+- Own models
+- Bump mapping (has not used, depends on if it is hard).
+- Sound
+- Collision on other objects in the room (furnitures).
