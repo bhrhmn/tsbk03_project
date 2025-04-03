@@ -44,6 +44,7 @@ Model *balcony;
 
 Model *ground;
 Model *skybox;
+Model *sofa;
 
 vec3 color1 = vec3(1, 0, 0);
 vec3 color2 = vec3(0, 1, 0);
@@ -192,6 +193,7 @@ void init(void)
     worldCamera = lookAtv(worldCameraP, worldCameraL, worldCameraV);
 
     skybox = LoadModel("skybox/skybox.obj");
+	sofa = LoadModel("sofa.obj");
     printError("textcoodarray");
     
 
@@ -242,28 +244,30 @@ void moveCamera(){
         worldCameraP = T(0,0,0.5)*worldCameraP;
         worldCameraL = T(0,0,0.5)*worldCameraL;
         worldCamera = lookAtv(worldCameraP, worldCameraL, worldCameraV);
-    uploadMat4ToShader(program, "worldCamera", worldCamera);
+        uploadMat4ToShader(program, "worldCamera", worldCamera);
     }
 
     if (glutKeyIsDown('q')) {
-        worldCameraP = Ry(-0.1)*worldCameraP;
+        vec3 direction = worldCameraL - worldCameraP;
+        worldCameraL = Ry(-0.1)*direction;
         worldCamera = lookAtv(worldCameraP, worldCameraL, worldCameraV);
-    uploadMat4ToShader(program, "worldCamera", worldCamera);
+        uploadMat4ToShader(program, "worldCamera", worldCamera);
     }
     if (glutKeyIsDown('e')) {
         //worldCameraL = T(worldCameraP)*Ry(0.1)*T(0,0,0)*worldCameraL;
         //get direction vector P-L and rotate it. 
-        worldCameraL = Ry(0.1)*worldCameraL;
+        vec3 direction = worldCameraL - worldCameraP;
+        worldCameraL = Ry(0.1)*direction;
         worldCamera = lookAtv(worldCameraP, worldCameraL, worldCameraV);
         uploadMat4ToShader(program, "worldCamera", worldCamera);
+
     }
 }
+
 
 void display(void)
 {
 	printError("pre display");
-    //shybox_shader = loadShaders("skybox.vert", "skybox.frag");
-    //program = loadShaders("lab3-4.vert", "lab3-4.frag");
 
     glUseProgram(shybox_shader);
 	// clear the screen
@@ -296,6 +300,9 @@ void display(void)
     
     uploadMat4ToShader(program, "worldCamera", worldCamera);
 
+	mat4 sofaT = T(0,-10,0);
+	uploadMat4ToShader(program, "mdlMatrix", sofaT);
+	DrawModel(sofa, program, "in_Position", "inNormal", "inTexCord");
 
     
     glUniform1i(glGetUniformLocation(program, "texUnit"), 1); // Texture unit 0
