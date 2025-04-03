@@ -1,0 +1,20 @@
+Modeller: 
+- Cabin
+- Fireplace
+- Soffa/sittplats
+- Bord, planta
+- Fönster 
+    - Glas
+- Mark
+
+Fönster: 
+- Billboard med en fin natur
+- Lite Mark
+- Ljuskälla
+
+Eld: 
+- Eldstad med eld i. 
+- Partiklar
+    - Gör research! Animation? Bara partiklar eller stort också?
+- Ljus
+    - 
