@@ -58,23 +58,7 @@ GLfloat projectionMatrix[] = {    2.0f*near/(right-left), 0.0f, (right+left)/(ri
                                             0.0f, 0.0f, -(far + near)/(far - near), -2*far*near/(far - near),
 
                                             0.0f, 0.0f, -1.0f, 0.0f };
-GLfloat projectionMatrix2[] = {    2.0f*near/(right-left), 0.0f, (right+left)/(right-left), 0.0f,
 
-                                            0.0f, 2.0f*near/(top-bottom), (top+bottom)/(top-bottom), 0.0f,
-
-                                            0.0f, 0.0f, -(far + near)/(far - near), -2*far*near/(far - near),
-
-                                            0.0f, 0.0f, -1.0f, 0.0f };
-
-//Vector Utils
-mat4 totalWing1;
-mat4 totalWing2;
-mat4 totalWing3;
-mat4 totalWing4;
-
-mat4 totalwall;
-mat4 totalRoof;
-mat4 totalBalcony;
 
 mat4 totalGround;
 mat4 worldCamera;
@@ -97,6 +81,8 @@ vec3 worldCameraV = { 0.0f, 1.0f, 0.0f,};
 unsigned int vertexArrayObjID;
 GLuint program;
 GLuint shybox_shader;
+GLuint object_shader;
+
 
 //Skybox
 vec3 vertices[] =
@@ -172,6 +158,7 @@ void init(void)
 	
     program = loadShaders("program.vert", "program.frag");
     shybox_shader = loadShaders("skybox.vert", "skybox.frag");
+	object_shader = loadShaders("object.vert", "object.frag");
 	printError("init shader");
     
 
@@ -193,22 +180,21 @@ void init(void)
     worldCamera = lookAtv(worldCameraP, worldCameraL, worldCameraV);
 
     skybox = LoadModel("skybox/skybox.obj");
-	sofa = LoadModel("sofa.obj");
+	sofa = LoadModel("Koltuk.obj");
     printError("textcoodarray");
     
-
-
-    //set wing rotations
-    totalWing1 = changeTranslationWing(0.0);
-    totalWing2 = changeTranslationWing(M_PI/2);
-    totalWing3 = changeTranslationWing(M_PI);
-    totalWing4 = changeTranslationWing(3*M_PI/2);
     //Model done
     printError("init color");
 
     //uploadMat4toshader, vecutils
     glUseProgram(shybox_shader);
-    glUniformMatrix4fv(glGetUniformLocation(shybox_shader, "projectionMatrix"), 1, GL_TRUE, projectionMatrix2);
+    glUniformMatrix4fv(glGetUniformLocation(shybox_shader, "projectionMatrix"), 1, GL_TRUE, projectionMatrix);
+
+
+
+    //uploadMat4toshader, vecutils
+    glUseProgram(object_shader);
+    glUniformMatrix4fv(glGetUniformLocation(object_shader, "projectionMatrix"), 1, GL_TRUE, projectionMatrix);
     
     glUseProgram(program);
     glUniformMatrix4fv(glGetUniformLocation(program, "projectionMatrix"), 1, GL_TRUE, projectionMatrix);
@@ -293,21 +279,21 @@ void display(void)
     uploadMat4ToShader(shybox_shader, "mdlMatrix", IdentityMatrix());
     DrawModel(skybox, shybox_shader, "in_Position", "inNormal", "inTexCord");
 
-    //Draw Models
-    glUseProgram(program);
     glEnable(GL_DEPTH_TEST);
     glActiveTexture(GL_TEXTURE1);
-    
+
+	//Draw Models
+	glUseProgram(object_shader);
+	mat4 sofaT = T(0,-10,0) * S(20);
+	uploadMat4ToShader(object_shader, "mdlMatrix", sofaT);
+	uploadMat4ToShader(object_shader, "worldCamera", worldCamera);
+	DrawModel(sofa, object_shader, "in_Position", "inNormal", "inTexCord");
+
+
+	//Draw ground
+    glUseProgram(program);
     uploadMat4ToShader(program, "worldCamera", worldCamera);
-
-	mat4 sofaT = T(0,-10,0);
-	uploadMat4ToShader(program, "mdlMatrix", sofaT);
-	DrawModel(sofa, program, "in_Position", "inNormal", "inTexCord");
-
-    
-    glUniform1i(glGetUniformLocation(program, "texUnit"), 1); // Texture unit 0
-
-    //Draw ground
+    glUniform1i(glGetUniformLocation(program, "texUnit"), 1); // Texture unit 1
     uploadMat4ToShader(program, "mdlMatrix", totalGround);
     DrawModel(ground, program, "in_Position", "inNormal", "inTexCord");
 
