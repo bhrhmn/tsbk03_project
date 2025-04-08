@@ -11,5 +11,5 @@ in vec2 outTexCord;
 
 void main(void)
 {
-	outColor =  vec4(0.0, 0.0, 1.0, 1.0);
+	outColor =  texture(texUnit, outTexCord);
 }
