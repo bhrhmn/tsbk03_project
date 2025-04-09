@@ -32,19 +32,12 @@
 // Globals
 // Data would normally be read from files
 
-//MOdel 1
-Model *wing1;
-Model *wing2;
-Model *wing3;
-Model *wing4;
-
-Model *roof;
-Model *wall;
-Model *balcony;
+//Models
 
 Model *ground;
 Model *skybox;
 Model *sofa;
+Model *table;
 
 vec3 color1 = vec3(1, 0, 0);
 vec3 color2 = vec3(0, 1, 0);
@@ -181,6 +174,8 @@ void init(void)
 
     skybox = LoadModel("skybox/skybox.obj");
 	sofa = LoadModel("Koltuk.obj");
+	table = LoadModel("Table.obj");
+
     printError("textcoodarray");
     
     //Model done
@@ -208,27 +203,31 @@ void init(void)
 }
 
 void moveCamera(){
+    vec3 direction = normalize(worldCameraL - worldCameraP);
+    vec3 side_dir = normalize(cross(vec3(0,1,0), direction));
+
     if (glutKeyIsDown('a')) {
-        worldCameraL = T(-0.5,0,0)*worldCameraL;
-        worldCameraP = T(-0.5,0,0)*worldCameraP;
+        worldCameraL += side_dir;
+        worldCameraP += side_dir;
         worldCamera = lookAtv(worldCameraP, worldCameraL, worldCameraV);
         uploadMat4ToShader(program, "worldCamera", worldCamera);
     }
     if (glutKeyIsDown('d')) {
-        worldCameraL = T(0.5,0,0)*worldCameraL;
-        worldCameraP = T(0.5,0,0)*worldCameraP;
+        worldCameraL -= side_dir;
+        worldCameraP -= side_dir;
         worldCamera = lookAtv(worldCameraP, worldCameraL, worldCameraV);
     uploadMat4ToShader(program, "worldCamera", worldCamera);
     }
     if (glutKeyIsDown('w')) {
-        worldCameraP = T(0,0,-0.5)*worldCameraP;
-        worldCameraL = T(0,0,-0.5)*worldCameraL;
+        
+        worldCameraL += direction;
+        worldCameraP += direction;
         worldCamera = lookAtv(worldCameraP, worldCameraL, worldCameraV);
     uploadMat4ToShader(program, "worldCamera", worldCamera);
     }
     if (glutKeyIsDown('s')) {
-        worldCameraP = T(0,0,0.5)*worldCameraP;
-        worldCameraL = T(0,0,0.5)*worldCameraL;
+        worldCameraL -= direction;
+        worldCameraP -= direction;
         worldCamera = lookAtv(worldCameraP, worldCameraL, worldCameraV);
         uploadMat4ToShader(program, "worldCamera", worldCamera);
     }
@@ -289,6 +288,13 @@ void display(void)
 	uploadMat4ToShader(object_shader, "worldCamera", worldCamera);
 	DrawModel(sofa, object_shader, "in_Position", "inNormal", "inTexCord");
 
+    //Draw table
+
+	mat4 tableT = T(40,-15,0) * S(8);
+	uploadMat4ToShader(object_shader, "mdlMatrix", tableT);
+	DrawModel(table, object_shader, "in_Position", "inNormal", "inTexCord");
+
+
 
 	//Draw ground
     glUseProgram(program);
@@ -296,6 +302,7 @@ void display(void)
     glUniform1i(glGetUniformLocation(program, "texUnit"), 1); // Texture unit 1
     uploadMat4ToShader(program, "mdlMatrix", totalGround);
     DrawModel(ground, program, "in_Position", "inNormal", "inTexCord");
+
 
     moveCamera();   
 	printError("display");
