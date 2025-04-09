@@ -1,6 +1,8 @@
 #version 150
 uniform sampler2D texUnit; 
 
+uniform vec3 firePos;
+uniform vec3 fireColor;
 
 out vec4 outColor;
 uniform mat4 myMatrix;
@@ -11,5 +13,6 @@ in vec2 outTexCord;
 
 void main(void)
 {
+	/* do light here */ 
 	outColor =  texture(texUnit, outTexCord);
 }

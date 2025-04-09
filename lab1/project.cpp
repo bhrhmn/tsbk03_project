@@ -34,6 +34,10 @@
 // Globals
 // Data would normally be read from files
 
+// fire
+vec3 firePos = vec3(30, 0, 25);
+vec3 fireColor = vec3(0.8, 0.5, 0.2);
+
 //Models
 Model *ground;
 Model *skybox;
@@ -204,6 +208,12 @@ void init(void)
     
     //Start timer
     glutTimerFunc(20, &OnTimer, 0);
+
+
+    // upload fire
+	glUniform3fv(glGetUniformLocation(program, "firePos"), 1, firePos);
+	glUniform3fv(glGetUniformLocation(program, "fireColor"), 1, fireColor);
+
 
     	
 	printError("init arrays");
