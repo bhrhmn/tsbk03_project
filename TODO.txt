@@ -2,7 +2,11 @@
 Jorunn kollar blender
 Hannah kollar Glas, kollar på att implemnetera bättre kamera
 Bassen kollar väggar och tak
-
+ 
+ ==2025-04-10==
+ Jorunn fixar dörren
+ Hannah fixar billboard
+ Bacilika snyggar till kod och texturer
 
 Modeller: 
 - Cabin
@@ -12,6 +16,8 @@ Modeller:
 - Fönster 
     - Glas
 - Mark
+
+
 
 Fönster: 
 - Billboard med en fin natur
@@ -23,6 +29,17 @@ Eld:
 - Partiklar
     - Gör research! Animation? Bara partiklar eller stort också?
 - Ljus
+- take screenshots of youtube video
+- animate screenshots for a billboard in the Fireplace
+- add multiple small light sources behind the billboard 
+- lights at the top of the fire moves faster and is more orange
+- lights at the bottom move slower and is more white
+- add some redish lights for the firewood ember
+
+Shadows
+- hardcoded shadows for the pillar 
+- have shadow move with the fire light sources to add effect of realism/raytrace
+
 
 
 
