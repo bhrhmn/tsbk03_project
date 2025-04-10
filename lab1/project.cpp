@@ -201,6 +201,10 @@ void init(void)
     //uploadMat4toshader, vecutils
     glUseProgram(object_shader);
     glUniformMatrix4fv(glGetUniformLocation(object_shader, "projectionMatrix"), 1, GL_TRUE, projectionMatrix);
+
+    // upload fire
+	glUniform3fv(glGetUniformLocation(object_shader, "firePos"), 1, &firePos.x);
+	glUniform3fv(glGetUniformLocation(object_shader, "fireColor"), 1, &fireColor.x);
     
     glUseProgram(program);
     glUniformMatrix4fv(glGetUniformLocation(program, "projectionMatrix"), 1, GL_TRUE, projectionMatrix);
@@ -208,13 +212,6 @@ void init(void)
     
     //Start timer
     glutTimerFunc(20, &OnTimer, 0);
-
-
-    // upload fire
-	glUniform3fv(glGetUniformLocation(program, "firePos"), 1, firePos);
-	glUniform3fv(glGetUniformLocation(program, "fireColor"), 1, fireColor);
-
-
     	
 	printError("init arrays");
 }
@@ -222,7 +219,6 @@ void init(void)
 void moveCamera(){
     vec3 direction = normalize(worldCameraL - worldCameraP);
     vec3 side_dir = normalize(cross(vec3(0,1,0), direction));
-    printf("dir %f \n", direction.y);
     if (glutKeyIsDown('a')) {
         worldCameraL += side_dir;
         worldCameraP += side_dir;
@@ -250,14 +246,14 @@ void moveCamera(){
     }
 
     if (glutKeyIsDown('q')) {
-        worldCameraL += Ry(-1.1)*direction;
+        worldCameraL = worldCameraP + Ry(-0.05)*direction;
         worldCamera = lookAtv(worldCameraP, worldCameraL, worldCameraV);
         uploadMat4ToShader(program, "worldCamera", worldCamera);
     }
     if (glutKeyIsDown('e')) {
         //worldCameraL = T(worldCameraP)*Ry(0.1)*T(0,0,0)*worldCameraL;
         //get direction vector P-L and rotate it. 
-        worldCameraL += Ry(1.1)*direction;
+        worldCameraL = worldCameraP + Ry(0.05)*direction;
         worldCamera = lookAtv(worldCameraP, worldCameraL, worldCameraV);
         uploadMat4ToShader(program, "worldCamera", worldCamera);
 

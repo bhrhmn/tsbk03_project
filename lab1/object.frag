@@ -14,5 +14,5 @@ in vec2 outTexCord;
 void main(void)
 {
 	/* do light here */ 
-	outColor =  texture(texUnit, outTexCord);
+	outColor = vec4(fireColor, 1.0) * texture(texUnit, outTexCord);
 }

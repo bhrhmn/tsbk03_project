@@ -1,9 +1,6 @@
 #version 150
 uniform sampler2D textUnit; 
 
-uniform vec3 firePos;
-uniform vec3 fireColor;
-
 in vec3 in_Position;
 uniform mat4 mdlMatrix;
 uniform mat4 projectionMatrix;
