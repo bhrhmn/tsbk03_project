@@ -35,8 +35,10 @@
 // Data would normally be read from files
 
 // fire
-vec3 firePos = vec3(30, 0, 25);
+vec3 firePos = vec3(33, 0, 23);
 vec3 fireColor = vec3(0.8, 0.5, 0.2);
+
+
 
 //Models
 Model *ground;
@@ -44,6 +46,7 @@ Model *skybox;
 Model *sofa;
 Model *table;
 Model *cabin;
+Model *fireplace;
 
 vec3 color1 = vec3(1, 0, 0);
 vec3 color2 = vec3(0, 1, 0);
@@ -186,7 +189,7 @@ void init(void)
 	sofa = LoadModel("Koltuk.obj");
 	table = LoadModel("Table.obj");
     cabin = LoadModel("WoodenCabinObj.obj");
-
+    fireplace = LoadModel("fireplace_blender.obj");
     printError("textcoodarray");
     
     //Model done
@@ -246,14 +249,14 @@ void moveCamera(){
     }
 
     if (glutKeyIsDown('q')) {
-        worldCameraL = worldCameraP + Ry(-0.05)*direction;
+        worldCameraL = worldCameraP + Ry(0.05)*direction;
         worldCamera = lookAtv(worldCameraP, worldCameraL, worldCameraV);
         uploadMat4ToShader(program, "worldCamera", worldCamera);
     }
     if (glutKeyIsDown('e')) {
         //worldCameraL = T(worldCameraP)*Ry(0.1)*T(0,0,0)*worldCameraL;
         //get direction vector P-L and rotate it. 
-        worldCameraL = worldCameraP + Ry(0.05)*direction;
+        worldCameraL = worldCameraP + Ry(-0.05)*direction;
         worldCamera = lookAtv(worldCameraP, worldCameraL, worldCameraV);
         uploadMat4ToShader(program, "worldCamera", worldCamera);
 
@@ -268,6 +271,14 @@ void DrawCabin(){
     uploadMat4ToShader(object_shader, "mdlMatrix", cabinT);
 	uploadMat4ToShader(object_shader, "worldCamera", worldCamera);
 	DrawModel(cabin, object_shader, "in_Position", "inNormal", "inTexCord");
+}
+void DrawFireplace(){
+    mat4 FireplaceT = T(35,-5,25) * Ry(5*M_PI/4) * S(9);
+    glActiveTexture(GL_TEXTURE2);
+    glUniform1i(glGetUniformLocation(object_shader, "texUnit"), 2); // Texture unit 0
+    uploadMat4ToShader(object_shader, "mdlMatrix", FireplaceT);
+	uploadMat4ToShader(object_shader, "worldCamera", worldCamera);
+	DrawModel(fireplace, object_shader, "in_Position", "inNormal", "inTexCord");
 }
 
 
@@ -306,7 +317,7 @@ void display(void)
 	glUseProgram(object_shader);
 
     
-	mat4 sofaT = T(25,-7,-5) * S(20);
+	mat4 sofaT = T(20,-4,-25) * S(20);
     
 	uploadMat4ToShader(object_shader, "mdlMatrix", sofaT);
 	uploadMat4ToShader(object_shader, "worldCamera", worldCamera);
@@ -314,11 +325,15 @@ void display(void)
 
     //Draw table
 
-	mat4 tableT = T(40,-10,10) * S(8);
+	mat4 tableT = T(20,-12,-10) * S(8);
 	uploadMat4ToShader(object_shader, "mdlMatrix", tableT);
 	DrawModel(table, object_shader, "in_Position", "inNormal", "inTexCord");
 
     DrawCabin();
+    DrawFireplace();
+
+    firePos = vec3(33+sin(t*10)*2, 0, 23);
+    glUniform3fv(glGetUniformLocation(object_shader, "firePos"), 1, &firePos.x);
 
 	//Draw ground
     glUseProgram(program);

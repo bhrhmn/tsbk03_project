@@ -9,6 +9,8 @@ in vec3 inNormal;
 in vec2 inTexCord;
 out vec2 outTexCord;
 
+out vec4 SurfacePos;
+
 out vec3 transformedNormal;
 out vec3 exColor;
 
@@ -18,10 +20,11 @@ out vec3 exColor;
 void main(void)
 {
     gl_Position = projectionMatrix*worldCamera*mdlMatrix*vec4(in_Position, 1.0);
-    mat3 normalMatrix1 = mat3(mdlMatrix);
     const vec3 light = vec3(0.58, 0.58, 0.58);
     exColor = vec3(0.8,0,0.8);
     outTexCord = inTexCord;
 
-    transformedNormal = normalMatrix1 * inNormal;
+    SurfacePos = worldCamera*mdlMatrix*vec4(in_Position, 1.0);
+
+    transformedNormal = mat3(worldCamera)*mat3(mdlMatrix) * inNormal;
 }
