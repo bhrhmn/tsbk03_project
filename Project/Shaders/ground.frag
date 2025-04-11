@@ -5,7 +5,6 @@ uniform vec3 firePos;
 uniform vec3 fireColor;
 
 out vec4 outColor;
-uniform mat4 myMatrix;
 in vec3 transformedNormal;
 in vec2 outTexCord;
 

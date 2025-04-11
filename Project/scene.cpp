@@ -137,8 +137,7 @@ void moveCamera(){
 void DrawCabin(){
     glActiveTexture(GL_TEXTURE2);
     glUniform1i(glGetUniformLocation(object_shader, "texUnit"), 2); // Texture unit 0
-    uploadMat4ToShader(object_shader, "mdlMatrix", cabinT);
-	uploadMat4ToShader(object_shader, "worldCamera", worldCamera);
+    uploadMat4ToShader(object_shader, "model_To_World", cabinT);
 	DrawModel(cabin, object_shader, "in_Position", "inNormal", "inTexCord");
     printError("DrawCabin");
 }
@@ -146,8 +145,7 @@ void DrawCabin(){
 void DrawFireplace(){
     glActiveTexture(GL_TEXTURE2);
     glUniform1i(glGetUniformLocation(object_shader, "texUnit"), 2); // Texture unit 0
-    uploadMat4ToShader(object_shader, "mdlMatrix", FireplaceT);
-	uploadMat4ToShader(object_shader, "worldCamera", worldCamera);
+    uploadMat4ToShader(object_shader, "model_To_World", FireplaceT);
 	DrawModel(fireplace, object_shader, "in_Position", "inNormal", "inTexCord");
     printError("DrawFireplace");
 }
@@ -155,14 +153,13 @@ void DrawFireplace(){
 void DrawTable(){
     glActiveTexture(GL_TEXTURE2);
     glUniform1i(glGetUniformLocation(object_shader, "texUnit"), 2); // Texture unit 0
-	uploadMat4ToShader(object_shader, "mdlMatrix", tableT);
+	uploadMat4ToShader(object_shader, "model_To_World", tableT);
 	DrawModel(table, object_shader, "in_Position", "inNormal", "inTexCord");
     printError("DrawTable");
 }
 
 void DrawSofa(){
-	uploadMat4ToShader(object_shader, "mdlMatrix", sofaT);
-	uploadMat4ToShader(object_shader, "worldCamera", worldCamera);
+	uploadMat4ToShader(object_shader, "model_To_World", sofaT);
 	DrawModel(sofa, object_shader, "in_Position", "inNormal", "inTexCord");
     printError("DrawSofa");
 }
@@ -172,16 +169,17 @@ void DrawSkyBox(){
     vec3 newWorldCamera = worldCameraP;
     worldCamera = lookAtv(newWorldCamera, worldCameraL, worldCameraV);
     glDisable(GL_DEPTH_TEST);
+
     glActiveTexture(GL_TEXTURE0);
-    glUniform1i(glGetUniformLocation(shybox_shader, "texUnit"), 0); // Texture unit 0
+    glUniform1i(glGetUniformLocation(shybox_shader, "texUnit"), 0);
     
     mat4 worldCameraCopy = worldCamera;
     worldCameraCopy.m[3] = 0;
     worldCameraCopy.m[7] = 0;
     worldCameraCopy.m[11] = 0;
-    uploadMat4ToShader(shybox_shader, "worldCamera", worldCameraCopy);
+    uploadMat4ToShader(shybox_shader, "world_To_View", worldCameraCopy);
 
-    uploadMat4ToShader(shybox_shader, "mdlMatrix", IdentityMatrix());
+    uploadMat4ToShader(shybox_shader, "model_To_World", IdentityMatrix());
     DrawModel(skybox, shybox_shader, "in_Position", "inNormal", "inTexCord");
 
     glEnable(GL_DEPTH_TEST);
@@ -193,32 +191,34 @@ void DrawGround(){
     glUseProgram(ground_shader);
     glActiveTexture(GL_TEXTURE1);
     glUniform1i(glGetUniformLocation(ground_shader, "texUnit"), 1); // Texture unit 1
-    uploadMat4ToShader(ground_shader, "worldCamera", worldCamera);
-    uploadMat4ToShader(ground_shader, "mdlMatrix", totalGround);
+    uploadMat4ToShader(ground_shader, "world_To_View", worldCamera);
+    uploadMat4ToShader(ground_shader, "model_To_World", totalGround);
     DrawModel(ground, ground_shader, "in_Position", "inNormal", "inTexCord");
 
     printError("DrawGround");
 }
 
+void UpdateLightSources(){
+    firePos = vec3(33+sin(t*10)*2, 0, 23);
+    glUniform3fv(glGetUniformLocation(object_shader, "firePos"), 1, &firePos.x);
+    printError("UpdateLightSources");
+}
 void display(void)
 {
 	printError("pre display");
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     t = (GLfloat)glutGet(GLUT_ELAPSED_TIME)/1000;
-
-
-    printError("display lightsources");
-
+    
     moveCamera();
     DrawSkyBox();
     DrawGround();
 	
+    //draw using object shader
 	glUseProgram(object_shader);
-
-    //update light sources
-    firePos = vec3(33+sin(t*10)*2, 0, 23);
-    glUniform3fv(glGetUniformLocation(object_shader, "firePos"), 1, &firePos.x);
+    uploadMat4ToShader(object_shader, "world_To_View", worldCamera);
+    UpdateLightSources();
+    
     DrawCabin();
     DrawFireplace();
     DrawSofa();
@@ -227,7 +227,6 @@ void display(void)
 	glutSwapBuffers();
 }
 
-
 int main(int argc, char *argv[])
 {
 	glutInit(&argc, argv);
@@ -235,9 +234,11 @@ int main(int argc, char *argv[])
 
 	glutInitContextVersion(3, 2);
 	glutInitWindowSize(WINDOW_SIZE, WINDOW_SIZE);
-	glutCreateWindow ("GL3 white triangle example");
+	glutCreateWindow ("Cosy Cabin");
 	glutDisplayFunc(display); 
-	init ();
+	init();
 	glutMainLoop();
 	return 0;
 }
+
+
