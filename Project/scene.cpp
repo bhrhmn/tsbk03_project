@@ -1,5 +1,6 @@
 
 #include "scene.h"
+#include "tree.h"
 
 // Global variable definitions (declared extern in header)
 Model *ground;
@@ -8,10 +9,12 @@ Model *sofa;
 Model *table;
 Model *cabin;
 Model *fireplace;
+Model *tree;
 
 unsigned int myTex;
 unsigned int myTex2;
 unsigned int cabintex;
+unsigned int maskrosTex;
 
 mat4 totalGround;
 mat4 worldCamera;
@@ -19,6 +22,7 @@ mat4 cabinT;
 mat4 FireplaceT;
 mat4 tableT;
 mat4 sofaT;
+mat4 treeMat;
 
 vec3 worldCameraP = { 0.0f, 5.0f, 25.0f };
 vec3 worldCameraL = { 0.0f, 5.0f, 0.0f };
@@ -37,6 +41,7 @@ GLfloat t = 0;
 // Function implementations
 void InstantiateModels() {
     ground = LoadDataToModel(vertices, vertex_normals, tex_coords, vertex_normals, indices, 4, 6);
+    tree = LoadDataToModel(tree_vertices, tree_vertex_normals, tree_tex_coords, tree_vertex_normals, tree_indices, 4, 6);
     skybox = LoadModel("skybox/skybox.obj");
     sofa = LoadModel("Models/Koltuk.obj");
     table = LoadModel("Models/Table.obj");
@@ -48,6 +53,7 @@ void InstantiateModels() {
     tableT = T(20,-12,-10) * S(8);
     sofaT = T(20,-4,-25) * S(20);
     totalGround = T(0,-10,0);
+    treeMat = IdentityMatrix();
 }
 
 void InstantiateTextures() {
@@ -62,6 +68,10 @@ void InstantiateTextures() {
     glActiveTexture(GL_TEXTURE2);
     LoadTGATextureSimple("Models/WoodCabinDif.tga", &cabintex);
     glBindTexture(GL_TEXTURE_2D, cabintex);
+
+    glActiveTexture(GL_TEXTURE3);
+    LoadTGATextureSimple("Models/maskros512.tga", &maskrosTex);
+    glBindTexture(GL_TEXTURE_2D, maskrosTex);
 }
 
 void OnTimer(int value) {
@@ -155,7 +165,7 @@ void DrawTable(){
     glUniform1i(glGetUniformLocation(object_shader, "texUnit"), 2); // Texture unit 0
 	uploadMat4ToShader(object_shader, "model_To_World", tableT);
 	DrawModel(table, object_shader, "in_Position", "inNormal", "inTexCord");
-    printError("DrawTable");
+    printError("DrawTable"); 
 }
 
 void DrawSofa(){
@@ -181,13 +191,13 @@ void DrawSkyBox(){
 
     uploadMat4ToShader(shybox_shader, "model_To_World", IdentityMatrix());
     DrawModel(skybox, shybox_shader, "in_Position", "inNormal", "inTexCord");
-
+ 
     glEnable(GL_DEPTH_TEST);
-    printError("DrawSkyBox");
+    printError("DrawSkyBox");  
 }
 
 void DrawGround(){
-    //Draw ground
+    //Draw ground 
     glUseProgram(ground_shader);
     glActiveTexture(GL_TEXTURE1);
     glUniform1i(glGetUniformLocation(ground_shader, "texUnit"), 1); // Texture unit 1
@@ -197,6 +207,18 @@ void DrawGround(){
 
     printError("DrawGround");
 }
+
+void DrawTree() {
+    glUseProgram(ground_shader);
+    glActiveTexture(GL_TEXTURE3);
+    glUniform1i(glGetUniformLocation(ground_shader, "texUnit"), 3); 
+    uploadMat4ToShader(ground_shader, "world_To_View", worldCamera);
+    uploadMat4ToShader(ground_shader, "model_To_World", treeMat);
+    DrawModel(tree, ground_shader, "in_Position", "inNormal", "inTexCord");
+
+    printError("DrawTree\n");
+}
+
 
 void UpdateLightSources(){
     firePos = vec3(33+sin(t*10)*2, 0, 23);
@@ -213,6 +235,8 @@ void display(void)
     moveCamera();
     DrawSkyBox();
     DrawGround();
+    DrawTree();
+
 	
     //draw using object shader
 	glUseProgram(object_shader);

@@ -20,7 +20,7 @@
 #define left -0.5
 #define top 0.5
 #define bottom -0.5
-#define GROUND_SIZE 100.0f
+#define GROUND_SIZE 1000.0f
 #define WINDOW_SIZE 800
 
 
@@ -111,6 +111,7 @@ void DrawTable();
 void DrawSofa();
 void DrawSkyBox();
 void DrawGround();
+void DrawTree();
 void display();
 
 #endif // SCENE_H
