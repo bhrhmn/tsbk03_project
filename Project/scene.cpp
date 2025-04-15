@@ -12,6 +12,9 @@ Model *fireplace;
 unsigned int myTex;
 unsigned int myTex2;
 unsigned int cabintex;
+unsigned int sofatex;
+unsigned int fireplacetex;
+
 
 mat4 totalGround;
 mat4 worldCamera;
@@ -38,7 +41,7 @@ GLfloat t = 0;
 void InstantiateModels() {
     ground = LoadDataToModel(vertices, vertex_normals, tex_coords, vertex_normals, indices, 4, 6);
     skybox = LoadModel("skybox/skybox.obj");
-    sofa = LoadModel("Models/Koltuk.obj");
+    sofa = LoadModel("Models/sofa/model/SOFA.obj.obj");
     table = LoadModel("Models/Table.obj");
     cabin = LoadModel("Models/WoodenCabinObj.obj");
     fireplace = LoadModel("Models/fireplace_blender.obj");
@@ -46,7 +49,9 @@ void InstantiateModels() {
     cabinT = T(20,-10,0) * S(1);
     FireplaceT = T(35,-5,25) * Ry(5*M_PI/4) * S(9);
     tableT = T(20,-12,-10) * S(8);
-    sofaT = T(20,-4,-25) * S(20);
+    sofaT = T(20,-4,-30)* S(8);
+    
+
     totalGround = T(0,-10,0);
 }
 
@@ -62,6 +67,14 @@ void InstantiateTextures() {
     glActiveTexture(GL_TEXTURE2);
     LoadTGATextureSimple("Models/WoodCabinDif.tga", &cabintex);
     glBindTexture(GL_TEXTURE_2D, cabintex);
+
+    glActiveTexture(GL_TEXTURE3);
+    LoadTGATextureSimple("Models/stonebrick.tga", &fireplacetex);
+    glBindTexture(GL_TEXTURE_2D, fireplacetex);
+
+    glActiveTexture(GL_TEXTURE4);
+    LoadTGATextureSimple("Models/sofa/color.tga", &sofatex);
+    glBindTexture(GL_TEXTURE_2D, sofatex);
 }
 
 void OnTimer(int value) {
@@ -143,8 +156,8 @@ void DrawCabin(){
 }
 
 void DrawFireplace(){
-    glActiveTexture(GL_TEXTURE2);
-    glUniform1i(glGetUniformLocation(object_shader, "texUnit"), 2); // Texture unit 0
+    glActiveTexture(GL_TEXTURE3);
+    glUniform1i(glGetUniformLocation(object_shader, "texUnit"), 3); 
     uploadMat4ToShader(object_shader, "model_To_World", FireplaceT);
 	DrawModel(fireplace, object_shader, "in_Position", "inNormal", "inTexCord");
     printError("DrawFireplace");
@@ -159,6 +172,8 @@ void DrawTable(){
 }
 
 void DrawSofa(){
+    glActiveTexture(GL_TEXTURE4);
+    glUniform1i(glGetUniformLocation(object_shader, "texUnit"), 4); 
 	uploadMat4ToShader(object_shader, "model_To_World", sofaT);
 	DrawModel(sofa, object_shader, "in_Position", "inNormal", "inTexCord");
     printError("DrawSofa");
