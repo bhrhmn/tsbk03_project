@@ -3,6 +3,8 @@ uniform sampler2D texUnit;
 
 uniform vec3 firePos;
 uniform vec3 fireColor;
+uniform vec3 moonPos;
+uniform vec3 moonColor;
 uniform mat4 model_To_World;
 uniform mat4 world_To_View;
 out vec4 outColor;
@@ -14,10 +16,12 @@ in vec4 SurfacePos;
 void main(void)
 {
 	/* do light here */ 
-	
-
 
 	vec3 loc_v1 = normalize(vec3((world_To_View * vec4(firePos, 1.0)) - SurfacePos)); 
 	vec3 diff_Color = (max(0.0, dot(normalize(transformedNormal), loc_v1)) * fireColor);
-	outColor = vec4(diff_Color, 1.0) * texture(texUnit, outTexCord);
+
+
+	vec3 loc_v2 = normalize(vec3((world_To_View * vec4(moonPos, 1.0)) - SurfacePos)); 
+	vec3 diff_Color2 = (max(0.0, dot(normalize(transformedNormal), loc_v2)) * moonColor);
+	outColor = vec4(diff_Color + diff_Color2, 1.0) * texture(texUnit, outTexCord);
 }
