@@ -1,14 +1,13 @@
 uniform sampler2D ShadowMap;
 
 varying vec4 ShadowCoord;
-uniform mat4 projectionMatrix;
-uniform mat4 world_To_View;
+out vec4 frag_color;
 
 void main()
 {	
 	vec4 shadowCoordinateWdivide = ShadowCoord / ShadowCoord.w ;
 	
-	// Used to lower moirÃ© pattern and self-shadowing
+	// Used to lower moire pattern and self-shadowing
 	shadowCoordinateWdivide.z += 0.0005;
 	
 	
@@ -20,7 +19,7 @@ void main()
  		shadow = distanceFromLight < shadowCoordinateWdivide.z ? 0.5 : 1.0 ;
   	
 	
-  	gl_FragColor =	 shadow * gl_Color;
+  	frag_color =	 shadow * gl_Color;
   
 }
 

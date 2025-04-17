@@ -146,55 +146,75 @@ void drawObjects(){
     //draw using object shader
     printError("DrawError");
 
-	glUseProgram(object_shader);
-    uploadMat4ToShader(object_shader, "world_To_View", worldCamera);
+	
     
     DrawCabin();
     DrawFireplace();
     DrawSofa();
     DrawTable();
     DrawDoor();
+    //DrawGround();
 }
 
 void drawObjectsShadows(){
     //draw using object shader
     printError("DrawError");
+    glDisable(GL_TEXTURE_2D);
+    glActiveTexture(GL_TEXTURE7);
 
     uploadMat4ToShader(shadow_shader, "model_To_World", cabinT);
 	DrawModel(cabin, shadow_shader, "in_Position", "inNormal", "inTexCord");
 
-    uploadMat4ToShader(shadow_shader, "model_To_World", FireplaceT);
-	DrawModel(fireplace, shadow_shader, "in_Position", "inNormal", "inTexCord");
+    // uploadMat4ToShader(shadow_shader, "model_To_World", FireplaceT);
+	// DrawModel(fireplace, shadow_shader, "in_Position", "inNormal", "inTexCord");
 
-    uploadMat4ToShader(shadow_shader, "model_To_World", sofaT);
-	DrawModel(sofa, shadow_shader, "in_Position", "inNormal", "inTexCord");
+    // uploadMat4ToShader(shadow_shader, "model_To_World", sofaT);
+	// DrawModel(sofa, shadow_shader, "in_Position", "inNormal", "inTexCord");
     
-    uploadMat4ToShader(shadow_shader, "model_To_World", tableT);
-	DrawModel(table, shadow_shader, "in_Position", "inNormal", "inTexCord");
+    // uploadMat4ToShader(shadow_shader, "model_To_World", tableT);
+	// DrawModel(table, shadow_shader, "in_Position", "inNormal", "inTexCord");
     
-    uploadMat4ToShader(shadow_shader, "model_To_World", doorT);
-	DrawModel(door, shadow_shader, "in_Position", "inNormal", "inTexCord");
+    // uploadMat4ToShader(shadow_shader, "model_To_World", doorT);
+	// DrawModel(door, shadow_shader, "in_Position", "inNormal", "inTexCord");
+
+    uploadMat4ToShader(shadow_shader, "model_To_World", totalGround);
+    DrawModel(ground, shadow_shader, "in_Position", "inNormal", "inTexCord");
+    printError("renderscene");
+
 }
 
 
 
-void setupMatrices(float position_x,float position_y,float position_z,float lookAt_x,float lookAt_y,float lookAt_z)
+void setupShadowMatrices(float position_x,float position_y,float position_z,float lookAt_x,float lookAt_y,float lookAt_z)
 {
+    float far2 = far;
+    float near2 = near; 
+    float fov = M_PI / 4;
+    float top2 = near2 / tanf(fov / 2.0f);
+    float bottom2 = -top2;
+    float right2 = top2 * RENDER_WIDTH / RENDER_HEIGHT;
+    float left2 = -right2;
+
+    const GLfloat projectionMatrix2[] = {2.0f*near2/(right2-left2), 0.0f, 0.0f, 0.0f,
+                                            0.0f, 2.0f*near2/(top2-bottom2), 0.0f, 0.0f,
+                                            (right2+left2)/(right2-left2), (top2+bottom2)/(top2-bottom2), -(far2 + near2)/(far2 - near2), -1.0f,
+                                            0.0f, 0.0f, -2.0f*far2*near2/(far2-near2), 0.0f };
     glUseProgram(shadow_shader);
-    glUniformMatrix4fv(glGetUniformLocation(shadow_shader, "projectionMatrix"), 1, GL_TRUE, projectionMatrix);
-    uploadMat4ToShader(shadow_shader, "world_To_View", lookAt(position_x,position_y,position_z,lookAt_x,lookAt_y,lookAt_z,0,1,0));
+    glUniformMatrix4fv(glGetUniformLocation(shadow_shader, "projectionMatrix"), 1, GL_TRUE, projectionMatrix2);
+    mat4 l = lookAt(position_x,position_y,position_z,lookAt_x,lookAt_y,lookAt_z,0,1,0);
+    uploadMat4ToShader(shadow_shader, "world_To_View", l);
 }
 
-void setupObjectMatrices(float position_x,float position_y,float position_z,float lookAt_x,float lookAt_y,float lookAt_z)
+void setupObjectMatrices()
 {
     glUseProgram(object_shader);
+    uploadMat4ToShader(object_shader, "world_To_View", worldCamera);
     glUniformMatrix4fv(glGetUniformLocation(object_shader, "projectionMatrix"), 1, GL_TRUE, projectionMatrix);
-    uploadMat4ToShader(object_shader, "world_To_View", lookAt(position_x,position_y,position_z,lookAt_x,lookAt_y,lookAt_z,0,1,0));
 }
 
 
 
-void ShadowMap(){
+void ShadowMap(){ 
     int shadowMapWidth = RENDER_WIDTH * SHADOW_MAP_RATIO;
     int shadowMapHeight = RENDER_HEIGHT * SHADOW_MAP_RATIO;
     GLenum FBOstatus;
@@ -278,7 +298,8 @@ void setTextureMatrix(void)
         glBindFramebuffer(GL_FRAMEBUFFER,fboId);//Rendering offscreen
         
         //Using the fixed pipeline to render to the depthbuffer
-        glUseProgram(object_shader);
+        // TODO: create simple shader, doesn't matter what it draws in fragment shader
+        glUseProgram(simpleShader);
 
         
         // In the case we render the shadowmap to a higher resolution, the viewport must be modified accordingly.
@@ -291,7 +312,7 @@ void setTextureMatrix(void)
         glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
 
         // Setup the projection and modelview from the light source
-        setupObjectMatrices(moonPos.x, moonPos.y, moonPos.z, moonLookAt[0], moonLookAt[1], moonLookAt[2]);
+        setupShadowMatrices(moonPos.x, moonPos.y, moonPos.z, moonLookAt[0], moonLookAt[1], moonLookAt[2]);
 
         // Cull front, render only backface, to avoid self-shadowing
         glCullFace(GL_FRONT);
@@ -302,6 +323,7 @@ void setTextureMatrix(void)
         // and add the scale and bias transformation
         //setTextureMatrix();
         
+        //==================================
         //2. Render from camera with the Z-buffer FBO
         glBindFramebuffer(GL_FRAMEBUFFER,0);
         glViewport(0,0,RENDER_WIDTH,RENDER_HEIGHT);
@@ -313,7 +335,9 @@ void setTextureMatrix(void)
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         
         //Using the shadow shader
-        glUseProgram(shadow_shader);
+        // TODO: add logic in shadow shader to object_shader
+        //       shadowCoord = surfacePos typ
+        glUseProgram(object_shader);
 
         glUniform1i(glGetUniformLocation(shadow_shader, "shadowMap"), 7); // Texture unit 0
 
@@ -323,9 +347,9 @@ void setTextureMatrix(void)
         glBindTexture(GL_TEXTURE_2D, depthTextureId);
         
         // Setup the projection and modelview from the camera
-        setupMatrices(worldCameraP.x,worldCameraP.y,worldCameraP.z,worldCameraL.x,worldCameraL.y,worldCameraL.z);
+        setupObjectMatrices();
         glCullFace(GL_BACK);
-        drawObjectsShadows();
+        drawObjects();
         glutSwapBuffers();
     }
 
@@ -458,12 +482,12 @@ void display(void)
 	printError("pre display");
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glClearColor(0,0,0,1);
+    
     t = (GLfloat)glutGet(GLUT_ELAPSED_TIME)/1000;
     
     moveCamera();
     DrawSkyBox();
-    DrawGround();
+    //DrawGround();
 	
     renderScene();
 
