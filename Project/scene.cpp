@@ -152,6 +152,22 @@ void moveCamera(){
     if (glutKeyIsDown('e')) {
         worldCameraL = worldCameraP + Ry(-0.05)*direction;
     }
+    // go up and down
+    if (glutKeyIsDown('j')) {
+        worldCameraL -= vec3(0, 1, 0);
+        worldCameraP -= vec3(0, 1, 0);
+    }
+    if (glutKeyIsDown('k')) {
+        worldCameraL += vec3(0, 1, 0);
+        worldCameraP += vec3(0, 1, 0);
+    }
+    // look up and down
+    if (glutKeyIsDown('h')) {
+        worldCameraL = normalize(ArbRotate(side_dir, M_PI/100)*direction) + worldCameraP;
+    }
+    if (glutKeyIsDown('l')) {
+        worldCameraL = normalize(ArbRotate(side_dir, -M_PI/100)*direction) + worldCameraP;
+    }
 }
 
 void DrawCabin(){
