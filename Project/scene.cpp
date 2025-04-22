@@ -15,6 +15,7 @@ unsigned int myTex;
 unsigned int myTex2;
 unsigned int cabintex;
 unsigned int maskrosTex;
+unsigned int treeTex;
 
 mat4 totalGround;
 mat4 worldCamera;
@@ -22,7 +23,7 @@ mat4 cabinT;
 mat4 FireplaceT;
 mat4 tableT;
 mat4 sofaT;
-mat4 treeMat;
+mat4 treeMat; 
 
 vec3 worldCameraP = { 0.0f, 5.0f, 25.0f };
 vec3 worldCameraL = { 0.0f, 5.0f, 0.0f };
@@ -31,6 +32,7 @@ vec3 worldCameraV = { 0.0f, 5.0f, 0.0f };
 GLuint ground_shader;
 GLuint shybox_shader;
 GLuint object_shader;
+GLuint tree_shader;
 
 vec3 firePos = vec3(33, 0, 23);
 vec3 fireColor = vec3(0.8, 0.5, 0.2);
@@ -53,7 +55,7 @@ void InstantiateModels() {
     tableT = T(20,-12,-10) * S(8);
     sofaT = T(20,-4,-25) * S(20);
     totalGround = T(0,-10,0);
-    treeMat = IdentityMatrix();
+    treeMat = T(100, -5, 0);
 }
 
 void InstantiateTextures() {
@@ -72,6 +74,10 @@ void InstantiateTextures() {
     glActiveTexture(GL_TEXTURE3);
     LoadTGATextureSimple("Models/maskros512.tga", &maskrosTex);
     glBindTexture(GL_TEXTURE_2D, maskrosTex);
+
+    glActiveTexture(GL_TEXTURE4);
+    LoadTGATextureSimple("Models/tree.tga", &treeTex);
+    glBindTexture(GL_TEXTURE_2D, treeTex);
 }
 
 void OnTimer(int value) {
@@ -90,6 +96,7 @@ void init(void) {
     ground_shader = loadShaders("Shaders/ground.vert", "Shaders/ground.frag");
     shybox_shader = loadShaders("Shaders/skybox.vert", "Shaders/skybox.frag");
     object_shader = loadShaders("Shaders/object.vert", "Shaders/object.frag");
+    tree_shader = loadShaders("Shaders/tree.vert", "Shaders/tree.frag");
     printError("init shader");
     
     // Textures
@@ -107,8 +114,11 @@ void init(void) {
     glUniformMatrix4fv(glGetUniformLocation(ground_shader, "projectionMatrix"), 1, GL_TRUE, projectionMatrix);
     glUseProgram(object_shader);
     glUniformMatrix4fv(glGetUniformLocation(object_shader, "projectionMatrix"), 1, GL_TRUE, projectionMatrix);
+    glUseProgram(tree_shader);
+    glUniformMatrix4fv(glGetUniformLocation(tree_shader, "projectionMatrix"), 1, GL_TRUE, projectionMatrix);
 
     // upload fire
+    glUseProgram(object_shader);
     glUniform3fv(glGetUniformLocation(object_shader, "firePos"), 1, &firePos.x);
     glUniform3fv(glGetUniformLocation(object_shader, "fireColor"), 1, &fireColor.x);
     
@@ -201,20 +211,25 @@ void DrawGround(){
     glUseProgram(ground_shader);
     glActiveTexture(GL_TEXTURE1);
     glUniform1i(glGetUniformLocation(ground_shader, "texUnit"), 1); // Texture unit 1
-    uploadMat4ToShader(ground_shader, "world_To_View", worldCamera);
+    uploadMat4ToShader(ground_shader, "world_To_View", worldCamera); 
     uploadMat4ToShader(ground_shader, "model_To_World", totalGround);
     DrawModel(ground, ground_shader, "in_Position", "inNormal", "inTexCord");
 
     printError("DrawGround");
 }
 
-void DrawTree() {
-    glUseProgram(ground_shader);
-    glActiveTexture(GL_TEXTURE3);
-    glUniform1i(glGetUniformLocation(ground_shader, "texUnit"), 3); 
-    uploadMat4ToShader(ground_shader, "world_To_View", worldCamera);
-    uploadMat4ToShader(ground_shader, "model_To_World", treeMat);
-    DrawModel(tree, ground_shader, "in_Position", "inNormal", "inTexCord");
+ 
+void DrawTree(){ 
+    glUseProgram(tree_shader);
+    glActiveTexture(GL_TEXTURE4);
+    glUniform1i(glGetUniformLocation(tree_shader, "texUnit"), 4); 
+    uploadMat4ToShader(tree_shader, "world_To_View", worldCamera);
+    //tree 1
+    uploadMat4ToShader(tree_shader, "model_To_World", treeMat);
+    DrawModel(tree, tree_shader, "in_Position", "inNormal", "inTexCord");
+    //tree 1.1
+    uploadMat4ToShader(tree_shader, "model_To_World", treeMat*Ry(M_PI*3/2));
+    DrawModel(tree, tree_shader, "in_Position", "inNormal", "inTexCord");
 
     printError("DrawTree\n");
 }
