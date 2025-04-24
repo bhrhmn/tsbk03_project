@@ -23,7 +23,9 @@ mat4 cabinT;
 mat4 FireplaceT;
 mat4 tableT;
 mat4 sofaT;
-mat4 treeMat; 
+
+const int FOREST_SIZE = 5;
+mat4 treeMat[FOREST_SIZE]; 
 
 vec3 worldCameraP = { 0.0f, 5.0f, 25.0f };
 vec3 worldCameraL = { 0.0f, 5.0f, 0.0f };
@@ -55,7 +57,11 @@ void InstantiateModels() {
     tableT = T(20,-12,-10) * S(8);
     sofaT = T(20,-4,-25) * S(20);
     totalGround = T(0,-10,0);
-    treeMat = T(100, -5, 0);
+    treeMat[0] = T(150, -5, -10);
+    treeMat[1] = T(200, -5, 20);
+    treeMat[2] = T(180, -5, -28);
+    treeMat[3] = T(120, -5, 35);
+    treeMat[4] = T(100, -5, -35);
 }
 
 void InstantiateTextures() {
@@ -168,6 +174,7 @@ void moveCamera(){
     if (glutKeyIsDown('l')) {
         worldCameraL = normalize(ArbRotate(side_dir, -M_PI/100)*direction) + worldCameraP;
     }
+    worldCamera = lookAtv(worldCameraP, worldCameraL, worldCameraV);
 }
 
 void DrawCabin(){
@@ -202,8 +209,7 @@ void DrawSofa(){
 
 void DrawSkyBox(){
     glUseProgram(shybox_shader);
-    vec3 newWorldCamera = worldCameraP;
-    worldCamera = lookAtv(newWorldCamera, worldCameraL, worldCameraV);
+   
     glDisable(GL_DEPTH_TEST);
 
     glActiveTexture(GL_TEXTURE0);
@@ -234,19 +240,26 @@ void DrawGround(){
     printError("DrawGround");
 }
 
- 
+  
 void DrawTree(){ 
     glUseProgram(tree_shader);
     glActiveTexture(GL_TEXTURE4);
     glUniform1i(glGetUniformLocation(tree_shader, "texUnit"), 4); 
     uploadMat4ToShader(tree_shader, "world_To_View", worldCamera);
-    //tree 1
-    uploadMat4ToShader(tree_shader, "model_To_World", treeMat);
-    DrawModel(tree, tree_shader, "in_Position", "inNormal", "inTexCord");
-    //tree 1.1
-    uploadMat4ToShader(tree_shader, "model_To_World", treeMat*Ry(M_PI*3/2));
-    DrawModel(tree, tree_shader, "in_Position", "inNormal", "inTexCord");
-
+    
+    for (int i = 0; i<FOREST_SIZE; i++) {
+        mat4 rotation = Ry(0);
+        if (i%2 == 0) {
+            rotation = Ry(M_PI_4);
+        }
+        //tree 1    
+        uploadMat4ToShader(tree_shader, "model_To_World", treeMat[i]*rotation);
+        DrawModel(tree, tree_shader, "in_Position", "inNormal", "inTexCord");
+        //tree 1.1
+        uploadMat4ToShader(tree_shader, "model_To_World", treeMat[i]*rotation*Ry(M_PI_2));
+        DrawModel(tree, tree_shader, "in_Position", "inNormal", "inTexCord");
+    }
+    
     printError("DrawTree\n");
 }
 
@@ -254,7 +267,7 @@ void DrawTree(){
 void UpdateLightSources(){
     firePos = vec3(33+sin(t*10)*2, 0, 23);
     glUniform3fv(glGetUniformLocation(object_shader, "firePos"), 1, &firePos.x);
-    printError("UpdateLightSources");
+    printError("UpdateLightSources"); 
 }
 void display(void)
 {
@@ -262,6 +275,7 @@ void display(void)
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     t = (GLfloat)glutGet(GLUT_ELAPSED_TIME)/1000;
+    glEnable(GL_DEPTH_TEST);
     
     moveCamera();
     DrawSkyBox();
