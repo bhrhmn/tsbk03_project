@@ -1,25 +1,9 @@
-uniform sampler2D ShadowMap;
 
-varying vec4 ShadowCoord;
-out vec4 frag_color;
+varying out vec4 frag_color;
+uniform sampler2D ShadowMap;
 
 void main()
 {	
-	vec4 shadowCoordinateWdivide = ShadowCoord / ShadowCoord.w ;
-	
-	// Used to lower moire pattern and self-shadowing
-	shadowCoordinateWdivide.z += 0.0005;
-	
-	
-	float distanceFromLight = texture2D(ShadowMap,shadowCoordinateWdivide.st).z;
-	
-	
- 	float shadow = 1.0;
- 	if (ShadowCoord.w > 0.0)
- 		shadow = distanceFromLight < shadowCoordinateWdivide.z ? 0.5 : 1.0 ;
-  	
-	
-  	frag_color =	 shadow * gl_Color;
-  
+	frag_color = vec4(0.5);
 }
 

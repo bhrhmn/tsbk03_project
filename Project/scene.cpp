@@ -53,6 +53,7 @@ unsigned int RENDER_HEIGHT = 1024;
 
 GLuint fboId;
 GLuint depthTextureId;
+FBOstruct *fbo;
 
 //Light lookAt
 float moonLookAt[3] = {0.0f,0.0f,0.0f};
@@ -81,7 +82,7 @@ void DrawDoor(){
     glUniform1i(glGetUniformLocation(object_shader, "texUnit"), 2); // Texture unit 0
     uploadMat4ToShader(object_shader, "model_To_World", doorT);
 	DrawModel(door, object_shader, "in_Position", "inNormal", "inTexCord");
-    printError("DrawCabin");
+    printError("DrawDoor");
 }
 
 void DrawFireplace(){
@@ -153,33 +154,38 @@ void drawObjects(){
     DrawSofa();
     DrawTable();
     DrawDoor();
-    //DrawGround();
+    DrawGround();
 }
 
 void drawObjectsShadows(){
+    //glUniform1i(glGetUniformLocation(shadow_shader, "shadowMap"), 7); // Texture unit 0
+	glActiveTexture(GL_TEXTURE7);
+	glBindTexture(GL_TEXTURE_2D,7);
     //draw using object shader
     printError("DrawError");
-    glDisable(GL_TEXTURE_2D);
-    glActiveTexture(GL_TEXTURE7);
+    //glDisable(GL_TEXTURE_2D);
+    printError("renderscene");
+    
+    
+
 
     uploadMat4ToShader(shadow_shader, "model_To_World", cabinT);
-	DrawModel(cabin, shadow_shader, "in_Position", "inNormal", "inTexCord");
+	DrawModel(cabin, shadow_shader, "in_Position",  NULL, NULL);
 
-    // uploadMat4ToShader(shadow_shader, "model_To_World", FireplaceT);
-	// DrawModel(fireplace, shadow_shader, "in_Position", "inNormal", "inTexCord");
+    uploadMat4ToShader(shadow_shader, "model_To_World", FireplaceT);
+	DrawModel(fireplace, shadow_shader, "in_Position", NULL, NULL);
 
-    // uploadMat4ToShader(shadow_shader, "model_To_World", sofaT);
-	// DrawModel(sofa, shadow_shader, "in_Position", "inNormal", "inTexCord");
+    uploadMat4ToShader(shadow_shader, "model_To_World", sofaT);
+	DrawModel(sofa, shadow_shader, "in_Position",  NULL, NULL);
     
-    // uploadMat4ToShader(shadow_shader, "model_To_World", tableT);
-	// DrawModel(table, shadow_shader, "in_Position", "inNormal", "inTexCord");
+    uploadMat4ToShader(shadow_shader, "model_To_World", tableT);
+	DrawModel(table, shadow_shader, "in_Position",  NULL, NULL);
     
-    // uploadMat4ToShader(shadow_shader, "model_To_World", doorT);
-	// DrawModel(door, shadow_shader, "in_Position", "inNormal", "inTexCord");
+    uploadMat4ToShader(shadow_shader, "model_To_World", doorT);
+	DrawModel(door, shadow_shader, "in_Position",  NULL, NULL);
 
     uploadMat4ToShader(shadow_shader, "model_To_World", totalGround);
-    DrawModel(ground, shadow_shader, "in_Position", "inNormal", "inTexCord");
-    printError("renderscene");
+    DrawModel(ground, shadow_shader, "in_Position",  NULL, NULL);
 
 }
 
@@ -187,22 +193,13 @@ void drawObjectsShadows(){
 
 void setupShadowMatrices(float position_x,float position_y,float position_z,float lookAt_x,float lookAt_y,float lookAt_z)
 {
-    float far2 = far;
-    float near2 = near; 
-    float fov = M_PI / 4;
-    float top2 = near2 / tanf(fov / 2.0f);
-    float bottom2 = -top2;
-    float right2 = top2 * RENDER_WIDTH / RENDER_HEIGHT;
-    float left2 = -right2;
-
-    const GLfloat projectionMatrix2[] = {2.0f*near2/(right2-left2), 0.0f, 0.0f, 0.0f,
-                                            0.0f, 2.0f*near2/(top2-bottom2), 0.0f, 0.0f,
-                                            (right2+left2)/(right2-left2), (top2+bottom2)/(top2-bottom2), -(far2 + near2)/(far2 - near2), -1.0f,
-                                            0.0f, 0.0f, -2.0f*far2*near2/(far2-near2), 0.0f };
+    mat4 projectionMatrix2 = perspective(45, RENDER_WIDTH/RENDER_HEIGHT, 10, 4000);
     glUseProgram(shadow_shader);
-    glUniformMatrix4fv(glGetUniformLocation(shadow_shader, "projectionMatrix"), 1, GL_TRUE, projectionMatrix2);
+    glUniformMatrix4fv(glGetUniformLocation(shadow_shader, "projectionMatrix"), 1, GL_TRUE, projectionMatrix2.m);
     mat4 l = lookAt(position_x,position_y,position_z,lookAt_x,lookAt_y,lookAt_z,0,1,0);
     uploadMat4ToShader(shadow_shader, "world_To_View", l);
+
+
 }
 
 void setupObjectMatrices()
@@ -210,18 +207,23 @@ void setupObjectMatrices()
     glUseProgram(object_shader);
     uploadMat4ToShader(object_shader, "world_To_View", worldCamera);
     glUniformMatrix4fv(glGetUniformLocation(object_shader, "projectionMatrix"), 1, GL_TRUE, projectionMatrix);
+
+    uploadMat4ToShader(object_shader,"textureMatrix", Mult(T(0.5, 0.5, 0.0), S(0.5, 0.5, 1.0)));
+	// Multiply modelview and transformation matrices
 }
 
 
 
 void ShadowMap(){ 
+    printError("shadowmap start");
     int shadowMapWidth = RENDER_WIDTH * SHADOW_MAP_RATIO;
     int shadowMapHeight = RENDER_HEIGHT * SHADOW_MAP_RATIO;
     GLenum FBOstatus;
     // Try to use a texture depth component
 
-    glGenTextures(1, &depthTextureId);
-    glBindTexture(GL_TEXTURE_2D, depthTextureId);
+    glGenTextures(1, &fbo->depth);
+    glBindTexture(GL_TEXTURE_2D, fbo->depth);
+
 
     
     // GL_LINEAR does not make sense for depth texture.
@@ -229,21 +231,20 @@ void ShadowMap(){
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     
     printError("bindtexture");
-
-    glTexImage2D( GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, shadowMapWidth, shadowMapHeight, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE, 0);
+    glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, 0,0, shadowMapWidth, shadowMapHeight,0);
+    //glTexImage2D( GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, shadowMapWidth, shadowMapHeight, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE, 0);
     glBindTexture(GL_TEXTURE_2D, 0);
 
     // create a framebuffer object
-    glGenFramebuffers(1, &fboId);
-    glBindFramebuffer(GL_FRAMEBUFFER, fboId);
+    // glGenFramebuffers(1, &fboId);
+    // glBindFramebuffer(GL_FRAMEBUFFER, fboId);
     
     // Instruct OpenGL that we won't bind a color texture to the FBO
     glDrawBuffer(GL_NONE);
     glReadBuffer(GL_NONE);
-    
+    printError("shadowmap fbo");
     // attach the texture to FBO depth attachment point
-    glFramebufferTexture2D(GL_FRAMEBUFFER,
-        GL_DEPTH_ATTACHMENT,GL_TEXTURE_2D, depthTextureId, 0);
+    //glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,GL_TEXTURE_2D, fbo->depth, 0);
     
         // check FBO status
     FBOstatus = glCheckFramebufferStatus(GL_FRAMEBUFFER);
@@ -254,52 +255,17 @@ void ShadowMap(){
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-
-
-
-
-void setTextureMatrix(void)
-	{
-		static double modelView[16];
-		static double projection[16];
-		
-		// Moving from unit cube [-1,1] to [0,1]  
-		const GLdouble bias[16] = {	
-			0.5, 0.0, 0.0, 0.0, 
-			0.0, 0.5, 0.0, 0.0,
-			0.0, 0.0, 0.5, 0.0,
-		0.5, 0.5, 0.5, 1.0};
-		
-		// Grab modelview and transformation matrices
-		glGetDoublev(GL_MODELVIEW_MATRIX, modelView);
-		glGetDoublev(GL_PROJECTION_MATRIX, projection);
-		
-		
-		//glMatrixMode(GL_TEXTURE);
-		glActiveTextureARB(GL_TEXTURE7);
-		
-		glLoadIdentity();	
-		glLoadMatrixd(bias);
-		
-		// concatating all matrices into one.
-		glMultMatrixd (projection);
-		glMultMatrixd (modelView);
-		
-		// Go back to normal matrix mode
-		glMatrixMode(GL_MODELVIEW);
-	}		
-
     void renderScene(void)
     {
 
         //1. First step: Render from the light POV to a FBO, depth values only
         // Bind the depth FBO
         
-        glBindFramebuffer(GL_FRAMEBUFFER,fboId);//Rendering offscreen
+        //glBindFramebuffer(GL_FRAMEBUFFER,fbo);//Rendering offscreen
         
         //Using the fixed pipeline to render to the depthbuffer
         // TODO: create simple shader, doesn't matter what it draws in fragment shader
-        glUseProgram(simpleShader);
+        glUseProgram(shadow_shader);
 
         
         // In the case we render the shadowmap to a higher resolution, the viewport must be modified accordingly.
@@ -313,19 +279,18 @@ void setTextureMatrix(void)
 
         // Setup the projection and modelview from the light source
         setupShadowMatrices(moonPos.x, moonPos.y, moonPos.z, moonLookAt[0], moonLookAt[1], moonLookAt[2]);
-
+        useFBO(fbo, NULL, NULL);
         // Cull front, render only backface, to avoid self-shadowing
         glCullFace(GL_FRONT);
 
-        drawObjects();
+        drawObjectsShadows();  
         
         // Save modelview/projection matrice into the texture matrix
         // and add the scale and bias transformation
-        //setTextureMatrix();
         
         //==================================
         //2. Render from camera with the Z-buffer FBO
-        glBindFramebuffer(GL_FRAMEBUFFER,0);
+        useFBO(NULL, fbo, NULL);
         glViewport(0,0,RENDER_WIDTH,RENDER_HEIGHT);
         
         //Enabling color write (previously disabled for z-buffer rendering)
@@ -339,12 +304,12 @@ void setTextureMatrix(void)
         //       shadowCoord = surfacePos typ
         glUseProgram(object_shader);
 
-        glUniform1i(glGetUniformLocation(shadow_shader, "shadowMap"), 7); // Texture unit 0
+        glUniform1i(glGetUniformLocation(object_shader, "shadowMap"), 7); // Texture unit 0
 
         //glUniform1i("shadowMap", GL_TEXTURE7);
         //glUniform1i(texunit,TEX_UNIT);
         glActiveTexture(GL_TEXTURE7);
-        glBindTexture(GL_TEXTURE_2D, depthTextureId);
+        glBindTexture(GL_TEXTURE_2D,fbo->depth);
         
         // Setup the projection and modelview from the camera
         setupObjectMatrices();
@@ -504,7 +469,8 @@ int main(int argc, char *argv[])
 	glutInitContextVersion(3, 2);
 	glutInitWindowSize(WINDOW_SIZE, WINDOW_SIZE);
 	glutCreateWindow ("Cosy Cabin");
-    ShadowMap();
+    fbo = initFBO2(RENDER_WIDTH,RENDER_HEIGHT, 0, 1);
+    //ShadowMap();
     printError("Under shadow map");
     glEnable(GL_DEPTH_TEST);
     glClearColor(0, 0, 0, 1);
