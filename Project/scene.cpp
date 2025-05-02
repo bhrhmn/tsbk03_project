@@ -66,10 +66,6 @@ void InstantiateModels() {
 
 void InstantiateTextures() {
 
-    glActiveTexture(GL_TEXTURE1);
-    LoadTGATextureSimple("Models/grass.tga", &myTex2);
-    glBindTexture(GL_TEXTURE_2D, myTex2);
-
     glActiveTexture(GL_TEXTURE2);
     LoadTGATextureSimple("Models/WoodCabinDif.tga", &cabintex);
     glBindTexture(GL_TEXTURE_2D, cabintex);
@@ -87,6 +83,10 @@ void InstantiateTextures() {
     glBindTexture(GL_TEXTURE_2D, myTex);
 
     glActiveTexture(GL_TEXTURE6);
+    LoadTGATextureSimple("Models/grass.tga", &myTex2);
+    glBindTexture(GL_TEXTURE_2D, myTex2);
+
+    glActiveTexture(GL_TEXTURE7);
 
 }
 
@@ -169,7 +169,25 @@ void moveCamera(){
     if (glutKeyIsDown('e')) {
         worldCameraL = worldCameraP + Ry(-0.05)*direction;
     }
+    // go up and down
+    if (glutKeyIsDown('j')) {
+        worldCameraL -= vec3(0, 1, 0);
+        worldCameraP -= vec3(0, 1, 0);
+    }
+    if (glutKeyIsDown('k')) {
+        worldCameraL += vec3(0, 1, 0);
+        worldCameraP += vec3(0, 1, 0);
+    }
+    // look up and down
+    if (glutKeyIsDown('h')) {
+        worldCameraL = normalize(ArbRotate(side_dir, M_PI/100)*direction) + worldCameraP;
+    }
+    if (glutKeyIsDown('l')) {
+        worldCameraL = normalize(ArbRotate(side_dir, -M_PI/100)*direction) + worldCameraP;
+    }
+    worldCamera = lookAtv(worldCameraP, worldCameraL, worldCameraV);
 }
+
 
 void DrawCabin(GLuint shader){
     glActiveTexture(GL_TEXTURE2);
@@ -205,8 +223,6 @@ void DrawSofa(GLuint shader){
 
 void DrawSkyBox(){
     glUseProgram(shybox_shader);
-    vec3 newWorldCamera = worldCameraP;
-    worldCamera = lookAtv(newWorldCamera, worldCameraL, worldCameraV);
     glDisable(GL_DEPTH_TEST);
 
     glActiveTexture(GL_TEXTURE5);
@@ -228,8 +244,8 @@ void DrawSkyBox(){
 void DrawGround(){
     //Draw ground
     glUseProgram(ground_shader);
-    glActiveTexture(GL_TEXTURE1);
-    glUniform1i(glGetUniformLocation(ground_shader, "texUnit"), 1); // Texture unit 1
+    glActiveTexture(GL_TEXTURE6);
+    glUniform1i(glGetUniformLocation(ground_shader, "texUnit"), 6); // Texture unit 6
     uploadMat4ToShader(ground_shader, "world_To_View", worldCamera);
     uploadMat4ToShader(ground_shader, "model_To_World", totalGround);
     DrawModel(ground, ground_shader, "in_Position", "inNormal", "inTexCord");
@@ -261,10 +277,7 @@ void display(void)
     t = (GLfloat)glutGet(GLUT_ELAPSED_TIME)/1000;
     
     moveCamera();
-    DrawSkyBox();
-    DrawGround();
-
-
+    worldCamera = lookAtv(worldCameraP, worldCameraL, worldCameraV);
 	
     //draw using object shader
 	glUseProgram(object_shader);
@@ -299,7 +312,6 @@ void display(void)
 
 
     //2. Render from camera.
-
 	useFBO(NULL, fbo, NULL);
 	
 	glViewport(0,0,WINDOW_SIZE,WINDOW_SIZE);
@@ -311,11 +323,16 @@ void display(void)
 	glUniform1i(glGetUniformLocation(object_shader, "textureUnit"),TEX_UNIT);
 	glActiveTexture(GL_TEXTURE0 + TEX_UNIT);
 	glBindTexture(GL_TEXTURE_2D,fbo->depth);
+
+    DrawSkyBox();
     
     uploadMat4ToShader(object_shader, "world_To_View", worldCamera);
     glCullFace(GL_BACK);
+    
+    DrawGround();
     drawObjects(object_shader);
 
+    
 
 	glutSwapBuffers();
 }
