@@ -20,4 +20,5 @@ void main(void)
     outTexCord = inTexCord;
 
     transformedNormal = normalMatrix1 * inNormal;
+    
 }
