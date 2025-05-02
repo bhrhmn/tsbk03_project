@@ -1,6 +1,9 @@
 
 #include "scene.h"
 
+// We assign one texture unit in which to store the transformation.
+#define TEX_UNIT 0
+
 // Global variable definitions (declared extern in header)
 Model *ground;
 Model *skybox;
@@ -14,6 +17,8 @@ unsigned int myTex2;
 unsigned int cabintex;
 unsigned int sofatex;
 unsigned int fireplacetex;
+
+
 
 FBOstruct *fbo;
 
@@ -63,9 +68,7 @@ void InstantiateModels() {
 }
 
 void InstantiateTextures() {
-    glActiveTexture(GL_TEXTURE0);
-    LoadTGATextureSimple("skybox-alt/atmosphere-cloud.tga", &myTex);
-    glBindTexture(GL_TEXTURE_2D, myTex);
+
 
     glActiveTexture(GL_TEXTURE1);
     LoadTGATextureSimple("Models/grass.tga", &myTex2);
@@ -84,6 +87,10 @@ void InstantiateTextures() {
     glBindTexture(GL_TEXTURE_2D, sofatex);
 
     glActiveTexture(GL_TEXTURE5);
+    LoadTGATextureSimple("skybox-alt/atmosphere-cloud.tga", &myTex);
+    glBindTexture(GL_TEXTURE_2D, myTex);
+
+    glActiveTexture(GL_TEXTURE6);
 
 }
 
@@ -140,9 +147,6 @@ void init(void) {
     //setTextureMatrix
     uploadMat4ToShader(shadow_shader, "scaleBiasMatrix", scaleBiasMatrix);
 
-
- 
-
     
     // Start timer
     glutTimerFunc(20, &OnTimer, 0);
@@ -177,35 +181,35 @@ void moveCamera(){
     }
 }
 
-void DrawCabin(){
+void DrawCabin(GLuint shader){
     glActiveTexture(GL_TEXTURE2);
-    glUniform1i(glGetUniformLocation(object_shader, "texUnit"), 2); // Texture unit 0
-    uploadMat4ToShader(object_shader, "model_To_World", cabinT);
-	DrawModel(cabin, object_shader, "in_Position", "inNormal", "inTexCord");
+    glUniform1i(glGetUniformLocation(shader, "texUnit"), 2); // Texture unit 0
+    uploadMat4ToShader(shader, "model_To_World", cabinT);
+	DrawModel(cabin, shader, "in_Position", "inNormal", "inTexCord");
     printError("DrawCabin");
 }
 
-void DrawFireplace(){
+void DrawFireplace(GLuint shader){
     glActiveTexture(GL_TEXTURE3);
-    glUniform1i(glGetUniformLocation(object_shader, "texUnit"), 3); 
-    uploadMat4ToShader(object_shader, "model_To_World", FireplaceT);
-	DrawModel(fireplace, object_shader, "in_Position", "inNormal", "inTexCord");
+    glUniform1i(glGetUniformLocation(shader, "texUnit"), 3); 
+    uploadMat4ToShader(shader, "model_To_World", FireplaceT);
+	DrawModel(fireplace, shader, "in_Position", "inNormal", "inTexCord");
     printError("DrawFireplace");
 }
 
-void DrawTable(){
+void DrawTable(GLuint shader){
     glActiveTexture(GL_TEXTURE2);
-    glUniform1i(glGetUniformLocation(object_shader, "texUnit"), 2); // Texture unit 0
-	uploadMat4ToShader(object_shader, "model_To_World", tableT);
-	DrawModel(table, object_shader, "in_Position", "inNormal", "inTexCord");
+    glUniform1i(glGetUniformLocation(shader, "texUnit"), 2); // Texture unit 0
+	uploadMat4ToShader(shader, "model_To_World", tableT);
+	DrawModel(table, shader, "in_Position", "inNormal", "inTexCord");
     printError("DrawTable");
 }
 
-void DrawSofa(){
+void DrawSofa(GLuint shader){
     glActiveTexture(GL_TEXTURE4);
-    glUniform1i(glGetUniformLocation(object_shader, "texUnit"), 4); 
-	uploadMat4ToShader(object_shader, "model_To_World", sofaT);
-	DrawModel(sofa, object_shader, "in_Position", "inNormal", "inTexCord");
+    glUniform1i(glGetUniformLocation(shader, "texUnit"), 4); 
+	uploadMat4ToShader(shader, "model_To_World", sofaT);
+	DrawModel(sofa, shader, "in_Position", "inNormal", "inTexCord");
     printError("DrawSofa");
 }
 
@@ -215,8 +219,8 @@ void DrawSkyBox(){
     worldCamera = lookAtv(newWorldCamera, worldCameraL, worldCameraV);
     glDisable(GL_DEPTH_TEST);
 
-    glActiveTexture(GL_TEXTURE0);
-    glUniform1i(glGetUniformLocation(shybox_shader, "texUnit"), 0);
+    glActiveTexture(GL_TEXTURE5);
+    glUniform1i(glGetUniformLocation(shybox_shader, "texUnit"), 5);
     
     mat4 worldCameraCopy = worldCamera;
     worldCameraCopy.m[3] = 0;
@@ -248,6 +252,16 @@ void UpdateLightSources(){
     glUniform3fv(glGetUniformLocation(object_shader, "firePos"), 1, &firePos.x);
     printError("UpdateLightSources");
 }
+
+void drawObjects(GLuint shader){
+    DrawCabin(shader);
+    DrawFireplace(shader);
+    DrawSofa(shader);
+    DrawTable(shader);
+
+}
+
+
 void display(void)
 {
 	printError("pre display");
@@ -272,15 +286,28 @@ void display(void)
 	modelViewMatrix = lookAt(firePos.x, firePos.y, firePos.z,
         table_pos.x, table_pos.y, table_pos.z, 0,1,0);
 
+    glUseProgram(shadow_shader);
+    uploadMat4ToShader(shadow_shader, "world_To_View", modelViewMatrix);
 
-    
-    DrawCabin();
-    DrawFireplace();
-    DrawSofa();
-    DrawTable();
+
+    // 1. Render scene to FBO
+
+	useFBO(fbo, NULL, NULL);
+	glViewport(0,0,WINDOW_SIZE,WINDOW_SIZE);
+	glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_TRUE); // Depth only
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	//Using the simple shader
+	glUniform1i(glGetUniformLocation(shadow_shader, "textureUnit"),TEX_UNIT);
+	glActiveTexture(GL_TEXTURE0 + TEX_UNIT);
+	glBindTexture(GL_TEXTURE_2D,0);
+	
+	drawObjects(shadow_shader);
 
 	glutSwapBuffers();
 }
+
+
 
 int main(int argc, char *argv[])
 {

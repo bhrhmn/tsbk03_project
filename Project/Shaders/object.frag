@@ -9,6 +9,7 @@ out vec4 outColor;
 in vec3 transformedNormal;
 in vec2 outTexCord;
 in vec4 SurfacePos;
+uniform sampler2D textureUnit;
 
 in vec4 lightSourceCoord;
 
