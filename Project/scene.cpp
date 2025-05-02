@@ -1,9 +1,6 @@
 
 #include "scene.h"
 
-// We assign one texture unit in which to store the transformation.
-#define TEX_UNIT 0
-
 // Global variable definitions (declared extern in header)
 Model *ground;
 Model *skybox;
@@ -69,7 +66,6 @@ void InstantiateModels() {
 
 void InstantiateTextures() {
 
-
     glActiveTexture(GL_TEXTURE1);
     LoadTGATextureSimple("Models/grass.tga", &myTex2);
     glBindTexture(GL_TEXTURE_2D, myTex2);
@@ -119,34 +115,28 @@ void init(void) {
     printError("Init Textures");
 
     shadowProjectionMatrix = perspective(45, WINDOW_SIZE/WINDOW_SIZE, 10, 4000);
-
+    mat4 scaleBiasMatrix = T(0.5, 0.5, 0.0) * S(0.5, 0.5, 1.0);
     
     // Models
     InstantiateModels();
     printError("Init Models");
     
-    // Upload Projection Matrix Once to each shader
+    // Upload Projection Matrix Once to each shader (and scaleBiasMatrix)
     glUseProgram(shybox_shader);
     glUniformMatrix4fv(glGetUniformLocation(shybox_shader, "projectionMatrix"), 1, GL_TRUE, projectionMatrix);
     glUseProgram(ground_shader);
     glUniformMatrix4fv(glGetUniformLocation(ground_shader, "projectionMatrix"), 1, GL_TRUE, projectionMatrix);
     glUseProgram(object_shader);
-    mat4 scaleBiasMatrix = T(0.5, 0.5, 0.0) * S(0.5, 0.5, 1.0);
-
     glUniformMatrix4fv(glGetUniformLocation(object_shader, "projectionMatrix"), 1, GL_TRUE, projectionMatrix);
     uploadMat4ToShader(object_shader, "scaleBiasMatrix", scaleBiasMatrix);
-
-    // upload fire
-    glUniform3fv(glGetUniformLocation(object_shader, "firePos"), 1, &firePos.x);
-    glUniform3fv(glGetUniformLocation(object_shader, "fireColor"), 1, &fireColor.x);
-
     glUseProgram(shadow_shader);
     uploadMat4ToShader(shadow_shader, "projectionMatrix", shadowProjectionMatrix);
-
-
-    //setTextureMatrix
     uploadMat4ToShader(shadow_shader, "scaleBiasMatrix", scaleBiasMatrix);
 
+    // upload fire
+    glUseProgram(object_shader);
+    glUniform3fv(glGetUniformLocation(object_shader, "firePos"), 1, &firePos.x);
+    glUniform3fv(glGetUniformLocation(object_shader, "fireColor"), 1, &fireColor.x);
     
     // Start timer
     glutTimerFunc(20, &OnTimer, 0);
@@ -183,7 +173,7 @@ void moveCamera(){
 
 void DrawCabin(GLuint shader){
     glActiveTexture(GL_TEXTURE2);
-    glUniform1i(glGetUniformLocation(shader, "texUnit"), 2); // Texture unit 0
+    glUniform1i(glGetUniformLocation(shader, "texUnit"), 2); 
     uploadMat4ToShader(shader, "model_To_World", cabinT);
 	DrawModel(cabin, shader, "in_Position", "inNormal", "inTexCord");
     printError("DrawCabin");
@@ -199,7 +189,7 @@ void DrawFireplace(GLuint shader){
 
 void DrawTable(GLuint shader){
     glActiveTexture(GL_TEXTURE2);
-    glUniform1i(glGetUniformLocation(shader, "texUnit"), 2); // Texture unit 0
+    glUniform1i(glGetUniformLocation(shader, "texUnit"), 2); 
 	uploadMat4ToShader(shader, "model_To_World", tableT);
 	DrawModel(table, shader, "in_Position", "inNormal", "inTexCord");
     printError("DrawTable");
@@ -254,6 +244,7 @@ void UpdateLightSources(){
 }
 
 void drawObjects(GLuint shader){
+    glUseProgram(shader);
     DrawCabin(shader);
     DrawFireplace(shader);
     DrawSofa(shader);
@@ -282,27 +273,28 @@ void display(void)
 
     //Shadow things
     // Setup the modelview from the light source
-    vec3 table_pos = vec3(20,-12,-10);
+    vec3 table_pos = vec3(20,8,-10);
 	modelViewMatrix = lookAt(firePos.x, firePos.y, firePos.z,
         table_pos.x, table_pos.y, table_pos.z, 0,1,0);
 
-    glUseProgram(shadow_shader);
-    uploadMat4ToShader(shadow_shader, "world_To_View", modelViewMatrix);
+    glUseProgram(object_shader);
+    uploadMat4ToShader(object_shader, "world_To_View", modelViewMatrix);
 
 
     // 1. Render scene to FBO
 
-	useFBO(fbo, NULL, NULL);
-	glViewport(0,0,WINDOW_SIZE,WINDOW_SIZE);
-	glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_TRUE); // Depth only
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	// useFBO(fbo, NULL, NULL);
+	// glViewport(0,0,WINDOW_SIZE,WINDOW_SIZE);
+	// glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_TRUE); // Depth only
+	// glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	//Using the simple shader
-	glUniform1i(glGetUniformLocation(shadow_shader, "textureUnit"),TEX_UNIT);
-	glActiveTexture(GL_TEXTURE0 + TEX_UNIT);
-	glBindTexture(GL_TEXTURE_2D,0);
+	// //Using the simple shader
+	// glUniform1i(glGetUniformLocation(object_shader, "textureUnit"),TEX_UNIT);
+	// glActiveTexture(GL_TEXTURE0 + TEX_UNIT);
+	// glBindTexture(GL_TEXTURE_2D,0);
+    // printError("1. Render scene to FBO");
 	
-	drawObjects(shadow_shader);
+	drawObjects(object_shader);
 
 	glutSwapBuffers();
 }

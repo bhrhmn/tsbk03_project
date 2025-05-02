@@ -23,6 +23,9 @@
 #define GROUND_SIZE 100.0f
 #define WINDOW_SIZE 800.0f
 
+// We assign one texture unit in which to store the transformation.
+#define TEX_UNIT 0
+
 
 const GLfloat projectionMatrix[] = {2.0f*near/(right-left), 0.0f, (right+left)/(right-left), 0.0f,
                                     0.0f, 2.0f*near/(top-bottom), (top+bottom)/(top-bottom), 0.0f,
