@@ -15,6 +15,7 @@ unsigned int cabintex;
 unsigned int sofatex;
 unsigned int fireplacetex;
 
+FBOstruct *fbo;
 
 mat4 totalGround;
 mat4 worldCamera;
@@ -22,6 +23,7 @@ mat4 cabinT;
 mat4 FireplaceT;
 mat4 tableT;
 mat4 sofaT;
+mat4 modelViewMatrix;
 
 vec3 worldCameraP = { 0.0f, 5.0f, 25.0f };
 vec3 worldCameraL = { 0.0f, 5.0f, 0.0f };
@@ -30,6 +32,11 @@ vec3 worldCameraV = { 0.0f, 5.0f, 0.0f };
 GLuint ground_shader;
 GLuint shybox_shader;
 GLuint object_shader;
+GLuint shadow_shader;
+
+mat4 shadowProjectionMatrix;
+
+
 
 vec3 firePos = vec3(33, 0, 23);
 vec3 fireColor = vec3(0.8, 0.5, 0.2);
@@ -75,6 +82,9 @@ void InstantiateTextures() {
     glActiveTexture(GL_TEXTURE4);
     LoadTGATextureSimple("Models/sofa/color.tga", &sofatex);
     glBindTexture(GL_TEXTURE_2D, sofatex);
+
+    glActiveTexture(GL_TEXTURE5);
+
 }
 
 void OnTimer(int value) {
@@ -87,17 +97,22 @@ void init(void) {
 
     // GL inits
     glClearColor(0.8,0.8,0.8,0);
-    glDisable(GL_CULL_FACE);
 
     // Load and compile shader
     ground_shader = loadShaders("Shaders/ground.vert", "Shaders/ground.frag");
     shybox_shader = loadShaders("Shaders/skybox.vert", "Shaders/skybox.frag");
+    shadow_shader = loadShaders("Shaders/shadow.vert", "Shaders/shadow.frag");
     object_shader = loadShaders("Shaders/object.vert", "Shaders/object.frag");
+
+
     printError("init shader");
     
     // Textures
     InstantiateTextures();
     printError("Init Textures");
+
+    shadowProjectionMatrix = perspective(45, WINDOW_SIZE/WINDOW_SIZE, 10, 4000);
+
     
     // Models
     InstantiateModels();
@@ -109,15 +124,30 @@ void init(void) {
     glUseProgram(ground_shader);
     glUniformMatrix4fv(glGetUniformLocation(ground_shader, "projectionMatrix"), 1, GL_TRUE, projectionMatrix);
     glUseProgram(object_shader);
+    mat4 scaleBiasMatrix = T(0.5, 0.5, 0.0) * S(0.5, 0.5, 1.0);
+
     glUniformMatrix4fv(glGetUniformLocation(object_shader, "projectionMatrix"), 1, GL_TRUE, projectionMatrix);
+    uploadMat4ToShader(object_shader, "scaleBiasMatrix", scaleBiasMatrix);
 
     // upload fire
     glUniform3fv(glGetUniformLocation(object_shader, "firePos"), 1, &firePos.x);
     glUniform3fv(glGetUniformLocation(object_shader, "fireColor"), 1, &fireColor.x);
+
+    glUseProgram(shadow_shader);
+    uploadMat4ToShader(shadow_shader, "projectionMatrix", shadowProjectionMatrix);
+
+
+    //setTextureMatrix
+    uploadMat4ToShader(shadow_shader, "scaleBiasMatrix", scaleBiasMatrix);
+
+
+ 
+
     
     // Start timer
     glutTimerFunc(20, &OnTimer, 0);
     printError("init arrays");
+
 }
 
 void moveCamera(){
@@ -228,11 +258,21 @@ void display(void)
     moveCamera();
     DrawSkyBox();
     DrawGround();
+
+
 	
     //draw using object shader
 	glUseProgram(object_shader);
     uploadMat4ToShader(object_shader, "world_To_View", worldCamera);
     UpdateLightSources();
+
+    //Shadow things
+    // Setup the modelview from the light source
+    vec3 table_pos = vec3(20,-12,-10);
+	modelViewMatrix = lookAt(firePos.x, firePos.y, firePos.z,
+        table_pos.x, table_pos.y, table_pos.z, 0,1,0);
+
+
     
     DrawCabin();
     DrawFireplace();
@@ -250,8 +290,15 @@ int main(int argc, char *argv[])
 	glutInitContextVersion(3, 2);
 	glutInitWindowSize(WINDOW_SIZE, WINDOW_SIZE);
 	glutCreateWindow ("Cosy Cabin");
+    glEnable(GL_DEPTH_TEST);
+    glEnable(GL_CULL_FACE);
+
+    init();
+    //Binds to the active texture. 
+    fbo = initFBO2(WINDOW_SIZE, WINDOW_SIZE, 0, 1);
+
 	glutDisplayFunc(display); 
-	init();
+
 	glutMainLoop();
 	return 0;
 }

@@ -9,6 +9,9 @@ in vec3 inNormal;
 in vec2 inTexCord;
 out vec2 outTexCord;
 
+in mat4 scaleBiasMatrix;
+out vec4 lightSourceCoord;
+
 out vec4 SurfacePos;
 
 out vec3 transformedNormal;
@@ -20,6 +23,8 @@ out vec3 exColor;
 void main(void)
 {
     gl_Position = projectionMatrix*world_To_View*model_To_World*vec4(in_Position, 1.0);
+    lightSourceCoord = scaleBiasMatrix * gl_Position; // Transform vertex to light source coordinates
+
     const vec3 light = vec3(0.58, 0.58, 0.58);
     exColor = vec3(0.8,0,0.8);
     outTexCord = inTexCord;

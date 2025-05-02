@@ -10,6 +10,8 @@ in vec3 transformedNormal;
 in vec2 outTexCord;
 in vec4 SurfacePos;
 
+in vec4 lightSourceCoord;
+
 
 void main(void)
 {

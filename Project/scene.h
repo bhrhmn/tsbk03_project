@@ -21,13 +21,15 @@
 #define top 0.5
 #define bottom -0.5
 #define GROUND_SIZE 100.0f
-#define WINDOW_SIZE 800
+#define WINDOW_SIZE 800.0f
 
 
 const GLfloat projectionMatrix[] = {2.0f*near/(right-left), 0.0f, (right+left)/(right-left), 0.0f,
                                     0.0f, 2.0f*near/(top-bottom), (top+bottom)/(top-bottom), 0.0f,
                                     0.0f, 0.0f, -(far + near)/(far - near), -2*far*near/(far - near),
                                     0.0f, 0.0f, -1.0f, 0.0f };
+
+
 
 
 // Vertex data for ground
