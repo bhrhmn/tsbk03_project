@@ -268,7 +268,6 @@ void display(void)
 	
     //draw using object shader
 	glUseProgram(object_shader);
-    uploadMat4ToShader(object_shader, "world_To_View", worldCamera);
     UpdateLightSources();
 
     //Shadow things
@@ -277,24 +276,46 @@ void display(void)
 	modelViewMatrix = lookAt(firePos.x, firePos.y, firePos.z,
         table_pos.x, table_pos.y, table_pos.z, 0,1,0);
 
-    glUseProgram(object_shader);
-    uploadMat4ToShader(object_shader, "world_To_View", modelViewMatrix);
-
+    glUseProgram(shadow_shader);
+    uploadMat4ToShader(shadow_shader, "world_To_View", modelViewMatrix);
+    glUniform1f(glGetUniformLocation(shadow_shader, "shade"), 0.3); // color of shadow
 
     // 1. Render scene to FBO
 
-	// useFBO(fbo, NULL, NULL);
-	// glViewport(0,0,WINDOW_SIZE,WINDOW_SIZE);
-	// glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_TRUE); // Depth only
-	// glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	useFBO(fbo, NULL, NULL);
+	glViewport(0,0,WINDOW_SIZE,WINDOW_SIZE);
+	glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_TRUE); // Depth only // gör att kameran inte rör på sig??
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	// //Using the simple shader
-	// glUniform1i(glGetUniformLocation(object_shader, "textureUnit"),TEX_UNIT);
-	// glActiveTexture(GL_TEXTURE0 + TEX_UNIT);
-	// glBindTexture(GL_TEXTURE_2D,0);
-    // printError("1. Render scene to FBO");
+	//Using the simple shader
+	glUniform1i(glGetUniformLocation(shadow_shader, "textureUnit"),TEX_UNIT);
+	glActiveTexture(GL_TEXTURE0 + TEX_UNIT);
+	glBindTexture(GL_TEXTURE_2D,0);
+    printError("1. Render scene to FBO");
 	
-	drawObjects(object_shader);
+	drawObjects(shadow_shader);
+    
+    glFlush();
+
+
+    //2. Render from camera.
+
+	useFBO(NULL, fbo, NULL);
+	
+	glViewport(0,0,WINDOW_SIZE,WINDOW_SIZE);
+    glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    //Using the projTex (object) shader
+    glUseProgram(object_shader);
+	glUniform1i(glGetUniformLocation(object_shader, "textureUnit"),TEX_UNIT);
+	glActiveTexture(GL_TEXTURE0 + TEX_UNIT);
+	glBindTexture(GL_TEXTURE_2D,fbo->depth);
+    
+    uploadMat4ToShader(object_shader, "world_To_View", worldCamera);
+    glCullFace(GL_BACK);
+    drawObjects(object_shader);
+
 
 	glutSwapBuffers();
 }
