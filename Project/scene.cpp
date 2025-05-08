@@ -114,7 +114,7 @@ void init(void) {
     InstantiateTextures();
     printError("Init Textures");
 
-    shadowProjectionMatrix = perspective(45, WINDOW_SIZE/WINDOW_SIZE, 10, 4000);
+    shadowProjectionMatrix = perspective(45, WINDOW_SIZE/WINDOW_SIZE, 10, 100);
     mat4 scaleBiasMatrix = T(0.5, 0.5, 0.0) * S(0.5, 0.5, 1.0);
     
     // Models
@@ -268,7 +268,6 @@ void drawObjects(GLuint shader){
 
 }
 
-
 void display(void)
 {
 	printError("pre display");
@@ -276,11 +275,7 @@ void display(void)
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     t = (GLfloat)glutGet(GLUT_ELAPSED_TIME)/1000;
     
-    moveCamera();
-    worldCamera = lookAtv(worldCameraP, worldCameraL, worldCameraV);
-	
-    //draw using object shader
-	glUseProgram(object_shader);
+
     UpdateLightSources();
 
     //Shadow things
@@ -288,13 +283,17 @@ void display(void)
     vec3 table_pos = vec3(20,8,-10);
 	modelViewMatrix = lookAt(firePos.x, firePos.y, firePos.z,
         table_pos.x, table_pos.y, table_pos.z, 0,1,0);
+    
+
+    mat4 lightViewProj = shadowProjectionMatrix * modelViewMatrix;
+    glUseProgram(object_shader);
+    uploadMat4ToShader(object_shader, "lightViewProjMatrix", lightViewProj);    
 
     glUseProgram(shadow_shader);
     uploadMat4ToShader(shadow_shader, "world_To_View", modelViewMatrix);
     glUniform1f(glGetUniformLocation(shadow_shader, "shade"), 0.3); // color of shadow
 
     // 1. Render scene to FBO
-
 	useFBO(fbo, NULL, NULL);
 	glViewport(0,0,WINDOW_SIZE,WINDOW_SIZE);
 	glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_TRUE); // Depth only // gör att kameran inte rör på sig??
@@ -314,18 +313,23 @@ void display(void)
     //2. Render from camera.
 	useFBO(NULL, fbo, NULL);
 	
-	glViewport(0,0,WINDOW_SIZE,WINDOW_SIZE);
+
+    
+    glViewport(0,0,WINDOW_SIZE,WINDOW_SIZE);
     glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     //Using the projTex (object) shader
     glUseProgram(object_shader);
+
+	
 	glUniform1i(glGetUniformLocation(object_shader, "textureUnit"),TEX_UNIT);
 	glActiveTexture(GL_TEXTURE0 + TEX_UNIT);
 	glBindTexture(GL_TEXTURE_2D,fbo->depth);
 
     DrawSkyBox();
-    
+    moveCamera();
+    worldCamera = lookAtv(worldCameraP, worldCameraL, worldCameraV);
     uploadMat4ToShader(object_shader, "world_To_View", worldCamera);
     glCullFace(GL_BACK);
     
