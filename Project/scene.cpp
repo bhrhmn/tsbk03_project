@@ -50,7 +50,7 @@ mat4 moonViewProjMatrix;
 // Second FBO for moonlight shadows
 
 
-vec3 firePos = vec3(33, 0, 23);
+vec3 firePos = vec3(33, -5, 23);
 vec3 fireColor = vec3(0.8, 0.5, 0.2);
 
 GLfloat t = 0;
@@ -69,8 +69,6 @@ void InstantiateModels() {
     FireplaceT = T(35,-5,25) * Ry(5*M_PI/4) * S(9);
     tableT = T(20,-12,-10) * S(8);
     sofaT = T(20,-4,-30)* S(8);
-    
-
     totalGround = T(0,-10,0);
 }
 
@@ -267,11 +265,37 @@ void DrawGround(GLuint shader){
     printError("DrawGround");
 }
 
+float randFloat() { 
+    return (float)rand() / (float)RAND_MAX; 
+}
+
+float flicker(float time, float speed, float intensity) {
+    static float lastValue = 0.5f;
+    static float lastChangeTime = 0.0f;
+    
+    if (time - lastChangeTime > 0.05f) { // 0.05s tick
+        lastValue = 0.5f + (randFloat() - 0.5f) * intensity;
+        lastChangeTime = time;
+    }
+    return lastValue;
+}
+
+
 void UpdateLightSources(){
-    firePos = vec3(33+sin(t*10)*2, 0, 23);
+    float fireJitterX = flicker(t, 10.0f, 0.5f); //  horizontal
+    float fireJitterY = flicker(t, 15.0f, 0.3f); // Vertical
+    firePos = vec3(33 + fireJitterX, -3.0f + fireJitterY, 23);
     glUniform3fv(glGetUniformLocation(object_shader, "firePos"), 1, &firePos.x);
+    //tableT = T(firePos.x,firePos.y,firePos.z) * S(2); for debug
+
+    float fireIntensity = 0.8f + 0.2f * flicker(t, 8.0f, 1.0f);
+    fireColor = vec3(242.f/256, 125.f/256, 12.f/256) * fireIntensity;
+    glUniform3fv(glGetUniformLocation(object_shader, "fireColor"), 1, &fireColor.x);
     printError("UpdateLightSources");
 }
+
+
+
 
 void drawObjects(GLuint shader){
     glUseProgram(shader);
@@ -297,8 +321,9 @@ void display(void)
     //Shadow things
     // Setup the modelview from the light source
     vec3 table_pos = vec3(20,8,-10);
-	modelViewMatrix = lookAt(firePos.x, firePos.y, firePos.z,
-        table_pos.x, table_pos.y, table_pos.z, 0,1,0);
+	modelViewMatrix = lookAt(firePos,
+                            table_pos,
+                            vec3( 0,1,0));
     
 
     mat4 lightViewProj = shadowProjectionMatrix * modelViewMatrix;
@@ -329,11 +354,11 @@ void display(void)
 	drawObjects(shadow_shader);
 
 
-    //render moonlight shadow map
     // Render moonlight shadow map
     useFBO(moonFBO, NULL, NULL);
     glViewport(0, 0, WINDOW_SIZE, WINDOW_SIZE);
-    glClear(GL_DEPTH_BUFFER_BIT);
+    glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_TRUE); // Depth only // gör att kameran inte rör på sig??
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glUseProgram(shadow_shader);
     uploadMat4ToShader(shadow_shader, "world_To_View", moonViewMatrix);
     uploadMat4ToShader(shadow_shader, "projectionMatrix", moonProjectionMatrix);
