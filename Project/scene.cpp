@@ -18,6 +18,7 @@ unsigned int fireplacetex;
 
 
 FBOstruct *fbo;
+FBOstruct *moonFBO;
 
 mat4 totalGround;
 mat4 worldCamera;
@@ -31,13 +32,22 @@ vec3 worldCameraP = { 0.0f, 5.0f, 25.0f };
 vec3 worldCameraL = { 0.0f, 5.0f, 0.0f };
 vec3 worldCameraV = { 0.0f, 5.0f, 0.0f };
 
-GLuint ground_shader;
 GLuint shybox_shader;
 GLuint object_shader;
 GLuint shadow_shader;
 
 mat4 shadowProjectionMatrix;
 
+// Moonlight properties (directional light)
+vec3 moonDir = vec3(0,0,0);
+vec3 moonColor = vec3(0,0,0);
+
+
+mat4 moonViewMatrix;
+mat4 moonProjectionMatrix; 
+mat4 moonViewProjMatrix;
+
+// Second FBO for moonlight shadows
 
 
 vec3 firePos = vec3(33, 0, 23);
@@ -79,7 +89,7 @@ void InstantiateTextures() {
     glBindTexture(GL_TEXTURE_2D, sofatex);
 
     glActiveTexture(GL_TEXTURE5);
-    LoadTGATextureSimple("skybox-alt/atmosphere-cloud.tga", &myTex);
+    LoadTGATextureSimple("skybox/steven-c-skydome-render.tga", &myTex);
     glBindTexture(GL_TEXTURE_2D, myTex);
 
     glActiveTexture(GL_TEXTURE6);
@@ -96,13 +106,13 @@ void OnTimer(int value) {
 }
 
 void init(void) {
+    glDisable(GL_LIGHTING); // Disable OpenGL's fixed-function lighting
     dumpInfo();
 
     // GL inits
     glClearColor(0.8,0.8,0.8,0);
 
     // Load and compile shader
-    ground_shader = loadShaders("Shaders/ground.vert", "Shaders/ground.frag");
     shybox_shader = loadShaders("Shaders/skybox.vert", "Shaders/skybox.frag");
     shadow_shader = loadShaders("Shaders/shadow.vert", "Shaders/shadow.frag");
     object_shader = loadShaders("Shaders/object.vert", "Shaders/object.frag");
@@ -124,8 +134,6 @@ void init(void) {
     // Upload Projection Matrix Once to each shader (and scaleBiasMatrix)
     glUseProgram(shybox_shader);
     glUniformMatrix4fv(glGetUniformLocation(shybox_shader, "projectionMatrix"), 1, GL_TRUE, projectionMatrix);
-    glUseProgram(ground_shader);
-    glUniformMatrix4fv(glGetUniformLocation(ground_shader, "projectionMatrix"), 1, GL_TRUE, projectionMatrix);
     glUseProgram(object_shader);
     glUniformMatrix4fv(glGetUniformLocation(object_shader, "projectionMatrix"), 1, GL_TRUE, projectionMatrix);
     uploadMat4ToShader(object_shader, "scaleBiasMatrix", scaleBiasMatrix);
@@ -137,6 +145,14 @@ void init(void) {
     glUseProgram(object_shader);
     glUniform3fv(glGetUniformLocation(object_shader, "firePos"), 1, &firePos.x);
     glUniform3fv(glGetUniformLocation(object_shader, "fireColor"), 1, &fireColor.x);
+
+
+    moonDir = normalize(vec3(-0.5f, -1.0f, -0.5f)); // Direction pointing down
+    moonColor = vec3(0.2f, 0.2f, 0.3f); // Cool blue-gray
+
+    moonViewMatrix = lookAtv(-moonDir * 50.0f, vec3(0,0,0), vec3(0,1,0)); // Light "positioned" far away
+    moonProjectionMatrix = ortho(-30.0f, 30.0f, -30.0f, 30.0f, 0.1f, 200.0f); // Covers the scene
+    moonViewProjMatrix = moonProjectionMatrix * moonViewMatrix;
     
     // Start timer
     glutTimerFunc(20, &OnTimer, 0);
@@ -241,15 +257,13 @@ void DrawSkyBox(){
     printError("DrawSkyBox");
 }
 
-void DrawGround(){
+void DrawGround(GLuint shader){
     //Draw ground
-    glUseProgram(ground_shader);
     glActiveTexture(GL_TEXTURE6);
-    glUniform1i(glGetUniformLocation(ground_shader, "texUnit"), 6); // Texture unit 6
-    uploadMat4ToShader(ground_shader, "world_To_View", worldCamera);
-    uploadMat4ToShader(ground_shader, "model_To_World", totalGround);
-    DrawModel(ground, ground_shader, "in_Position", "inNormal", "inTexCord");
-
+    glUniform1i(glGetUniformLocation(shader, "texUnit"), 6); // Texture unit 6
+    uploadMat4ToShader(shader, "world_To_View", worldCamera);
+    uploadMat4ToShader(shader, "model_To_World", totalGround);
+    DrawModel(ground, shader, "in_Position", "inNormal", "inTexCord");
     printError("DrawGround");
 }
 
@@ -261,6 +275,7 @@ void UpdateLightSources(){
 
 void drawObjects(GLuint shader){
     glUseProgram(shader);
+    DrawGround(shader);
     DrawCabin(shader);
     DrawFireplace(shader);
     DrawSofa(shader);
@@ -278,6 +293,7 @@ void display(void)
 
     UpdateLightSources();
 
+
     //Shadow things
     // Setup the modelview from the light source
     vec3 table_pos = vec3(20,8,-10);
@@ -287,6 +303,11 @@ void display(void)
 
     mat4 lightViewProj = shadowProjectionMatrix * modelViewMatrix;
     glUseProgram(object_shader);
+
+    glUniform3fv(glGetUniformLocation(object_shader, "moonDir"), 1, &moonDir.x);
+    glUniform3fv(glGetUniformLocation(object_shader, "moonColor"), 1, &moonColor.x);
+    uploadMat4ToShader(object_shader, "moonViewProjMatrix", moonViewProjMatrix);
+
     uploadMat4ToShader(object_shader, "lightViewProjMatrix", lightViewProj);    
 
     glUseProgram(shadow_shader);
@@ -306,6 +327,17 @@ void display(void)
     printError("1. Render scene to FBO");
 	
 	drawObjects(shadow_shader);
+
+
+    //render moonlight shadow map
+    // Render moonlight shadow map
+    useFBO(moonFBO, NULL, NULL);
+    glViewport(0, 0, WINDOW_SIZE, WINDOW_SIZE);
+    glClear(GL_DEPTH_BUFFER_BIT);
+    glUseProgram(shadow_shader);
+    uploadMat4ToShader(shadow_shader, "world_To_View", moonViewMatrix);
+    uploadMat4ToShader(shadow_shader, "projectionMatrix", moonProjectionMatrix);
+    drawObjects(shadow_shader); // Render scene from moonlight's perspective
     
     glFlush();
 
@@ -322,10 +354,15 @@ void display(void)
     //Using the projTex (object) shader
     glUseProgram(object_shader);
 
-	
+	//fire
 	glUniform1i(glGetUniformLocation(object_shader, "textureUnit"),TEX_UNIT);
 	glActiveTexture(GL_TEXTURE0 + TEX_UNIT);
 	glBindTexture(GL_TEXTURE_2D,fbo->depth);
+
+    //moon
+    glActiveTexture(GL_TEXTURE0 + MOON_TEX_UNIT); // Define MOON_TEX_UNIT as 1
+    glBindTexture(GL_TEXTURE_2D, moonFBO->depth);
+    glUniform1i(glGetUniformLocation(object_shader, "moonShadowMap"), MOON_TEX_UNIT);
 
     DrawSkyBox();
     moveCamera();
@@ -333,11 +370,7 @@ void display(void)
     uploadMat4ToShader(object_shader, "world_To_View", worldCamera);
     glCullFace(GL_BACK);
     
-    DrawGround();
     drawObjects(object_shader);
-
-    
-
 	glutSwapBuffers();
 }
 
@@ -357,6 +390,7 @@ int main(int argc, char *argv[])
     init();
     //Binds to the active texture. 
     fbo = initFBO2(WINDOW_SIZE, WINDOW_SIZE, 0, 1);
+    moonFBO = initFBO2(WINDOW_SIZE, WINDOW_SIZE, 0, 1); // Same as firelight FBO
 
 	glutDisplayFunc(display); 
 
