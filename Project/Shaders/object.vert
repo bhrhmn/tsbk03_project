@@ -7,23 +7,16 @@ uniform mat4 model_To_World;
 uniform mat4 world_To_View;
 uniform mat4 lightViewProjMatrix;  
 
-out vec4 moonLightSourceCoord; // Add this
-uniform mat4 moonViewProjMatrix; // Add this
-
-
 in vec3 inNormal; 
 in vec2 inTexCord;
 out vec2 outTexCord;
 
-in mat4 scaleBiasMatrix;
+uniform mat4 scaleBiasMatrix;
 out vec4 lightSourceCoord;
 
 out vec4 SurfacePos;
 
 out vec3 transformedNormal;
-out vec3 exColor;
-
-
 
 
 void main(void)
@@ -32,10 +25,6 @@ void main(void)
    
     lightSourceCoord = scaleBiasMatrix * lightViewProjMatrix * model_To_World * vec4(in_Position, 1.0);
 
-    moonLightSourceCoord = scaleBiasMatrix * moonViewProjMatrix * model_To_World * vec4(in_Position, 1.0);
-
-    const vec3 light = vec3(0.58, 0.58, 0.58);
-    exColor = vec3(0.8,0,0.8);
     outTexCord = inTexCord;
 
     SurfacePos = world_To_View*model_To_World*vec4(in_Position, 1.0);

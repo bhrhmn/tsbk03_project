@@ -13,8 +13,6 @@ out vec3 transformedNormal;
 out vec3 exColor;
 
 
-
-
 void main(void)
 {
     gl_Position = projectionMatrix*world_To_View*model_To_World*vec4(in_Position, 1.0);
