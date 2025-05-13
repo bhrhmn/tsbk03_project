@@ -20,6 +20,8 @@ unsigned int maskrosTex;
 unsigned int treeTex;
 
 FBOstruct *fbo;
+FBOstruct *moonFbo;
+
 
 mat4 totalGround;
 mat4 worldCamera;
@@ -46,9 +48,12 @@ mat4 shadowProjectionMatrix;
 
 
 
-vec3 firePos = vec3(33, -3.0f, 23);
+vec3 firePos = vec3(25, 10.0f, 20.f);
 vec3 fireColor = vec3(0.8, 0.5, 0.2);
 
+
+vec3 moonPos = vec3(150, 100.0f, 0.f);
+vec3 moonColor = vec3(0.8f, 0.8f, 1.0f);
 GLfloat t = 0;
 
 
@@ -153,6 +158,8 @@ void init(void) {
     glUseProgram(object_shader);
     glUniform3fv(glGetUniformLocation(object_shader, "firePos"), 1, &firePos.x);
     glUniform3fv(glGetUniformLocation(object_shader, "fireColor"), 1, &fireColor.x);
+    glUniform3fv(glGetUniformLocation(object_shader, "moonPos"), 1, &moonPos.x);
+    glUniform3fv(glGetUniformLocation(object_shader, "moonColor"), 1, &moonColor.x);
     
     // Start timer
     glutTimerFunc(20, &OnTimer, 0);
@@ -313,9 +320,9 @@ void DrawTree(){
 void UpdateLightSources(){
     float fireJitterX = flicker(t, 10.0f, 0.5f); //  horizontal
     float fireJitterY = flicker(t, 15.0f, 0.3f); // Vertical
-    firePos = vec3(33 + fireJitterX, -3.0f + fireJitterY, 23);
+    firePos = vec3(33 + fireJitterX, 3.0f + fireJitterY, 23);
     glUniform3fv(glGetUniformLocation(object_shader, "firePos"), 1, &firePos.x);
-    //tableT = T(firePos.x,firePos.y,firePos.z) * S(2); for debug
+    
 
     float fireIntensity = 0.8f + 0.2f * flicker(t, 8.0f, 1.0f);
     fireColor = vec3(242.f/256, 125.f/256, 12.f/256) * fireIntensity;
@@ -332,24 +339,11 @@ void drawObjects(GLuint shader){
     DrawTable(shader);
 }
 
-void display(void)
-{
-	printError("pre display");
 
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    t = (GLfloat)glutGet(GLUT_ELAPSED_TIME)/1000;
-    glEnable(GL_DEPTH_TEST);
-
-	
-    //draw using object shader
-	glUseProgram(object_shader);
-    uploadMat4ToShader(object_shader, "world_To_View", worldCamera);
-    
-    UpdateLightSources();
-
-    //Shadow things
+void fireShadow(){
+        //Shadow things
     // Setup the modelview from the light source
-    vec3 table_pos = vec3(20,8,-10);
+    vec3 table_pos = vec3(0,0,0);
 	modelViewMatrix = lookAt(firePos,
                             table_pos,
                             vec3( 0,1,0));
@@ -380,10 +374,6 @@ void display(void)
 	
 
 
-    
-    //glFlush();
-
-
     //2. Render from camera.
 	useFBO(NULL, fbo, NULL);
 	
@@ -399,8 +389,75 @@ void display(void)
 	glActiveTexture(GL_TEXTURE0 + TEX_UNIT);
 	glBindTexture(GL_TEXTURE_2D,fbo->depth);
 
+}
+
+void moonShadow(){
+
+    vec3 table_pos = vec3(20,8,-10);
+    modelViewMatrix = lookAt(moonPos,
+        table_pos,
+        vec3( 0,1,0));
+
+    mat4 shadowProjectionMatrixMoon = perspective(45, WINDOW_SIZE/WINDOW_SIZE, 10, 500);
+    mat4 lightViewProj = shadowProjectionMatrixMoon * modelViewMatrix;
+    glUseProgram(object_shader);
+
+    uploadMat4ToShader(object_shader, "lightViewProjMatrixMoon", lightViewProj);    
+
+    glUseProgram(shadow_shader);
+    uploadMat4ToShader(shadow_shader, "world_To_View", modelViewMatrix);
+    uploadMat4ToShader(shadow_shader, "lightViewProjMatrix", lightViewProj);    
+
+    // 1. Render scene to FBO
+    useFBO(moonFbo, NULL, NULL);
+    glViewport(0,0,WINDOW_SIZE,WINDOW_SIZE);
+    glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_TRUE); // Depth only 
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    //Using the simple shader
+    glUniform1i(glGetUniformLocation(shadow_shader, "textureUnitMoon"),MOON_TEX_UNIT);
+    glActiveTexture(GL_TEXTURE0 + MOON_TEX_UNIT);
+    glBindTexture(GL_TEXTURE_2D,0); //what is 0????
+    printError("1. Render scene to FBO");
+    drawObjects(shadow_shader);
+
+    //2. Render from camera.
+	useFBO(NULL, moonFbo, NULL);
+	
+    glViewport(0,0,WINDOW_SIZE,WINDOW_SIZE);
+    glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    //Using the projTex (object) shader
+    glUseProgram(object_shader);
+
+	//fire
+	glUniform1i(glGetUniformLocation(object_shader, "textureUnitMoon"),MOON_TEX_UNIT);
+	glActiveTexture(GL_TEXTURE0 + MOON_TEX_UNIT);
+	glBindTexture(GL_TEXTURE_2D,moonFbo->depth);
+
+}
+void display(void)
+{
+	printError("pre display");
+
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    t = (GLfloat)glutGet(GLUT_ELAPSED_TIME)/1000;
+    glEnable(GL_DEPTH_TEST);
+
+	
+    //draw using object shader
+	glUseProgram(object_shader);
     
+    UpdateLightSources();
+    //tableT = T(firePos.x,firePos.y,firePos.z) * S(2); //for debug
+    fireShadow();
+    moonShadow();
+ 
+
     moveCamera();
+
+
     uploadMat4ToShader(object_shader, "world_To_View", worldCamera);
     DrawSkyBox();
     glCullFace(GL_BACK);
@@ -427,6 +484,9 @@ int main(int argc, char *argv[])
     init();
     //Binds to the active texture. 
     fbo = initFBO2(WINDOW_SIZE, WINDOW_SIZE, 0, 1);
+
+    glActiveTexture(GL_TEXTURE10);
+    moonFbo = initFBO2(WINDOW_SIZE, WINDOW_SIZE, 0, 1);
    
 	glutDisplayFunc(display); 
 
