@@ -295,6 +295,7 @@ float flicker(float time, float speed, float intensity) {
 
   
 void DrawTree(){ 
+    glDisable(GL_CULL_FACE);
     glUseProgram(tree_shader);
     glActiveTexture(GL_TEXTURE4);
     glUniform1i(glGetUniformLocation(tree_shader, "texUnit"), 8); 
@@ -313,6 +314,8 @@ void DrawTree(){
         DrawModel(tree, tree_shader, "in_Position", "inNormal", "inTexCord");
     }
     
+    glEnable(GL_CULL_FACE);
+
     printError("DrawTree\n");
 }
 
@@ -460,7 +463,7 @@ void display(void)
 
     uploadMat4ToShader(object_shader, "world_To_View", worldCamera);
     DrawSkyBox();
-    glCullFace(GL_BACK);
+    //glCullFace(GL_BACK);
 
     drawObjects(object_shader);
     DrawTree();
