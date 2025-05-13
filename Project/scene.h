@@ -15,17 +15,18 @@
 
 // Projection parameters
 #define near 1.0
-#define far 200.0
+#define far 500.0
 #define right 0.5
 #define left -0.5
 #define top 0.5
 #define bottom -0.5
-#define GROUND_SIZE 100.0f
+#define GROUND_SIZE 1000.0f
 #define WINDOW_SIZE 800.0f
 
 // We assign one texture unit in which to store the transformation.
 #define TEX_UNIT 0
 #define MOON_TEX_UNIT 1
+
 
 
 const GLfloat projectionMatrix[] = {2.0f*near/(right-left), 0.0f, (right+left)/(right-left), 0.0f,
@@ -117,6 +118,7 @@ void DrawTable();
 void DrawSofa();
 void DrawSkyBox();
 void DrawGround();
+void DrawTree();
 void display();
 
 #endif // SCENE_H

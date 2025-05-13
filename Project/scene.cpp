@@ -1,5 +1,6 @@
 
 #include "scene.h"
+#include "tree.h"
 
 // Global variable definitions (declared extern in header)
 Model *ground;
@@ -8,14 +9,15 @@ Model *sofa;
 Model *table;
 Model *cabin;
 Model *fireplace;
+Model *tree;
 
 unsigned int myTex;
 unsigned int myTex2;
 unsigned int cabintex;
 unsigned int sofatex;
 unsigned int fireplacetex;
-
-
+unsigned int maskrosTex;
+unsigned int treeTex;
 
 FBOstruct *fbo;
 
@@ -27,6 +29,9 @@ mat4 tableT;
 mat4 sofaT;
 mat4 modelViewMatrix;
 
+const int FOREST_SIZE = 5;
+mat4 treeMat[FOREST_SIZE]; 
+
 vec3 worldCameraP = { 0.0f, 5.0f, 25.0f };
 vec3 worldCameraL = { 0.0f, 5.0f, 0.0f };
 vec3 worldCameraV = { 0.0f, 5.0f, 0.0f };
@@ -34,6 +39,7 @@ vec3 worldCameraV = { 0.0f, 5.0f, 0.0f };
 GLuint shybox_shader;
 GLuint object_shader;
 GLuint shadow_shader;
+GLuint tree_shader;
 
 mat4 shadowProjectionMatrix;
 
@@ -49,6 +55,7 @@ GLfloat t = 0;
 // Function implementations
 void InstantiateModels() {
     ground = LoadDataToModel(vertices, vertex_normals, tex_coords, vertex_normals, indices, 4, 6);
+    tree = LoadDataToModel(tree_vertices, tree_vertex_normals, tree_tex_coords, tree_vertex_normals, tree_indices, 4, 6);
     skybox = LoadModel("skybox/skybox.obj");
     sofa = LoadModel("Models/sofa/model/SOFA.obj.obj");
     table = LoadModel("Models/Table.obj");
@@ -60,6 +67,11 @@ void InstantiateModels() {
     tableT = T(20,-12,-10) * S(8);
     sofaT = T(20,-4,-30)* S(8);
     totalGround = T(0,-10,0);
+    treeMat[0] = T(150, -5, -10);
+    treeMat[1] = T(200, -5, 20);
+    treeMat[2] = T(180, -5, -28);
+    treeMat[3] = T(120, -5, 35);
+    treeMat[4] = T(100, -5, -35);
 }
 
 void InstantiateTextures() {
@@ -85,6 +97,14 @@ void InstantiateTextures() {
     glBindTexture(GL_TEXTURE_2D, myTex2);
 
     glActiveTexture(GL_TEXTURE7);
+    LoadTGATextureSimple("Models/maskros512.tga", &maskrosTex);
+    glBindTexture(GL_TEXTURE_2D, maskrosTex);
+
+    glActiveTexture(GL_TEXTURE8);
+    LoadTGATextureSimple("Models/tree.tga", &treeTex);
+    glBindTexture(GL_TEXTURE_2D, treeTex);
+
+    glActiveTexture(GL_TEXTURE9);
 
 }
 
@@ -103,8 +123,7 @@ void init(void) {
     shybox_shader = loadShaders("Shaders/skybox.vert", "Shaders/skybox.frag");
     shadow_shader = loadShaders("Shaders/shadow.vert", "Shaders/shadow.frag");
     object_shader = loadShaders("Shaders/object.vert", "Shaders/object.frag");
-
-
+    tree_shader = loadShaders("Shaders/tree.vert", "Shaders/tree.frag");
     printError("init shader");
     
     // Textures
@@ -127,6 +146,8 @@ void init(void) {
     glUseProgram(shadow_shader);
     uploadMat4ToShader(shadow_shader, "projectionMatrix", shadowProjectionMatrix);
     uploadMat4ToShader(shadow_shader, "scaleBiasMatrix", scaleBiasMatrix);
+    glUseProgram(tree_shader);
+    glUniformMatrix4fv(glGetUniformLocation(tree_shader, "projectionMatrix"), 1, GL_TRUE, projectionMatrix);
 
     // upload fire
     glUseProgram(object_shader);
@@ -184,7 +205,6 @@ void moveCamera(){
     if (glutKeyIsDown('c')) {
         worldCamera = modelViewMatrix;
     }
-
 }
 
 
@@ -235,10 +255,11 @@ void DrawSkyBox(){
 
     uploadMat4ToShader(shybox_shader, "model_To_World", IdentityMatrix());
     DrawModel(skybox, shybox_shader, "in_Position", "inNormal", "inTexCord");
-
+ 
     glEnable(GL_DEPTH_TEST);
-    printError("DrawSkyBox");
+    printError("DrawSkyBox");  
 }
+
 
 void DrawGround(GLuint shader){
     //Draw ground
@@ -264,6 +285,30 @@ float flicker(float time, float speed, float intensity) {
     }
     return lastValue;
 }
+
+  
+void DrawTree(){ 
+    glUseProgram(tree_shader);
+    glActiveTexture(GL_TEXTURE4);
+    glUniform1i(glGetUniformLocation(tree_shader, "texUnit"), 8); 
+    uploadMat4ToShader(tree_shader, "world_To_View", worldCamera);
+    
+    for (int i = 0; i<FOREST_SIZE; i++) {
+        mat4 rotation = Ry(0);
+        if (i%2 == 0) {
+            rotation = Ry(M_PI_4);
+        }
+        //tree 1    
+        uploadMat4ToShader(tree_shader, "model_To_World", treeMat[i]*rotation);
+        DrawModel(tree, tree_shader, "in_Position", "inNormal", "inTexCord");
+        //tree 1.1
+        uploadMat4ToShader(tree_shader, "model_To_World", treeMat[i]*rotation*Ry(M_PI_2));
+        DrawModel(tree, tree_shader, "in_Position", "inNormal", "inTexCord");
+    }
+    
+    printError("DrawTree\n");
+}
+
 
 void UpdateLightSources(){
     float fireJitterX = flicker(t, 10.0f, 0.5f); //  horizontal
@@ -293,6 +338,12 @@ void display(void)
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     t = (GLfloat)glutGet(GLUT_ELAPSED_TIME)/1000;
+    glEnable(GL_DEPTH_TEST);
+
+	
+    //draw using object shader
+	glUseProgram(object_shader);
+    uploadMat4ToShader(object_shader, "world_To_View", worldCamera);
     
     UpdateLightSources();
 
@@ -355,6 +406,8 @@ void display(void)
     glCullFace(GL_BACK);
 
     drawObjects(object_shader);
+    DrawTree();
+
 	glutSwapBuffers();
 }
 
