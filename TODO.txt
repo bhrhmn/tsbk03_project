@@ -9,20 +9,20 @@ Bassen kollar väggar och tak
  Bacilika snyggar till kod och texturer
 
 Modeller: 
-- Cabin
-- Fireplace
-- Soffa/sittplats
-- Bord, planta
+- Cabin             klar
+- Fireplace         typ klar
+- Soffa/sittplats   klar
+- Bord, planta      bord klar
 - Fönster 
     - Glas
-- Mark
+- Mark              klar
 
 
 
 Fönster: 
-- Billboard med en fin natur
-- Lite Mark
-- Ljuskälla
+- Billboard med en fin natur        träd
+- Lite Mark         klar
+- Ljuskälla         på gång
 
 Eld: 
 - Eldstad med eld i. 
@@ -50,16 +50,16 @@ creating shadows. There is also going to be a window with moonlight that also cr
 and shadow in the room. Basically, we want to work a lot with light and shadows and make
 the room look good in that regard.
 Will do:
-- Axis aligned billboard with view from window
-- Models (furnitures, walls, decoration)
-- Textures
-- Particles from the fire
-- Shadows
-- Flat shadow if not raytracing
-- First person view
-- Camera movement
-- Collision on walls (camera cannot go outside the cabin)
-
+- Axis aligned billboard with view from window      klar (inte axis aligned)
+- Models (furnitures, walls, decoration)    kanske byta cabin (beror på shadow)
+- Textures                                  klart
+- Particles from the fire                   jorunn börjar kolla
+- Shadows                                   på gång
+- Flat shadow if not raytracing             typ shadowmapping
+- First person view                         flytta upp lite
+- Camera movement                           klar
+- Collision on walls (camera cannot go outside the cabin)       bacgl kollar
+                                            Hannah kollar eld billboard
 
 Might do:
 - Ray tracing
