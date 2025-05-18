@@ -39,7 +39,7 @@ void main(void)
 	shadowCoordinateWdivide.z -= bias;
 
 	float distanceFromLight = texture(textureUnit, shadowCoordinateWdivide.st).x;
-	//distanceFromLight = (distanceFromLight-0.5) * 2.0;
+	distanceFromLight = (distanceFromLight-0.5) * 2.0;
 
 	float shadow = 1.0; // 1.0 = no shadow
 
@@ -55,7 +55,7 @@ void main(void)
 	shadowCoordinateWdivideMoon.z -= biasMoon;
 
 	float distanceFromLightMoon = texture(textureUnitMoon, shadowCoordinateWdivideMoon.st).x;
-	//distanceFromLightMoon = (distanceFromLightMoon-0.5) * 2.0;
+	distanceFromLightMoon = (distanceFromLightMoon-0.5) * 2.0;
 
 
 	if (lightSourceCoordMoon.w > 0.0)
@@ -63,5 +63,5 @@ void main(void)
 			shadow -= 0.3;
 	
 
-	outColor =  shadow* texture(texUnit, outTexCord);
+	outColor =  shadow * vec4(diff_Color,1.0) *texture(texUnit, outTexCord);
 }
