@@ -1,3 +1,11 @@
+==2025-05-19==
+Hannah Fixar träd
+    - Ändra färgen, lägg till fler, kanske riktiga Modeller
+jorunn fixar partiklar och lägger till dörren
+Bassen smoothar till skuggorna, kollar på ljud till fireplasen
+
+
+
 ==2025-04-03==
 Jorunn kollar blender
 Hannah kollar Glas, kollar på att implemnetera bättre kamera
