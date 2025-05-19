@@ -93,7 +93,7 @@ void InstantiateModels() {
     treeMat[3] = T(120, -5, 35);
     treeMat[4] = T(100, -5, -35);
     logT = T(fire_start_pos.x -1.0, -4, fire_start_pos.z -1.0) * Ry(5*M_PI/4) * Ry(M_PI_2) * S(0.025);
-    wolfT = T(150, -8, 0) * Ry(M_PI_2*3) * S(0.25);
+    wolfT = T(150, 3.5, 0) * Ry(M_PI_2*3) * Rx(M_PI) * S(0.4);
 }
 
 void InstantiateTextures() {
@@ -139,8 +139,19 @@ void InstantiateTextures() {
     glBindTexture(GL_TEXTURE_2D, logTex);
 
     glActiveTexture(GL_TEXTURE12);
-    LoadTGATextureSimple("Models/wolf.tga", &wolfTex);
+    // LoadTGATextureSimple("Models/wolf.tga", &wolfTex);
+    // glBindTexture(GL_TEXTURE_2D, wolfTex);
+    unsigned width, height;
+    std::vector<unsigned char> image; // RGBA output
+    lodepng::decode(image, width, height, "Models/wolf.png");
+
+    //glGenTextures(1, &wolfTex);
     glBindTexture(GL_TEXTURE_2D, wolfTex);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image.data());
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    
 
     glActiveTexture(GL_TEXTURE13);
 
@@ -450,11 +461,12 @@ void UpdateLightSources(){
 
 
 void UpdateWolf() {
-    mat4 start_position = T(150, -8, 1000);
+    mat4 start_position = T(150, 3.5, 1000);
     int speed = 200;
     int re_enter_speed = 2000;
     int pos = (int)(t*speed) % re_enter_speed;
-    wolfT = start_position * T(0, 0, -pos) * Ry(M_PI_2*3) * S(0.25);
+    wolfT = start_position * T(0, 0, -pos) * Ry(M_PI_2*3) * Rx(M_PI) * S(0.4);
+
     printError("UpdateWolf");
 }
 
