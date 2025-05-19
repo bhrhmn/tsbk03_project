@@ -10,14 +10,20 @@ Model *table;
 Model *cabin;
 Model *fireplace;
 Model *tree;
+Model *fireModel;
+Model *fireModel2;
+Model *tree_log;
 
 unsigned int myTex;
 unsigned int myTex2;
 unsigned int cabintex;
-unsigned int sofatex;
+unsigned int sofatex; 
 unsigned int fireplacetex;
 unsigned int maskrosTex;
 unsigned int treeTex;
+unsigned int fireTex;
+unsigned int fire2Tex;
+unsigned int logTex;
 
 FBOstruct *fbo;
 FBOstruct *moonFbo;
@@ -30,6 +36,9 @@ mat4 FireplaceT;
 mat4 tableT;
 mat4 sofaT;
 mat4 modelViewMatrix;
+mat4 fireT;
+mat4 fireT2;
+mat4 logT;
 
 const int FOREST_SIZE = 5;
 mat4 treeMat[FOREST_SIZE]; 
@@ -47,10 +56,11 @@ mat4 shadowProjectionMatrix;
 
 
 
-
+  
 vec3 firePos = vec3(25, 10.0f, 20.f);
 vec3 fireColor = vec3(0.8, 0.5, 0.2);
 
+vec3 fire_start_pos = vec3(35.5, -2.5, 25.5);
 
 vec3 moonPos = vec3(150, 100.0f, 0.f);
 vec3 moonColor = vec3(0.8f, 0.8f, 1.0f);
@@ -66,17 +76,21 @@ void InstantiateModels() {
     table = LoadModel("Models/Table.obj");
     cabin = LoadModel("Models/WoodenCabinObj.obj");
     fireplace = LoadModel("Models/fireplace_blender.obj");
+    tree_log = LoadModel("Models/tree_log/low_poly_log.obj");
     
     cabinT = T(20,-10,0) * S(1);
     FireplaceT = T(35,-5,25) * Ry(5*M_PI/4) * S(9);
     tableT = T(20,-12,-10) * S(8);
     sofaT = T(20,-4,-30)* S(8);
     totalGround = T(0,-10,0);
+    fireT = T(fire_start_pos.x, fire_start_pos.y, fire_start_pos.z) * Ry(5*M_PI/4) * S(0.1);
+    fireT = T(fire_start_pos.x -0.5, fire_start_pos.y, fire_start_pos.z -0.5) * Ry(5*M_PI/4) * S(0.1);
     treeMat[0] = T(150, -5, -10);
     treeMat[1] = T(200, -5, 20);
     treeMat[2] = T(180, -5, -28);
     treeMat[3] = T(120, -5, 35);
     treeMat[4] = T(100, -5, -35);
+    logT = T(fire_start_pos.x -1.0, -4, fire_start_pos.z -1.0) * Ry(5*M_PI/4) * Ry(M_PI_2) * S(0.025);
 }
 
 void InstantiateTextures() {
@@ -87,7 +101,7 @@ void InstantiateTextures() {
 
     glActiveTexture(GL_TEXTURE3);
     LoadTGATextureSimple("Models/stonebrick.tga", &fireplacetex);
-    glBindTexture(GL_TEXTURE_2D, fireplacetex);
+    glBindTexture(GL_TEXTURE_2D, fireplacetex); 
 
     glActiveTexture(GL_TEXTURE4);
     LoadTGATextureSimple("Models/sofa/color.tga", &sofatex);
@@ -102,7 +116,7 @@ void InstantiateTextures() {
     glBindTexture(GL_TEXTURE_2D, myTex2);
 
     glActiveTexture(GL_TEXTURE7);
-    LoadTGATextureSimple("Models/maskros512.tga", &maskrosTex);
+    LoadTGATextureSimple("Models/flames.tga", &maskrosTex);
     glBindTexture(GL_TEXTURE_2D, maskrosTex);
 
     glActiveTexture(GL_TEXTURE8);
@@ -110,6 +124,18 @@ void InstantiateTextures() {
     glBindTexture(GL_TEXTURE_2D, treeTex);
 
     glActiveTexture(GL_TEXTURE9);
+    LoadTGATextureSimple("Models/fire.tga", &fireTex);
+    glBindTexture(GL_TEXTURE_2D, fireTex);
+
+    glActiveTexture(GL_TEXTURE10);
+    LoadTGATextureSimple("Models/fire2.tga", &fire2Tex);
+    glBindTexture(GL_TEXTURE_2D, fire2Tex);
+
+    glActiveTexture(GL_TEXTURE11);
+    LoadTGATextureSimple("Models/tree_log/log_diffuse.tga", &logTex);
+    glBindTexture(GL_TEXTURE_2D, logTex);
+
+    glActiveTexture(GL_TEXTURE12);
 
 }
 
@@ -247,6 +273,14 @@ void DrawSofa(GLuint shader){
     printError("DrawSofa");
 }
 
+void DrawLog(GLuint shader){
+    glActiveTexture(GL_TEXTURE11);
+    glUniform1i(glGetUniformLocation(shader, "texUnit"), 11); 
+	uploadMat4ToShader(shader, "model_To_World", logT);
+	DrawModel(tree_log, shader, "in_Position", "inNormal", "inTexCord");
+    printError("DrawLog");
+}
+
 void DrawSkyBox(){
     glUseProgram(shybox_shader);
     glDisable(GL_DEPTH_TEST);
@@ -297,9 +331,11 @@ float flicker(float time, float speed, float intensity) {
 void DrawTree(){ 
     glDisable(GL_CULL_FACE);
     glUseProgram(tree_shader);
-    glActiveTexture(GL_TEXTURE4);
+    glActiveTexture(GL_TEXTURE8);
     glUniform1i(glGetUniformLocation(tree_shader, "texUnit"), 8); 
     uploadMat4ToShader(tree_shader, "world_To_View", worldCamera);
+    glUniform1f(glGetUniformLocation(tree_shader, "shade"), 0.5); // color of shadow
+
     
     for (int i = 0; i<FOREST_SIZE; i++) {
         mat4 rotation = Ry(0);
@@ -311,12 +347,35 @@ void DrawTree(){
         DrawModel(tree, tree_shader, "in_Position", "inNormal", "inTexCord");
         //tree 1.1
         uploadMat4ToShader(tree_shader, "model_To_World", treeMat[i]*rotation*Ry(M_PI_2));
-        DrawModel(tree, tree_shader, "in_Position", "inNormal", "inTexCord");
+        DrawModel(tree, tree_shader, "in_Position", "inNormal", "inTexCord"); 
     }
     
     glEnable(GL_CULL_FACE);
 
     printError("DrawTree\n");
+}
+
+void DrawFire(){ 
+    glDisable(GL_CULL_FACE);
+    glUseProgram(tree_shader);
+    uploadMat4ToShader(tree_shader, "world_To_View", worldCamera);
+    glUniform1f(glGetUniformLocation(tree_shader, "shade"), 0.7); // color of shadow
+    
+    //fire 1  
+    glActiveTexture(GL_TEXTURE9);
+    glUniform1i(glGetUniformLocation(tree_shader, "texUnit"), 9); 
+    uploadMat4ToShader(tree_shader, "model_To_World", fireT);
+    DrawModel(tree, tree_shader, "in_Position", "inNormal", "inTexCord");   
+
+    // //fire 2  
+    // glActiveTexture(GL_TEXTURE10);
+    // glUniform1i(glGetUniformLocation(tree_shader, "texUnit"), 10); 
+    uploadMat4ToShader(tree_shader, "model_To_World", fireT2);
+    DrawModel(tree, tree_shader, "in_Position", "inNormal", "inTexCord");
+
+    glEnable(GL_CULL_FACE);
+
+    printError("DrawFire\n");
 }
 
 
@@ -330,6 +389,16 @@ void UpdateLightSources(){
     float fireIntensity = 0.8f + 0.2f * flicker(t, 8.0f, 1.0f);
     fireColor = vec3(242.f/256, 125.f/256, 12.f/256) * fireIntensity;
     glUniform3fv(glGetUniformLocation(object_shader, "fireColor"), 1, &fireColor.x);
+
+    // float f = sin(t/7) * sin(t/5) * randFloat() / 190.0; 
+    float f  = randFloat() / 400.0;
+    float f2 = randFloat() / 300.0;
+    float f3 = sin(t/2) * sin(t/3) / 2.0;
+    float f4 = sin(t/3) / 2.0;
+    fireT =  T(fire_start_pos.x, fire_start_pos.y, fire_start_pos.z) * Ry(5*M_PI/4) * T(fire_start_pos.x*f, 0, 0) * T(f4, 0, 0) * S(0.1);
+    fireT2 =  T(fire_start_pos.x -0.5, fire_start_pos.y, fire_start_pos.z -0.5) * Ry(5*M_PI/4) * T((fire_start_pos.x-1)*f2, 0, 0) * T(f3, 0, 0) * Ry(M_PI) * S(0.07);
+
+
     printError("UpdateLightSources");
 }
 
@@ -340,6 +409,7 @@ void drawObjects(GLuint shader){
     DrawFireplace(shader);
     DrawSofa(shader);
     DrawTable(shader);
+    DrawLog(shader);
 }
 
 
@@ -439,7 +509,7 @@ void moonShadow(){
 	glActiveTexture(GL_TEXTURE0 + MOON_TEX_UNIT);
 	glBindTexture(GL_TEXTURE_2D,moonFbo->depth);
 
-}
+}  
 void display(void)
 {
 	printError("pre display");
@@ -455,7 +525,7 @@ void display(void)
     UpdateLightSources();
     //tableT = T(firePos.x,firePos.y,firePos.z) * S(2); //for debug
     fireShadow();
-    moonShadow();
+    //moonShadow();
  
 
     moveCamera();
@@ -467,6 +537,7 @@ void display(void)
 
     drawObjects(object_shader);
     DrawTree();
+    DrawFire();
 
 	glutSwapBuffers();
 }
@@ -488,7 +559,7 @@ int main(int argc, char *argv[])
     //Binds to the active texture. 
     fbo = initFBO2(WINDOW_SIZE, WINDOW_SIZE, 0, 1);
 
-    glActiveTexture(GL_TEXTURE10);
+    glActiveTexture(GL_TEXTURE13);
     moonFbo = initFBO2(WINDOW_SIZE, WINDOW_SIZE, 0, 1);
    
 	glutDisplayFunc(display); 

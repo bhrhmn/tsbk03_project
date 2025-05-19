@@ -12,6 +12,7 @@
 #include "LittleOBJLoader.h"
 #include "LoadTGA.h"
 #include "VectorUtils4.h"
+#include "lodepng.h"
 
 // Projection parameters
 #define near 1.0
