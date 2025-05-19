@@ -43,8 +43,8 @@ mat4 logT;
 const int FOREST_SIZE = 5;
 mat4 treeMat[FOREST_SIZE]; 
 
-vec3 worldCameraP = { 0.0f, 5.0f, 25.0f };
-vec3 worldCameraL = { 0.0f, 5.0f, 0.0f };
+vec3 worldCameraP = { 20.0f, 8.0f, 0.0f };
+vec3 worldCameraL = { 20.0f, 8.0f, -25.0f };
 vec3 worldCameraV = { 0.0f, 5.0f, 0.0f };
 
 GLuint shybox_shader;
@@ -192,10 +192,27 @@ void init(void) {
     printError("init arrays");
 
 }
+bool inCabin(vec3 newCameraP){
+    float minX = 0.f;
+    float maxX = 40.f;
+    float minZ = -35.f;
+    float maxZ = 35.f;
+
+    if(newCameraP.x < minX || newCameraP.x > maxX){
+        return false;
+    }
+    if(newCameraP.z < minZ || newCameraP.z > maxZ){
+        return false;
+    }
+    return true;
+}
 
 void moveCamera(){
     vec3 direction = normalize(worldCameraL - worldCameraP);
     vec3 side_dir = normalize(cross(vec3(0,1,0), direction));
+    vec3 oldCameraP = worldCameraP;
+    vec3 oldCameraL = worldCameraL;
+
     if (glutKeyIsDown('a')) {
         worldCameraL += side_dir;
         worldCameraP += side_dir;
@@ -234,10 +251,17 @@ void moveCamera(){
     if (glutKeyIsDown('l')) {
         worldCameraL = normalize(ArbRotate(side_dir, -M_PI/100)*direction) + worldCameraP;
     }
+
+    if(!inCabin(worldCameraP)){
+        worldCameraP = oldCameraP;
+        worldCameraL = oldCameraL; 
+    }
     worldCamera = lookAtv(worldCameraP, worldCameraL, worldCameraV);
+
     if (glutKeyIsDown('c')) {
         worldCamera = modelViewMatrix;
     }
+
 }
 
 
@@ -382,7 +406,7 @@ void DrawFire(){
 void UpdateLightSources(){
     float fireJitterX = flicker(t, 10.0f, 0.5f); //  horizontal
     float fireJitterY = flicker(t, 15.0f, 0.3f); // Vertical
-    firePos = vec3(33 + fireJitterX, 3.0f + fireJitterY, 23);
+    firePos = vec3(33 + fireJitterX, -1.0f + fireJitterY, 23);
     glUniform3fv(glGetUniformLocation(object_shader, "firePos"), 1, &firePos.x);
     
 
@@ -416,7 +440,7 @@ void drawObjects(GLuint shader){
 void fireShadow(){
         //Shadow things
     // Setup the modelview from the light source
-    vec3 table_pos = vec3(0,0,0);
+    vec3 table_pos = vec3(20,0.0f,-10);
 	modelViewMatrix = lookAt(firePos,
                             table_pos,
                             vec3( 0,1,0));
