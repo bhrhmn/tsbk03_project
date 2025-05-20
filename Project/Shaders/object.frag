@@ -28,9 +28,9 @@ void main(void)
 	vec3 moonLocation = normalize(vec3((world_To_View *vec4(moonPos, 1.0)) - SurfacePos)); 
 
 
-	vec3 diff_Color = (max(0.0, dot(normalize(transformedNormal), fireLocation)) * fireColor);
+	vec3 diff_color_fire = (max(0.0, dot(normalize(transformedNormal), fireLocation)) * fireColor);
 
-	diff_Color += (max(0.0, dot(normalize(transformedNormal), moonLocation)) * moonColor);
+	vec3 diff_color_moon = (max(0.0, dot(normalize(transformedNormal), moonLocation)) * moonColor);
 
 	//fire
 	vec4 shadowCoordinateWdivide = lightSourceCoord / lightSourceCoord.w;
@@ -43,7 +43,7 @@ void main(void)
 
 	float shadow = 1.0; // 1.0 = no shadow
 
-	if (lightSourceCoord.w > 0.0)
+	if (lightSourceCoord.w > 0.0 && lightSourceCoord.x > 2000.0) // Don't ask
 		if (distanceFromLight < shadowCoordinateWdivide.z) // shadow
 			shadow -= 0.3;
 
@@ -60,8 +60,9 @@ void main(void)
 
 	if (lightSourceCoordMoon.w > 0.0)
 		if (distanceFromLightMoon < shadowCoordinateWdivideMoon.z) // shadow
+			diff_color_moon = vec3(0, 0, 0);
 			shadow -= 0.3;
 	
 
-	outColor =  shadow * vec4(diff_Color,1.0) *texture(texUnit, outTexCord);
+	outColor =  shadow * vec4(diff_color_fire + diff_color_moon,1.0) *texture(texUnit, outTexCord);
 }

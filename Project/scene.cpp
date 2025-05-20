@@ -401,7 +401,7 @@ void DrawFire(){
     glDisable(GL_CULL_FACE);
     glUseProgram(tree_shader);
     uploadMat4ToShader(tree_shader, "world_To_View", worldCamera);
-    glUniform1f(glGetUniformLocation(tree_shader, "shade"), 0.7); // color of shadow
+    glUniform1f(glGetUniformLocation(tree_shader, "shade"), 0.65); // color of shadow
     
     //fire 1  
     glActiveTexture(GL_TEXTURE9);
@@ -515,20 +515,6 @@ void fireShadow(){
 	
 
 
-    //2. Render from camera.
-	useFBO(NULL, fbo, NULL);
-	
-    glViewport(0,0,WINDOW_SIZE,WINDOW_SIZE);
-    glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    //Using the projTex (object) shader
-    glUseProgram(object_shader);
-
-	//fire
-	glUniform1i(glGetUniformLocation(object_shader, "textureUnit"),TEX_UNIT);
-	glActiveTexture(GL_TEXTURE0 + TEX_UNIT);
-	glBindTexture(GL_TEXTURE_2D,fbo->depth);
 
 }
 
@@ -562,21 +548,6 @@ void moonShadow(){
     printError("1. Render scene to FBO");
     drawObjects(shadow_shader);
 
-    //2. Render from camera.
-	useFBO(NULL, moonFbo, NULL);
-	
-    glViewport(0,0,WINDOW_SIZE,WINDOW_SIZE);
-    glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    //Using the projTex (object) shader
-    glUseProgram(object_shader);
-
-	//fire
-	glUniform1i(glGetUniformLocation(object_shader, "textureUnitMoon"),MOON_TEX_UNIT);
-	glActiveTexture(GL_TEXTURE0 + MOON_TEX_UNIT);
-	glBindTexture(GL_TEXTURE_2D,moonFbo->depth);
-
 }  
 void display(void)
 {
@@ -593,9 +564,39 @@ void display(void)
     UpdateLightSources();
     UpdateWolf();
     //tableT = T(firePos.x,firePos.y,firePos.z) * S(2); //for debug
+    moonShadow();
     fireShadow();
-    //moonShadow();
+    
  
+    //2. Render from camera.
+	useFBO(NULL, fbo, moonFbo);
+	
+    glViewport(0,0,WINDOW_SIZE,WINDOW_SIZE);
+    glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    //Using the projTex (object) shader
+    glUseProgram(object_shader);
+
+	//fire
+	glUniform1i(glGetUniformLocation(object_shader, "textureUnit"),TEX_UNIT);
+	glActiveTexture(GL_TEXTURE0 + TEX_UNIT);
+	glBindTexture(GL_TEXTURE_2D,fbo->depth);
+
+    //2. Render from camera.
+	
+    // glViewport(0,0,WINDOW_SIZE,WINDOW_SIZE);
+    // glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+    // glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    //Using the projTex (object) shader
+    // glUseProgram(object_shader);
+
+	//fire
+	glUniform1i(glGetUniformLocation(object_shader, "textureUnitMoon"),MOON_TEX_UNIT);
+	glActiveTexture(GL_TEXTURE0 + MOON_TEX_UNIT);
+	glBindTexture(GL_TEXTURE_2D,moonFbo->depth);
+
 
     moveCamera();
 
