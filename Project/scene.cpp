@@ -43,7 +43,7 @@ mat4 fireT2;
 mat4 logT;
 mat4 wolfT;
 
-const int FOREST_SIZE = 5;
+const int FOREST_SIZE = 12;
 mat4 treeMat[FOREST_SIZE]; 
 
 vec3 worldCameraP = { 20.0f, 8.0f, 0.0f };
@@ -65,7 +65,7 @@ vec3 fireColor = vec3(0.8, 0.5, 0.2);
 
 vec3 fire_start_pos = vec3(35.5, -2.5, 25.5);
 
-vec3 moonPos = vec3(150, 100.0f, 0.f);
+vec3 moonPos = vec3(120.0, 70.0f, -120.f);
 vec3 moonColor = vec3(0.8f, 0.8f, 1.0f);
 GLfloat t = 0;
 sf::Sound* fireSound = nullptr;
@@ -92,7 +92,14 @@ void InstantiateModels() {
     treeMat[1] = T(200, -5, 20);
     treeMat[2] = T(180, -5, -28);
     treeMat[3] = T(120, -5, 35);
-    treeMat[4] = T(100, -5, -35);
+    treeMat[4] = T(140, -5, -35);
+    treeMat[5] = T(110, -5, -20);
+    treeMat[6] = T(80, -5, -43);
+    treeMat[7] = T(120, -5, -50);
+    treeMat[8] = T(100, -5, 30);
+    treeMat[9] = T(130, -5, 0);
+    treeMat[10] = T(150, -5, 70);
+    treeMat[11] = T(100, -5, 80);
     logT = T(fire_start_pos.x -1.0, -4, fire_start_pos.z -1.0) * Ry(5*M_PI/4) * Ry(M_PI_2) * S(0.025);
     wolfT = T(150, 3.5, 0) * Ry(M_PI_2*3) * Rx(M_PI) * S(0.4);
 }
@@ -394,18 +401,21 @@ void DrawTree(){
     uploadMat4ToShader(tree_shader, "world_To_View", worldCamera);
     glUniform1f(glGetUniformLocation(tree_shader, "shade"), 0.5); // color of shadow
 
-    
-    for (int i = 0; i<FOREST_SIZE; i++) {
-        mat4 rotation = Ry(0);
-        if (i%2 == 0) {
-            rotation = Ry(M_PI_4);
+    mat4 translations[] = {T(0, 0, 0), T(150, 0, 0), T(0, 0, 150), T(0, 0, -150)};
+    for (int j = 0; j < 4; j++) {
+        for (int i = 0; i<FOREST_SIZE; i++) {
+            mat4 rotation = Ry(0);
+            if (i%2 == 0) {
+                rotation = Ry(M_PI * (i+1) / 5);
+            }
+            mat4 t = treeMat[i] * translations[j];
+            //tree 1    
+            uploadMat4ToShader(tree_shader, "model_To_World", t*rotation);
+            DrawModel(treeBillboard, tree_shader, "in_Position", "inNormal", "inTexCord");
+            //tree 1.1
+            uploadMat4ToShader(tree_shader, "model_To_World", t*rotation*Ry(M_PI_2));
+            DrawModel(treeBillboard, tree_shader, "in_Position", "inNormal", "inTexCord"); 
         }
-        //tree 1    
-        uploadMat4ToShader(tree_shader, "model_To_World", treeMat[i]*rotation);
-        DrawModel(treeBillboard, tree_shader, "in_Position", "inNormal", "inTexCord");
-        //tree 1.1
-        uploadMat4ToShader(tree_shader, "model_To_World", treeMat[i]*rotation*Ry(M_PI_2));
-        DrawModel(treeBillboard, tree_shader, "in_Position", "inNormal", "inTexCord"); 
     }
     
     glEnable(GL_CULL_FACE);
@@ -440,7 +450,7 @@ void DrawWolf(){
     glDisable(GL_CULL_FACE);
     glUseProgram(tree_shader);
     uploadMat4ToShader(tree_shader, "world_To_View", worldCamera);
-    glUniform1f(glGetUniformLocation(tree_shader, "shade"), 0.7); // color of shadow
+    glUniform1f(glGetUniformLocation(tree_shader, "shade"), 0.5); // color of shadow
     
     glActiveTexture(GL_TEXTURE12);
     glUniform1i(glGetUniformLocation(tree_shader, "texUnit"), 12); 
@@ -484,6 +494,11 @@ void UpdateWolf() {
     wolfT = start_position * T(0, 0, -pos) * Ry(M_PI_2*3) * Rx(M_PI) * S(0.4);
 
     printError("UpdateWolf");
+}
+
+void UpdateMoon() {
+    if (moonPos.z >= 90) return;
+    moonPos = moonPos + vec3(0, 0, 0.05);
 }
 
 void drawObjects(GLuint shader){
@@ -578,10 +593,12 @@ void display(void)
 	glUseProgram(object_shader);
     
     UpdateLightSources();
+    UpdateMoon();
     UpdateWolf();
     //tableT = T(firePos.x,firePos.y,firePos.z) * S(2); //for debug
-    moonShadow();
+    
     fireShadow();
+    moonShadow();
     
  
     //2. Render from camera.
