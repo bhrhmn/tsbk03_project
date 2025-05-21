@@ -64,5 +64,5 @@ void main(void)
 			shadow -= 0.3;
 	
 
-	outColor =  shadow * vec4(diff_color_fire + diff_color_moon,1.0) *texture(texUnit, outTexCord);
+	outColor =  shadow * vec4(diff_color_fire*0.8 + diff_color_moon,1.0) *texture(texUnit, outTexCord);
 }

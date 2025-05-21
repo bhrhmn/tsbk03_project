@@ -1,6 +1,7 @@
-
+#include <SFML/Audio.hpp>
 #include "scene.h"
 #include "tree.h"
+
 
 // Global variable definitions (declared extern in header)
 Model *ground;
@@ -67,7 +68,7 @@ vec3 fire_start_pos = vec3(35.5, -2.5, 25.5);
 vec3 moonPos = vec3(150, 100.0f, 0.f);
 vec3 moonColor = vec3(0.8f, 0.8f, 1.0f);
 GLfloat t = 0;
-
+sf::Sound* fireSound = nullptr;
 
 // Function implementations
 void InstantiateModels() {
@@ -94,6 +95,21 @@ void InstantiateModels() {
     treeMat[4] = T(100, -5, -35);
     logT = T(fire_start_pos.x -1.0, -4, fire_start_pos.z -1.0) * Ry(5*M_PI/4) * Ry(M_PI_2) * S(0.025);
     wolfT = T(150, 3.5, 0) * Ry(M_PI_2*3) * Rx(M_PI) * S(0.4);
+}
+
+
+
+
+void initFireplaceSound() {
+    static sf::SoundBuffer buffer;
+    if (!buffer.loadFromFile("fireplace.wav")) {
+        printf("Error: Could not load sound file!\n");
+        return;
+    }
+    
+    fireSound = new sf::Sound(buffer);
+    fireSound->setLoop(true);
+    fireSound->play();
 }
 
 void InstantiateTextures() {
@@ -207,8 +223,8 @@ void init(void) {
     
     // Start timer
     glutTimerFunc(20, &OnTimer, 0);
+    initFireplaceSound();
     printError("init arrays");
-
 }
 bool inCabin(vec3 newCameraP){
     float minX = 0.f;
