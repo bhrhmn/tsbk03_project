@@ -43,7 +43,7 @@ void main(void)
 
 	float shadow = 1.0; // 1.0 = no shadow
 
-	if (lightSourceCoord.w > 0.0 && lightSourceCoord.x > 2000.0) // Don't ask
+	if (lightSourceCoord.w > 0.0)
 		if (distanceFromLight < shadowCoordinateWdivide.z) // shadow
 			shadow -= 0.3;
 
