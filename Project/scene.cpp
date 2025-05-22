@@ -308,10 +308,10 @@ void moveCamera(){
         worldCameraL = normalize(ArbRotate(side_dir, -M_PI/100)*direction) + worldCameraP;
     }
 
-    // if(!inCabin(worldCameraP)){
-    //     worldCameraP = oldCameraP;
-    //     worldCameraL = oldCameraL; 
-    // }
+    if(!inCabin(worldCameraP)){
+        worldCameraP = oldCameraP;
+        worldCameraL = oldCameraL; 
+    }
     worldCamera = lookAtv(worldCameraP, worldCameraL, worldCameraV);
 
     if (glutKeyIsDown('c')) {
