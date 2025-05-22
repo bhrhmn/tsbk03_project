@@ -1,9 +1,8 @@
 #version 150
 uniform sampler2D textUnit; 
+
 in vec3 in_Position;
 uniform mat4 projectionMatrix;
-out vec4 lightSourceCoord;
-in mat4 textureMatrix;
 uniform mat4 model_To_World;
 uniform mat4 world_To_View;
 uniform mat4 lightViewProjMatrix;
@@ -32,7 +31,7 @@ void main(void)
     lightSourceCoordMoon = scaleBiasMatrix * lightViewProjMatrixMoon * model_To_World * vec4(in_Position, 1.0);
 
     outTexCord = inTexCord;
-    lightSourceCoord = textureMatrix * gl_Position;
+
     SurfacePos = world_To_View*model_To_World*vec4(in_Position, 1.0);
 
     transformedNormal = mat3(world_To_View)*mat3(model_To_World) * inNormal;

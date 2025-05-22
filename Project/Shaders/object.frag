@@ -1,6 +1,5 @@
 #version 150
 uniform sampler2D texUnit; 
-
 uniform sampler2D textureUnit;
 uniform sampler2D textureUnitMoon;
 
@@ -18,12 +17,12 @@ in vec3 transformedNormal;
 in vec2 outTexCord;
 in vec4 SurfacePos;
 in vec4 lightSourceCoord;
+
 in vec4 lightSourceCoordMoon;
 
 
 void main(void)
 {
-
 
 	vec3 fireLocation = normalize(vec3((world_To_View *vec4(firePos, 1.0)) - SurfacePos)); 
 	vec3 moonLocation = normalize(vec3((world_To_View *vec4(moonPos, 1.0)) - SurfacePos)); 
@@ -64,16 +63,6 @@ void main(void)
 			diff_color_moon = vec3(0, 0, 0);
 			shadow -= 0.3;
 	
-	// Used to lower moire pattern and self-shadowing
-	shadowCoordinateWdivide.z += 0.0005;
-	
-	
-	float distanceFromLight = texture2D(ShadowMap,shadowCoordinateWdivide.st).z;
-	
-	
- 	float shadow = 1.0;
- 	if (lightSourceCoord.w > 0.0)
- 		shadow = distanceFromLight < shadowCoordinateWdivide.z ? 0.5 : 1.0 ;
-  	
+
 	outColor =  shadow * vec4(diff_color_fire*0.8 + diff_color_moon,1.0) *texture(texUnit, outTexCord);
 }
