@@ -14,6 +14,7 @@ Model *treeBillboard;
 Model *fireModel;
 Model *fireModel2;
 Model *tree_log;
+Model *door;
 
 unsigned int myTex;
 unsigned int myTex2;
@@ -26,6 +27,7 @@ unsigned int fireTex;
 unsigned int fire2Tex;
 unsigned int logTex;
 unsigned int wolfTex;
+unsigned int doorTex;
 
 FBOstruct *fbo;
 FBOstruct *moonFbo;
@@ -42,6 +44,9 @@ mat4 fireT;
 mat4 fireT2;
 mat4 logT;
 mat4 wolfT;
+mat4 doorT;
+
+
 
 const int FOREST_SIZE = 12;
 mat4 treeMat[FOREST_SIZE]; 
@@ -80,6 +85,7 @@ void InstantiateModels() {
     cabin = LoadModel("Models/WoodenCabinObj.obj");
     fireplace = LoadModel("Models/fireplace_blender.obj");
     tree_log = LoadModel("Models/tree_log/low_poly_log.obj");
+    door = LoadModel("Models/newdoor.obj");
     
     cabinT = T(20,-10,0) * S(1);
     FireplaceT = T(35,-5,25) * Ry(5*M_PI/4) * S(9);
@@ -88,6 +94,7 @@ void InstantiateModels() {
     totalGround = T(0,-10,0);
     fireT = T(fire_start_pos.x, fire_start_pos.y, fire_start_pos.z) * Ry(5*M_PI/4) * S(0.1);
     fireT = T(fire_start_pos.x -0.5, fire_start_pos.y, fire_start_pos.z -0.5) * Ry(5*M_PI/4) * S(0.1);
+    doorT = T(13,-2,40)*Ry(M_PI*3/2)* S(5.8);
     treeMat[0] = T(150, -5, -10);
     treeMat[1] = T(200, -5, 20);
     treeMat[2] = T(180, -5, -28);
@@ -161,6 +168,10 @@ void InstantiateTextures() {
     LoadTGATextureSimple("Models/tree_log/log_diffuse.tga", &logTex);
     glBindTexture(GL_TEXTURE_2D, logTex);
 
+    glActiveTexture(GL_TEXTURE15);
+    LoadTGATextureSimple("Models/Doorcolor.tga", &doorTex);
+    glBindTexture(GL_TEXTURE_2D, doorTex);
+
     glActiveTexture(GL_TEXTURE12);
     // LoadTGATextureSimple("Models/wolf.tga", &wolfTex);
     // glBindTexture(GL_TEXTURE_2D, wolfTex);
@@ -168,9 +179,13 @@ void InstantiateTextures() {
     std::vector<unsigned char> image; // RGBA output
     lodepng::decode(image, width, height, "Models/wolf.png");
 
+
+
     //glGenTextures(1, &wolfTex);
     glBindTexture(GL_TEXTURE_2D, wolfTex);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image.data());
+
+
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -314,6 +329,14 @@ void DrawCabin(GLuint shader){
     printError("DrawCabin");
 }
 
+void DrawDoor(GLuint shader){
+    glActiveTexture(GL_TEXTURE15);
+    glUniform1i(glGetUniformLocation(shader, "texUnit"), 15); 
+	uploadMat4ToShader(shader, "model_To_World", doorT);
+	DrawModel(door, shader, "in_Position", "inNormal", "inTexCord");
+    printError("DrawDoor");
+}
+
 void DrawFireplace(GLuint shader){
     glActiveTexture(GL_TEXTURE3);
     glUniform1i(glGetUniformLocation(shader, "texUnit"), 3); 
@@ -322,12 +345,12 @@ void DrawFireplace(GLuint shader){
     printError("DrawFireplace");
 }
 
-void DrawTable(GLuint shader){
-    glActiveTexture(GL_TEXTURE2);
-    glUniform1i(glGetUniformLocation(shader, "texUnit"), 2); 
-	uploadMat4ToShader(shader, "model_To_World", tableT);
-	DrawModel(table, shader, "in_Position", "inNormal", "inTexCord");
-    printError("DrawTable");
+void DrawLog(GLuint shader){
+    glActiveTexture(GL_TEXTURE11);
+    glUniform1i(glGetUniformLocation(shader, "texUnit"), 11); 
+	uploadMat4ToShader(shader, "model_To_World", logT);
+	DrawModel(tree_log, shader, "in_Position", "inNormal", "inTexCord");
+    printError("DrawLog");
 }
 
 void DrawSofa(GLuint shader){
@@ -338,13 +361,14 @@ void DrawSofa(GLuint shader){
     printError("DrawSofa");
 }
 
-void DrawLog(GLuint shader){
-    glActiveTexture(GL_TEXTURE11);
-    glUniform1i(glGetUniformLocation(shader, "texUnit"), 11); 
-	uploadMat4ToShader(shader, "model_To_World", logT);
-	DrawModel(tree_log, shader, "in_Position", "inNormal", "inTexCord");
-    printError("DrawLog");
+void DrawTable(GLuint shader){
+    glActiveTexture(GL_TEXTURE2);
+    glUniform1i(glGetUniformLocation(shader, "texUnit"), 2); 
+	uploadMat4ToShader(shader, "model_To_World", tableT);
+	DrawModel(table, shader, "in_Position", "inNormal", "inTexCord");
+    printError("DrawTable");
 }
+
 
 void DrawSkyBox(){
     glUseProgram(shybox_shader);
@@ -509,6 +533,7 @@ void drawObjects(GLuint shader){
     DrawSofa(shader);
     DrawTable(shader);
     DrawLog(shader);
+    DrawDoor(shader);
 }
 
 
