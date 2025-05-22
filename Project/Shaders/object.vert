@@ -6,23 +6,31 @@ out vec4 lightSourceCoord;
 in mat4 textureMatrix;
 uniform mat4 model_To_World;
 uniform mat4 world_To_View;
+uniform mat4 lightViewProjMatrix;
+uniform mat4 lightViewProjMatrixMoon;  
+
+
 in vec3 inNormal; 
 in vec2 inTexCord;
 out vec2 outTexCord;
 
+uniform mat4 scaleBiasMatrix;
+out vec4 lightSourceCoord;
+out vec4 lightSourceCoordMoon;
+
+
 out vec4 SurfacePos;
 
 out vec3 transformedNormal;
-out vec3 exColor;
-
-
 
 
 void main(void)
 {
     gl_Position = projectionMatrix*world_To_View*model_To_World*vec4(in_Position, 1.0);
-    const vec3 light = vec3(0.58, 0.58, 0.58);
-    exColor = vec3(0.8,0,0.8);
+   
+    lightSourceCoord = scaleBiasMatrix * lightViewProjMatrix * model_To_World * vec4(in_Position, 1.0);
+    lightSourceCoordMoon = scaleBiasMatrix * lightViewProjMatrixMoon * model_To_World * vec4(in_Position, 1.0);
+
     outTexCord = inTexCord;
     lightSourceCoord = textureMatrix * gl_Position;
     SurfacePos = world_To_View*model_To_World*vec4(in_Position, 1.0);

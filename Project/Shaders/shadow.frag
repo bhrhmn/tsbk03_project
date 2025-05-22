@@ -1,9 +1,12 @@
+#version 150
 
-varying out vec4 frag_color;
-uniform sampler2D ShadowMap;
+uniform float shade;
+out vec4 out_Color;
+uniform sampler2D textureUnit;
+uniform mat4 world_To_View;
+uniform mat4 scaleBiasMatrix;
 
-void main()
-{	
-	frag_color = vec4(0.5);
+void main(void)
+{
+	out_Color = vec4(shade);
 }
-
