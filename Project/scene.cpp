@@ -92,7 +92,7 @@ void InstantiateModels() {
     tableT = T(20,-12,-10) * S(8);
     sofaT = T(20,-4,-30)* S(8);
     totalGround = T(0,-10,0);
-    fireT = T(fire_start_pos.x, fire_start_pos.y, fire_start_pos.z) * Ry(5*M_PI/4) * S(0.1);
+    fireT = T(fire_start_pos.x, fire_start_pos.y, fire_start_pos.z) * Ry(5*M_PI/4) * S(0.1);1
     fireT = T(fire_start_pos.x -0.5, fire_start_pos.y, fire_start_pos.z -0.5) * Ry(5*M_PI/4) * S(0.1);
     doorT = T(13,-2,40)*Ry(M_PI*3/2)* S(5.8);
     treeMat[0] = T(150, -5, -10);
@@ -559,7 +559,7 @@ void fireShadow(){
     // 1. Render scene to FBO
 	useFBO(fbo, NULL, NULL);
 	glViewport(0,0,WINDOW_SIZE,WINDOW_SIZE);
-	glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_TRUE); // Depth only // gör att kameran inte rör på sig??
+	glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_TRUE); // Depth only
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	//Using the simple shader
@@ -620,7 +620,6 @@ void display(void)
     UpdateLightSources();
     UpdateMoon();
     UpdateWolf();
-    //tableT = T(firePos.x,firePos.y,firePos.z) * S(2); //for debug
     
     fireShadow();
     moonShadow();
@@ -636,32 +635,20 @@ void display(void)
     //Using the projTex (object) shader
     glUseProgram(object_shader);
 
-	//fire
+	//load both fbo depth maps to shader
 	glUniform1i(glGetUniformLocation(object_shader, "textureUnit"),TEX_UNIT);
 	glActiveTexture(GL_TEXTURE0 + TEX_UNIT);
 	glBindTexture(GL_TEXTURE_2D,fbo->depth);
 
-    //2. Render from camera.
-	
-    // glViewport(0,0,WINDOW_SIZE,WINDOW_SIZE);
-    // glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-    // glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    //Using the projTex (object) shader
-    // glUseProgram(object_shader);
-
-	//fire
 	glUniform1i(glGetUniformLocation(object_shader, "textureUnitMoon"),MOON_TEX_UNIT);
 	glActiveTexture(GL_TEXTURE0 + MOON_TEX_UNIT);
 	glBindTexture(GL_TEXTURE_2D,moonFbo->depth);
-
 
     moveCamera();
 
 
     uploadMat4ToShader(object_shader, "world_To_View", worldCamera);
     DrawSkyBox();
-    //glCullFace(GL_BACK);
 
     drawObjects(object_shader);
     DrawTree();
