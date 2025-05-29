@@ -178,14 +178,9 @@ void InstantiateTextures() {
     unsigned width, height;
     std::vector<unsigned char> image; // RGBA output
     lodepng::decode(image, width, height, "Models/wolf.png");
-
-
-
     //glGenTextures(1, &wolfTex);
     glBindTexture(GL_TEXTURE_2D, wolfTex);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image.data());
-
-
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -248,6 +243,7 @@ void init(void) {
     initFireplaceSound();
     printError("init arrays");
 }
+
 bool inCabin(vec3 newCameraP){
     float minX = 0.f;
     float maxX = 40.f;
@@ -460,8 +456,6 @@ void DrawFire(){
     DrawModel(treeBillboard, tree_shader, "in_Position", "inNormal", "inTexCord");   
 
     // //fire 2  
-    // glActiveTexture(GL_TEXTURE10);
-    // glUniform1i(glGetUniformLocation(tree_shader, "texUnit"), 10); 
     uploadMat4ToShader(tree_shader, "model_To_World", fireT2);
     DrawModel(treeBillboard, tree_shader, "in_Position", "inNormal", "inTexCord");
 
@@ -487,7 +481,7 @@ void DrawWolf(){
 }
 
 void UpdateLightSources(){
-    float fireJitterX = flicker(t, 10.0f, 0.5f); //  horizontal
+    float fireJitterX = flicker(t, 10.0f, 0.5f); // horizontal
     float fireJitterY = flicker(t, 15.0f, 0.3f); // Vertical
     firePos = vec3(33 + fireJitterX, -1.0f + fireJitterY, 23);
     glUniform3fv(glGetUniformLocation(object_shader, "firePos"), 1, &firePos.x);
@@ -497,14 +491,12 @@ void UpdateLightSources(){
     fireColor = vec3(242.f/256, 125.f/256, 12.f/256) * fireIntensity;
     glUniform3fv(glGetUniformLocation(object_shader, "fireColor"), 1, &fireColor.x);
 
-    // float f = sin(t/7) * sin(t/5) * randFloat() / 190.0; 
     float f  = randFloat() / 400.0;
     float f2 = randFloat() / 300.0;
     float f3 = sin(t/2) * sin(t/3) / 2.0;
     float f4 = sin(t/3) / 2.0;
     fireT =  T(fire_start_pos.x, fire_start_pos.y, fire_start_pos.z) * Ry(5*M_PI/4) * T(fire_start_pos.x*f, 0, 0) * T(f4, 0, 0) * S(0.1);
     fireT2 =  T(fire_start_pos.x -0.5, fire_start_pos.y, fire_start_pos.z -0.5) * Ry(5*M_PI/4) * T((fire_start_pos.x-1)*f2, 0, 0) * T(f3, 0, 0) * Ry(M_PI) * S(0.07);
-
 
     printError("UpdateLightSources");
 }
@@ -538,7 +530,7 @@ void drawObjects(GLuint shader){
 
 
 void fireShadow(){
-        //Shadow things
+    //Shadow things
     // Setup the modelview from the light source
     vec3 table_pos = vec3(20,0.0f,-10);
 	modelViewMatrix = lookAt(firePos,
@@ -559,7 +551,7 @@ void fireShadow(){
     // 1. Render scene to FBO
 	useFBO(fbo, NULL, NULL);
 	glViewport(0,0,WINDOW_SIZE,WINDOW_SIZE);
-	glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_TRUE); // Depth only // gör att kameran inte rör på sig??
+	glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_TRUE); // Depth only
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	//Using the simple shader
@@ -568,9 +560,6 @@ void fireShadow(){
 	glBindTexture(GL_TEXTURE_2D,0);
     printError("1. Render scene to FBO");
 	drawObjects(shadow_shader);
-	
-
-
 
 }
 
@@ -600,7 +589,7 @@ void moonShadow(){
     //Using the simple shader
     glUniform1i(glGetUniformLocation(shadow_shader, "textureUnitMoon"),MOON_TEX_UNIT);
     glActiveTexture(GL_TEXTURE0 + MOON_TEX_UNIT);
-    glBindTexture(GL_TEXTURE_2D,0); //what is 0????
+    glBindTexture(GL_TEXTURE_2D,0); 
     printError("1. Render scene to FBO");
     drawObjects(shadow_shader);
 
@@ -620,7 +609,6 @@ void display(void)
     UpdateLightSources();
     UpdateMoon();
     UpdateWolf();
-    //tableT = T(firePos.x,firePos.y,firePos.z) * S(2); //for debug
     
     fireShadow();
     moonShadow();
@@ -636,32 +624,19 @@ void display(void)
     //Using the projTex (object) shader
     glUseProgram(object_shader);
 
-	//fire
+	//load both fbo depth maps to shader
 	glUniform1i(glGetUniformLocation(object_shader, "textureUnit"),TEX_UNIT);
 	glActiveTexture(GL_TEXTURE0 + TEX_UNIT);
 	glBindTexture(GL_TEXTURE_2D,fbo->depth);
 
-    //2. Render from camera.
-	
-    // glViewport(0,0,WINDOW_SIZE,WINDOW_SIZE);
-    // glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-    // glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    //Using the projTex (object) shader
-    // glUseProgram(object_shader);
-
-	//fire
 	glUniform1i(glGetUniformLocation(object_shader, "textureUnitMoon"),MOON_TEX_UNIT);
 	glActiveTexture(GL_TEXTURE0 + MOON_TEX_UNIT);
 	glBindTexture(GL_TEXTURE_2D,moonFbo->depth);
 
-
     moveCamera();
-
 
     uploadMat4ToShader(object_shader, "world_To_View", worldCamera);
     DrawSkyBox();
-    //glCullFace(GL_BACK);
 
     drawObjects(object_shader);
     DrawTree();
