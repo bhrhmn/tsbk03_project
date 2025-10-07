@@ -1,7 +1,6 @@
-#include <SFML/Audio.hpp>
+//#include <SFML/Audio.hpp>
 #include "scene.h"
 #include "tree.h"
-
 
 // Global variable definitions (declared extern in header)
 Model *ground;
@@ -32,7 +31,6 @@ unsigned int doorTex;
 FBOstruct *fbo;
 FBOstruct *moonFbo;
 
-
 mat4 totalGround;
 mat4 worldCamera;
 mat4 cabinT;
@@ -45,8 +43,6 @@ mat4 fireT2;
 mat4 logT;
 mat4 wolfT;
 mat4 doorT;
-
-
 
 const int FOREST_SIZE = 12;
 mat4 treeMat[FOREST_SIZE]; 
@@ -61,9 +57,6 @@ GLuint shadow_shader;
 GLuint tree_shader;
 
 mat4 shadowProjectionMatrix;
-
-
-
   
 vec3 firePos = vec3(25, 10.0f, 20.f);
 vec3 fireColor = vec3(0.8, 0.5, 0.2);
@@ -73,7 +66,7 @@ vec3 fire_start_pos = vec3(35.5, -2.5, 25.5);
 vec3 moonPos = vec3(120.0, 70.0f, -120.f);
 vec3 moonColor = vec3(0.8f, 0.8f, 1.0f);
 GLfloat t = 0;
-sf::Sound* fireSound = nullptr;
+// sf::Sound* fireSound = nullptr;
 
 // Function implementations
 void InstantiateModels() {
@@ -111,20 +104,17 @@ void InstantiateModels() {
     wolfT = T(150, 3.5, 0) * Ry(M_PI_2*3) * Rx(M_PI) * S(0.4);
 }
 
-
-
-
-void initFireplaceSound() {
-    static sf::SoundBuffer buffer;
-    if (!buffer.loadFromFile("fireplace.wav")) {
-        printf("Error: Could not load sound file!\n");
-        return;
-    }
+// void initFireplaceSound() {
+//     static sf::SoundBuffer buffer;
+//     if (!buffer.loadFromFile("fireplace.wav")) {
+//         printf("Error: Could not load sound file!\n");
+//         return;
+//     }
     
-    fireSound = new sf::Sound(buffer);
-    fireSound->setLoop(true);
-    fireSound->play();
-}
+//     fireSound = new sf::Sound(buffer);
+//     fireSound->setLoop(true);
+//     fireSound->play();
+// }
 
 void InstantiateTextures() {
 
@@ -240,7 +230,7 @@ void init(void) {
     
     // Start timer
     glutTimerFunc(20, &OnTimer, 0);
-    initFireplaceSound();
+    // initFireplaceSound();
     printError("init arrays");
 }
 
