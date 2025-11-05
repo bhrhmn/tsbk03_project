@@ -28,8 +28,6 @@
 #define TEX_UNIT 0
 #define MOON_TEX_UNIT 1
 
-
-
 const GLfloat projectionMatrix[] = {2.0f*near/(right-left), 0.0f, (right+left)/(right-left), 0.0f,
                                     0.0f, 2.0f*near/(top-bottom), (top+bottom)/(top-bottom), 0.0f,
                                     0.0f, 0.0f, -(far + near)/(far - near), -2*far*near/(far - near),

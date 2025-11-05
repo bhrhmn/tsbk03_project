@@ -4,6 +4,8 @@ in vec3 in_Position;
 in vec3 inNormal; 
 in vec2 inTexCord;
 
+out vec2 texCoord;
+
 uniform mat4 projectionMatrix;
 uniform mat4 lightViewProjMatrix;
 

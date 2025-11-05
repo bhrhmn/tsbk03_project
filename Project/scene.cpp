@@ -28,8 +28,7 @@ unsigned int logTex;
 unsigned int wolfTex;
 unsigned int doorTex;
 
-FBOstruct *fbo;
-FBOstruct *moonFbo;
+FBOstruct *fireFbo, *moonFbo, *bloomFbo, *overFlowFbo, *tempFbo;
 
 mat4 totalGround;
 mat4 worldCamera;
@@ -55,11 +54,13 @@ GLuint shybox_shader;
 GLuint object_shader;
 GLuint shadow_shader;
 GLuint tree_shader;
+GLuint overflow_shader;
+GLuint bloom_shader;
 
 mat4 shadowProjectionMatrix;
   
 vec3 firePos = vec3(25, 10.0f, 20.f);
-vec3 fireColor = vec3(0.8, 0.5, 0.2);
+vec3 fireColor = vec3(2.5, 2.7, 2.4);
 
 vec3 fire_start_pos = vec3(35.5, -2.5, 25.5);
 
@@ -67,6 +68,20 @@ vec3 moonPos = vec3(120.0, 70.0f, -120.f);
 vec3 moonColor = vec3(0.8f, 0.8f, 1.0f);
 GLfloat t = 0;
 // sf::Sound* fireSound = nullptr;
+
+GLfloat square[] = {
+							-1,-1,0,
+							-1,1, 0,
+							1,1, 0,
+							1,-1, 0};
+GLfloat squareTexCoord[] = {
+							 0, 0,
+							 0, 1,
+							 1, 1,
+							 1, 0};
+GLuint squareIndices[] = {0, 1, 2, 0, 2, 3};
+
+Model* squareModel;
 
 // Function implementations
 void InstantiateModels() {
@@ -79,6 +94,9 @@ void InstantiateModels() {
     fireplace = LoadModel("Models/fireplace_blender.obj");
     tree_log = LoadModel("Models/tree_log/low_poly_log.obj");
     door = LoadModel("Models/newdoor.obj");
+    squareModel = LoadDataToModel(
+			(vec3 *)square, NULL, (vec2 *)squareTexCoord, NULL,
+			squareIndices, 4, 6);
     
     cabinT = T(20,-10,0) * S(1);
     FireplaceT = T(35,-5,25) * Ry(5*M_PI/4) * S(9);
@@ -196,6 +214,8 @@ void init(void) {
     shadow_shader = loadShaders("Shaders/shadow.vert", "Shaders/shadow.frag");
     object_shader = loadShaders("Shaders/object.vert", "Shaders/object.frag");
     tree_shader = loadShaders("Shaders/tree.vert", "Shaders/tree.frag");
+    overflow_shader = loadShaders("Shaders/overflow.vert", "Shaders/overflow.frag");
+    bloom_shader = loadShaders("Shaders/lowpassfilter.vert", "Shaders/lowpassfilter.frag");
     printError("init shader");
     
     // Textures
@@ -231,6 +251,19 @@ void init(void) {
     // Start timer
     glutTimerFunc(20, &OnTimer, 0);
     // initFireplaceSound();
+
+    // init fbos
+    glActiveTexture(GL_TEXTURE13);
+    fireFbo = initFBO2(WINDOW_SIZE, WINDOW_SIZE, 0, 1);
+    glActiveTexture(GL_TEXTURE14);
+    moonFbo = initFBO2(WINDOW_SIZE, WINDOW_SIZE, 0, 1);
+    glActiveTexture(GL_TEXTURE16);
+    bloomFbo = initFBO2(WINDOW_SIZE, WINDOW_SIZE, 0, 1);
+    glActiveTexture(GL_TEXTURE17);
+    overFlowFbo = initFBO2(WINDOW_SIZE, WINDOW_SIZE, 0, 1);
+    glActiveTexture(GL_TEXTURE18);
+    tempFbo = initFBO2(WINDOW_SIZE, WINDOW_SIZE, 0, 1);
+
     printError("init arrays");
 }
 
@@ -477,7 +510,7 @@ void UpdateLightSources(){
     glUniform3fv(glGetUniformLocation(object_shader, "firePos"), 1, &firePos.x);
     
 
-    float fireIntensity = 0.8f + 0.2f * flicker(t, 8.0f, 1.0f);
+    float fireIntensity = 10.8f + 0.2f * flicker(t, 8.0f, 1.0f);
     fireColor = vec3(242.f/256, 125.f/256, 12.f/256) * fireIntensity;
     glUniform3fv(glGetUniformLocation(object_shader, "fireColor"), 1, &fireColor.x);
 
@@ -539,7 +572,7 @@ void fireShadow(){
     glUniform1f(glGetUniformLocation(shadow_shader, "shade"), 0.3); // color of shadow
 
     // 1. Render scene to FBO
-	useFBO(fbo, NULL, NULL);
+	useFBO(fireFbo, NULL, NULL);
 	glViewport(0,0,WINDOW_SIZE,WINDOW_SIZE);
 	glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_TRUE); // Depth only
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -584,6 +617,40 @@ void moonShadow(){
     drawObjects(shadow_shader);
 
 }  
+
+void blooming(void) 
+{
+    // hdr
+    // useFBO(NULL, bloomFbo, NULL);
+    // glUseProgram(overflow_shader);
+    // glDisable(GL_CULL_FACE);
+	// glDisable(GL_DEPTH_TEST);
+	// DrawModel(squareModel, overflow_shader, "in_Position", NULL, "in_TexCoord");
+
+    glUseProgram(bloom_shader);
+    glUniform1f(glGetUniformLocation(bloom_shader, "windowWidth"), 1.0 /bloomFbo->width);
+	glUniform1f(glGetUniformLocation(bloom_shader, "windowHeight"), 1.0 /bloomFbo->height);
+
+    // ping-pong
+    for (int i {0}; i < 20; i++) 
+    {
+        useFBO(tempFbo, bloomFbo, NULL);
+        glDisable(GL_CULL_FACE);
+        glDisable(GL_DEPTH_TEST);
+        DrawModel(squareModel, bloom_shader, "in_Position", NULL, "in_TexCoord");
+
+        std::swap(tempFbo, bloomFbo);
+    }
+
+    // draw to screen
+    useFBO(NULL, bloomFbo, NULL);
+    glDisable(GL_CULL_FACE);
+    glDisable(GL_DEPTH_TEST);
+    DrawModel(squareModel, bloom_shader, "in_Position", NULL, "in_TexCoord");
+
+    printError("Blooming");
+}
+
 void display(void)
 {
 	printError("pre display");
@@ -605,7 +672,10 @@ void display(void)
     
  
     //2. Render from camera.
-	useFBO(NULL, fbo, moonFbo);
+    // With bloom
+	useFBO(bloomFbo, fireFbo, moonFbo);
+    // Without bloom, also remove blooming() function call 
+	//useFBO(NULL, fireFbo, moonFbo);
 	
     glViewport(0,0,WINDOW_SIZE,WINDOW_SIZE);
     glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
@@ -617,7 +687,7 @@ void display(void)
 	//load both fbo depth maps to shader
 	glUniform1i(glGetUniformLocation(object_shader, "textureUnit"),TEX_UNIT);
 	glActiveTexture(GL_TEXTURE0 + TEX_UNIT);
-	glBindTexture(GL_TEXTURE_2D,fbo->depth);
+	glBindTexture(GL_TEXTURE_2D,fireFbo->depth);
 
 	glUniform1i(glGetUniformLocation(object_shader, "textureUnitMoon"),MOON_TEX_UNIT);
 	glActiveTexture(GL_TEXTURE0 + MOON_TEX_UNIT);
@@ -632,6 +702,8 @@ void display(void)
     DrawTree();
     DrawFire();
     DrawWolf();
+
+    blooming();
 
 	glutSwapBuffers();
 }
@@ -650,11 +722,6 @@ int main(int argc, char *argv[])
     glEnable(GL_CULL_FACE);
 
     init();
-    //Binds to the active texture. 
-    fbo = initFBO2(WINDOW_SIZE, WINDOW_SIZE, 0, 1);
-
-    glActiveTexture(GL_TEXTURE14);
-    moonFbo = initFBO2(WINDOW_SIZE, WINDOW_SIZE, 0, 1);
    
 	glutDisplayFunc(display); 
 
