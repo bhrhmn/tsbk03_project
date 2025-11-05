@@ -8,7 +8,7 @@ out vec4 outColor;
 in vec3 transformedNormal;
 in vec2 outTexCord;
 
-uniform float shade;
+uniform vec4 shade;
 
 void main(void)
 {

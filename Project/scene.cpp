@@ -46,8 +46,8 @@ mat4 doorT;
 const int FOREST_SIZE = 12;
 mat4 treeMat[FOREST_SIZE]; 
 
-vec3 worldCameraP = { 20.0f, 8.0f, 0.0f };
-vec3 worldCameraL = { 20.0f, 8.0f, -25.0f };
+vec3 worldCameraP = { 25.0f, 8.0f, 0.0f };
+vec3 worldCameraL = { 30.0f, 8.0f, 25.0f };
 vec3 worldCameraV = { 0.0f, 5.0f, 0.0f };
 
 GLuint shybox_shader;
@@ -55,6 +55,7 @@ GLuint object_shader;
 GLuint shadow_shader;
 GLuint tree_shader;
 GLuint overflow_shader;
+GLuint lowpass_shader;
 GLuint bloom_shader;
 
 mat4 shadowProjectionMatrix;
@@ -215,7 +216,8 @@ void init(void) {
     object_shader = loadShaders("Shaders/object.vert", "Shaders/object.frag");
     tree_shader = loadShaders("Shaders/tree.vert", "Shaders/tree.frag");
     overflow_shader = loadShaders("Shaders/overflow.vert", "Shaders/overflow.frag");
-    bloom_shader = loadShaders("Shaders/lowpassfilter.vert", "Shaders/lowpassfilter.frag");
+    lowpass_shader = loadShaders("Shaders/lowpassfilter.vert", "Shaders/lowpassfilter.frag");
+    bloom_shader = loadShaders("Shaders/overflow.vert", "Shaders/bloom.frag");
     printError("init shader");
     
     // Textures
@@ -442,7 +444,8 @@ void DrawTree(){
     glActiveTexture(GL_TEXTURE8);
     glUniform1i(glGetUniformLocation(tree_shader, "texUnit"), 8); 
     uploadMat4ToShader(tree_shader, "world_To_View", worldCamera);
-    glUniform1f(glGetUniformLocation(tree_shader, "shade"), 0.5); // color of shadow
+    vec4 shade = vec4(0.5, 0.5, 0.5, 1.0);
+    glUniform4fv(glGetUniformLocation(tree_shader, "shade"), 1, &shade.x); // color of shadow
 
     mat4 translations[] = {T(0, 0, 0), T(150, 0, 0), T(0, 0, 150), T(0, 0, -150)};
     for (int j = 0; j < 4; j++) {
@@ -470,7 +473,8 @@ void DrawFire(){
     glDisable(GL_CULL_FACE);
     glUseProgram(tree_shader);
     uploadMat4ToShader(tree_shader, "world_To_View", worldCamera);
-    glUniform1f(glGetUniformLocation(tree_shader, "shade"), 0.65); // color of shadow
+    vec4 shade = vec4(1.4, 1.2, 1.0, 1.0);
+    glUniform4fv(glGetUniformLocation(tree_shader, "shade"), 1, &shade.x); // color of shadow
     
     //fire 1  
     glActiveTexture(GL_TEXTURE9);
@@ -491,7 +495,8 @@ void DrawWolf(){
     glDisable(GL_CULL_FACE);
     glUseProgram(tree_shader);
     uploadMat4ToShader(tree_shader, "world_To_View", worldCamera);
-    glUniform1f(glGetUniformLocation(tree_shader, "shade"), 0.5); // color of shadow
+    vec4 shade = vec4(0.5, 0.5, 0.5, 1.0);
+    glUniform4fv(glGetUniformLocation(tree_shader, "shade"), 1, &shade.x); // color of shadow
     
     glActiveTexture(GL_TEXTURE12);
     glUniform1i(glGetUniformLocation(tree_shader, "texUnit"), 12); 
@@ -510,7 +515,7 @@ void UpdateLightSources(){
     glUniform3fv(glGetUniformLocation(object_shader, "firePos"), 1, &firePos.x);
     
 
-    float fireIntensity = 10.8f + 0.2f * flicker(t, 8.0f, 1.0f);
+    float fireIntensity = 2.8f + 0.2f * flicker(t, 8.0f, 1.0f);
     fireColor = vec3(242.f/256, 125.f/256, 12.f/256) * fireIntensity;
     glUniform3fv(glGetUniformLocation(object_shader, "fireColor"), 1, &fireColor.x);
 
@@ -621,29 +626,31 @@ void moonShadow(){
 void blooming(void) 
 {
     // hdr
-    // useFBO(NULL, bloomFbo, NULL);
-    // glUseProgram(overflow_shader);
-    // glDisable(GL_CULL_FACE);
-	// glDisable(GL_DEPTH_TEST);
-	// DrawModel(squareModel, overflow_shader, "in_Position", NULL, "in_TexCoord");
+    useFBO(overFlowFbo, bloomFbo, NULL);
+    glUseProgram(overflow_shader);
+    glDisable(GL_CULL_FACE);
+	glDisable(GL_DEPTH_TEST);
+	DrawModel(squareModel, overflow_shader, "in_Position", NULL, "in_TexCoord");
 
-    glUseProgram(bloom_shader);
-    glUniform1f(glGetUniformLocation(bloom_shader, "windowWidth"), 1.0 /bloomFbo->width);
-	glUniform1f(glGetUniformLocation(bloom_shader, "windowHeight"), 1.0 /bloomFbo->height);
+    glUseProgram(lowpass_shader);
+    glUniform1f(glGetUniformLocation(lowpass_shader, "windowWidth"), 1.0 /overFlowFbo->width);
+	glUniform1f(glGetUniformLocation(lowpass_shader, "windowHeight"), 1.0 /overFlowFbo->height);
 
     // ping-pong
-    for (int i {0}; i < 20; i++) 
+    for (int i {0}; i < 100; i++) 
     {
-        useFBO(tempFbo, bloomFbo, NULL);
+        useFBO(tempFbo, overFlowFbo, NULL);
         glDisable(GL_CULL_FACE);
         glDisable(GL_DEPTH_TEST);
-        DrawModel(squareModel, bloom_shader, "in_Position", NULL, "in_TexCoord");
+        DrawModel(squareModel, lowpass_shader, "in_Position", NULL, "in_TexCoord");
 
-        std::swap(tempFbo, bloomFbo);
+        std::swap(tempFbo, overFlowFbo);
     }
-
+    
     // draw to screen
-    useFBO(NULL, bloomFbo, NULL);
+    glUseProgram(bloom_shader);
+    glUniform1i(glGetUniformLocation(bloom_shader, "texUnitBloom"),1);
+    useFBO(NULL, bloomFbo, overFlowFbo);
     glDisable(GL_CULL_FACE);
     glDisable(GL_DEPTH_TEST);
     DrawModel(squareModel, bloom_shader, "in_Position", NULL, "in_TexCoord");

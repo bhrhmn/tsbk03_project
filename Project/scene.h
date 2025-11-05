@@ -27,6 +27,7 @@
 // We assign one texture unit in which to store the transformation.
 #define TEX_UNIT 0
 #define MOON_TEX_UNIT 1
+#define BLOOM_TEX_UNIT 16
 
 const GLfloat projectionMatrix[] = {2.0f*near/(right-left), 0.0f, (right+left)/(right-left), 0.0f,
                                     0.0f, 2.0f*near/(top-bottom), (top+bottom)/(top-bottom), 0.0f,
