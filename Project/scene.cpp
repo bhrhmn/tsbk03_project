@@ -640,6 +640,8 @@ void blooming(void)
     for (int i {0}; i < 100; i++) 
     {
         useFBO(tempFbo, overFlowFbo, NULL);
+        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
         glDisable(GL_CULL_FACE);
         glDisable(GL_DEPTH_TEST);
         DrawModel(squareModel, lowpass_shader, "in_Position", NULL, "in_TexCoord");
