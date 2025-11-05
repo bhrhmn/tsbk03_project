@@ -28,7 +28,7 @@ void main(void)
     for (int i = -1; i < 2; i++) {
         for (int j = -1; j < 2; j++) {
             vec2 coord = vec2(texCoord.x + i*windowWidth, texCoord.y + j*windowHeight);
-            res += texture(texUnit, coord) * lowpass[i+1][j+1] / 15;
+            res += texture(texUnit, coord) * lowpass[i+1][j+1] / 16;
         }
     }
 
