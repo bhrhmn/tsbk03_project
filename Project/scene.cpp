@@ -14,6 +14,8 @@ Model *fireModel;
 Model *fireModel2;
 Model *tree_log;
 Model *door;
+Model *newCabin;
+
 
 unsigned int myTex;
 unsigned int myTex2;
@@ -27,6 +29,8 @@ unsigned int fire2Tex;
 unsigned int logTex;
 unsigned int wolfTex;
 unsigned int doorTex;
+unsigned int newCabinTex;
+
 
 FBOstruct *fireFbo, *moonFbo, *bloomFbo, *overFlowFbo, *tempFbo;
 
@@ -42,6 +46,8 @@ mat4 fireT2;
 mat4 logT;
 mat4 wolfT;
 mat4 doorT;
+mat4 newCabinT;
+
 
 const int FOREST_SIZE = 12;
 mat4 treeMat[FOREST_SIZE]; 
@@ -95,6 +101,7 @@ void InstantiateModels() {
     fireplace = LoadModel("Models/fireplace_blender.obj");
     tree_log = LoadModel("Models/tree_log/low_poly_log.obj");
     door = LoadModel("Models/newdoor.obj");
+    newCabin = LoadModel("Models/Cottage.obj");
     squareModel = LoadDataToModel(
 			(vec3 *)square, NULL, (vec2 *)squareTexCoord, NULL,
 			squareIndices, 4, 6);
@@ -107,6 +114,8 @@ void InstantiateModels() {
     fireT = T(fire_start_pos.x, fire_start_pos.y, fire_start_pos.z) * Ry(5*M_PI/4) * S(0.1);
     fireT = T(fire_start_pos.x -0.5, fire_start_pos.y, fire_start_pos.z -0.5) * Ry(5*M_PI/4) * S(0.1);
     doorT = T(13,-2,40)*Ry(M_PI*3/2)* S(5.8);
+    newCabinT = T(-15,2,10)*Ry(M_PI*3/2)* S(5.8);
+
     treeMat[0] = T(150, -5, -10);
     treeMat[1] = T(200, -5, 20);
     treeMat[2] = T(180, -5, -28);
@@ -180,6 +189,10 @@ void InstantiateTextures() {
     glActiveTexture(GL_TEXTURE15);
     LoadTGATextureSimple("Models/Doorcolor.tga", &doorTex);
     glBindTexture(GL_TEXTURE_2D, doorTex);
+
+    glActiveTexture(GL_TEXTURE20);
+    LoadTGATextureSimple("Models/DoorColor.tga", &newCabinTex);
+    glBindTexture(GL_TEXTURE_2D, newCabinTex);
 
     glActiveTexture(GL_TEXTURE12);
     // LoadTGATextureSimple("Models/wolf.tga", &wolfTex);
@@ -349,6 +362,16 @@ void DrawCabin(GLuint shader){
 	DrawModel(cabin, shader, "in_Position", "inNormal", "inTexCord");
     printError("DrawCabin");
 }
+
+
+void DrawNewCabin(GLuint shader){
+    glActiveTexture(GL_TEXTURE15);
+    glUniform1i(glGetUniformLocation(shader, "texUnit"), 15); 
+    uploadMat4ToShader(shader, "model_To_World", newCabinT);
+	DrawModel(newCabin, shader, "in_Position", "inNormal", "inTexCord");
+    printError("DrawNewCabin");
+}
+
 
 void DrawDoor(GLuint shader){
     glActiveTexture(GL_TEXTURE15);
@@ -548,12 +571,14 @@ void UpdateMoon() {
 void drawObjects(GLuint shader){
     glUseProgram(shader);
     DrawGround(shader);
-    DrawCabin(shader);
+    //DrawCabin(shader);
     DrawFireplace(shader);
     DrawSofa(shader);
     DrawTable(shader);
     DrawLog(shader);
-    DrawDoor(shader);
+    //DrawDoor(shader);
+    DrawNewCabin(shader);
+
 }
 
 
