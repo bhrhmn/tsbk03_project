@@ -1,20 +1,22 @@
-# Your existing Makefile with SFML audio added
+# Minimal modular Makefile
 commondir = ../common/
 
 all: scene
 
-scene: scene.cpp $(commondir)GL_utilities.c $(commondir)LoadTGA.c $(commondir)Linux/MicroGlut.c $(commondir)lodepng.cpp
+scene: scene.cpp camera.cpp models.cpp rendering.cpp lighting.cpp shadows.cpp
 	g++ -Wall -o scene -I$(commondir) -I../common/Linux -DGL_GLEXT_PROTOTYPES \
-	scene.cpp $(commondir)GL_utilities.c $(commondir)LoadTGA.c \
-	$(commondir)Linux/MicroGlut.c $(commondir)lodepng.cpp \
+	scene.cpp camera.cpp models.cpp rendering.cpp lighting.cpp shadows.cpp tree.cpp \
+	$(commondir)GL_utilities.c $(commondir)LoadTGA.c $(commondir)Linux/MicroGlut.c $(commondir)lodepng.cpp \
 	-lXt -lX11 -lGL -lm -lstdc++ \
 	-lsfml-audio -lsfml-graphics -lsfml-window -lsfml-system
 
-fedora: scene.cpp $(commondir)GL_utilities.c $(commondir)LoadTGA.c $(commondir)Linux/MicroGlut.c $(commondir)lodepng.cpp
+fedora: scene.cpp camera.cpp models.cpp rendering.cpp lighting.cpp shadows.cpp
 	g++ -Wall -o scene -I$(commondir) -I../common/Linux -DGL_GLEXT_PROTOTYPES \
-	scene.cpp $(commondir)GL_utilities.c $(commondir)LoadTGA.c \
-	$(commondir)Linux/MicroGlut.c $(commondir)lodepng.cpp \
-	-lX11 -lGL -lm -lstdc++ 
+	scene.cpp camera.cpp models.cpp rendering.cpp lighting.cpp shadows.cpp \
+	$(commondir)GL_utilities.c $(commondir)LoadTGA.c $(commondir)Linux/MicroGlut.c $(commondir)lodepng.cpp \
+	-lX11 -lGL -lm -lstdc++
 
 clean:
 	rm -f scene
+
+.PHONY: all clean fedora
