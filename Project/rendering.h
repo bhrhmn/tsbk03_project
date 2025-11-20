@@ -15,6 +15,9 @@ void DrawSkyBox();
 void DrawGround(GLuint shader);
 void DrawTree();
 void DrawFire();
+void DrawRoof(GLuint shader);
+void DrawFloor(GLuint shader);
+
 void DrawWolf();
 void UpdateWolf();
 void drawObjects(GLuint shader);

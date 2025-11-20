@@ -2,10 +2,10 @@
 #include "scene.h"
 
 // Model variables
-Model *ground, *skybox, *sofa, *table, *cabin, *fireplace, *newCabin;
+Model *ground, *skybox, *sofa, *table, *cabin, *fireplace, *newCabin, *roof, *floor3;
 Model *treeBillboard, *tree_log, *door, *squareModel;
 mat4 totalGround, cabinT, FireplaceT, tableT, sofaT;
-mat4 fireT, fireT2, logT, wolfT, doorT, newCabinT;
+mat4 fireT, fireT2, logT, wolfT, doorT, newCabinT, floorT, roofT;
 const int FOREST_SIZE = 12;
 mat4 treeMat[FOREST_SIZE];
 
@@ -28,6 +28,7 @@ unsigned int fire2Tex;
 unsigned int logTex;
 unsigned int wolfTex;
 unsigned int doorTex;
+unsigned int roofTex;
 
 void InstantiateModels() {
     ground = LoadDataToModel(vertices, vertex_normals, tex_coords, vertex_normals, indices, 4, 6);
@@ -39,7 +40,10 @@ void InstantiateModels() {
     fireplace = LoadModel("Models/fireplace_blender.obj");
     tree_log = LoadModel("Models/tree_log/low_poly_log.obj");
     door = LoadModel("Models/newdoor.obj");
-    newCabin = LoadModel("Models/Cottage.obj");
+    newCabin = LoadModel("Models/maincottage.obj");
+    roof = LoadModel("Models/roof.obj");    
+    floor3 = LoadModel("Models/floor.obj");
+
     squareModel = LoadDataToModel(
             (vec3 *)square, NULL, (vec2 *)squareTexCoord, NULL,
             squareIndices, 4, 6);
@@ -53,6 +57,9 @@ void InstantiateModels() {
     fireT = T(fire_start_pos.x -0.5, fire_start_pos.y, fire_start_pos.z -0.5) * Ry(5*M_PI/4) * S(0.1);
     doorT = T(13,-2,40)*Ry(M_PI*3/2)* S(5.8);
     newCabinT = T(-15,2,10)*Ry(M_PI*3/2)* S(5.8);
+    floorT = T(-15,2,10)*Ry(M_PI*3/2)* S(5.8);
+    roofT = T(-15,2,10)*Ry(M_PI*3/2)* S(5.8);
+    floorT = T(-15,2,10)*Ry(M_PI*3/2)* S(5.8);
 
     treeMat[0] = T(150, -5, -10);
     treeMat[1] = T(200, -5, 20);
@@ -117,8 +124,12 @@ void InstantiateTextures() {
     glBindTexture(GL_TEXTURE_2D, doorTex);
 
     glActiveTexture(GL_TEXTURE20);
-    LoadTGATextureSimple("Models/DoorColor.tga", &newCabinTex);
+    LoadTGATextureSimple("Models/wall.tga", &newCabinTex);
     glBindTexture(GL_TEXTURE_2D, newCabinTex);
+
+    glActiveTexture(GL_TEXTURE21);
+    LoadTGATextureSimple("Models/roof.tga", &roofTex);
+    glBindTexture(GL_TEXTURE_2D, roofTex);
 
     glActiveTexture(GL_TEXTURE12);
     // LoadTGATextureSimple("Models/wolf.tga", &wolfTex);

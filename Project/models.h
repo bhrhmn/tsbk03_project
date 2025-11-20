@@ -6,11 +6,11 @@
 #include "LittleOBJLoader.h"
 
 // Model pointers
-extern Model *ground, *skybox, *sofa, *table, *cabin, *fireplace, *newCabin;
+extern Model *ground, *skybox, *sofa, *table, *cabin, *fireplace, *newCabin, *roof, *floor3;
 extern Model *treeBillboard, *tree_log, *door, *squareModel;
 
 // Transformation matrices
-extern mat4 totalGround, cabinT, FireplaceT, tableT, sofaT, newCabinT;
+extern mat4 totalGround, cabinT, FireplaceT, tableT, sofaT, newCabinT, floorT, roofT;
 extern mat4 fireT, fireT2, logT, wolfT, doorT;
 
 
@@ -29,6 +29,8 @@ extern unsigned int logTex;
 extern unsigned int wolfTex;
 extern unsigned int doorTex;
 extern unsigned int newCabinTex;
+extern unsigned int doorTex;
+extern unsigned int roofTex;
 extern const int FOREST_SIZE;
 extern mat4 treeMat[12]; // FOREST_SIZE = 12
 
