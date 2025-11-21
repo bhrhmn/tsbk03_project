@@ -1,4 +1,6 @@
 #include "models.h"
+
+#include "MicroGlut.h"
 #include "scene.h"
 
 // Model variables
@@ -6,6 +8,8 @@ Model *ground, *skybox, *sofa, *table, *cabin, *fireplace, *newCabin;
 Model *treeBillboard, *tree_log, *door, *squareModel;
 mat4 totalGround, cabinT, FireplaceT, tableT, sofaT;
 mat4 fireT, fireT2, logT, wolfT, doorT, newCabinT;
+vec3 fireStartPosition;
+float fireRotation;
 const int FOREST_SIZE = 12;
 mat4 treeMat[FOREST_SIZE];
 
@@ -29,6 +33,14 @@ unsigned int logTex;
 unsigned int wolfTex;
 unsigned int doorTex;
 
+// for moving model
+mat4* modelT;
+float currentTX;
+float currentTY;
+float currentTZ;
+float currentRy;
+float currentScale;
+
 void InstantiateModels() {
     ground = LoadDataToModel(vertices, vertex_normals, tex_coords, vertex_normals, indices, 4, 6);
     treeBillboard = LoadDataToModel(tree_vertices, tree_vertex_normals, tree_tex_coords, tree_vertex_normals, tree_indices, 4, 6);
@@ -41,16 +53,23 @@ void InstantiateModels() {
     door = LoadModel("Models/newdoor.obj");
     newCabin = LoadModel("Models/Cottage.obj");
     squareModel = LoadDataToModel(
-            (vec3 *)square, NULL, (vec2 *)squareTexCoord, NULL,
+            reinterpret_cast<vec3 *>(square), nullptr, reinterpret_cast<vec2 *>(squareTexCoord), nullptr,
             squareIndices, 4, 6);
 
     cabinT = T(20,-10,0) * S(1);
-    FireplaceT = T(35,-5,25) * Ry(5*M_PI/4) * S(9);
-    tableT = T(20,-12,-10) * S(8);
-    sofaT = T(20,-4,-30)* S(8);
+    FireplaceT = FireplaceT = T(35,-5,25) * Ry(-M_PI/2) * S(9);
+    tableT = T(15.5, -15.5, 30.0) * Ry(0.000) * S(8.000);
+    sofaT = T(-11.5, -8.5, 29.5) * Ry(1.571) * S(8.000);
     totalGround = T(0,-10,0);
-    fireT = T(fire_start_pos.x, fire_start_pos.y, fire_start_pos.z) * Ry(5*M_PI/4) * S(0.1);
-    fireT = T(fire_start_pos.x -0.5, fire_start_pos.y, fire_start_pos.z -0.5) * Ry(5*M_PI/4) * S(0.1);
+    //fireplace
+    FireplaceT = T(41.5, -8.0, 29.0) * Ry(-1.571) * S(9.000);
+    fireT = T(40.5, -5.0, 29.0) * Ry(-1.571) * S(0.1);
+    fireT2 = T(41.0, -5.0, 29.8) * Ry(-1.571) * S(0.8);
+    logT = T(40.0, -7.0, 29.0) * Ry(-3.271)* S(0.025);
+    fireStartPosition = vec3(40.5, -5.3, 29.0);
+    fireRotation = atan2(fireT.m[2], fireT.m[0]);
+
+    wolfT = T(150, 3.5, 0) * Ry(M_PI_2*3) * Rx(M_PI) * S(0.4);
     doorT = T(13,-2,40)*Ry(M_PI*3/2)* S(5.8);
     newCabinT = T(-15,2,10)*Ry(M_PI*3/2)* S(5.8);
 
@@ -66,8 +85,84 @@ void InstantiateModels() {
     treeMat[9] = T(130, -5, 0);
     treeMat[10] = T(150, -5, 70);
     treeMat[11] = T(100, -5, 80);
-    logT = T(fire_start_pos.x -1.0, -4, fire_start_pos.z -1.0) * Ry(5*M_PI/4) * Ry(M_PI_2) * S(0.025);
-    wolfT = T(150, 3.5, 0) * Ry(M_PI_2*3) * Rx(M_PI) * S(0.4);
+
+
+    modelT = &tableT; // change to desired model
+    currentScale = modelT->m[5];
+    currentRy = atan2(modelT->m[2]* currentScale, modelT->m[0]* currentScale);
+    currentTX = modelT->m[3];
+    currentTY = modelT->m[7];
+    currentTZ = modelT->m[11];
+}
+
+void moveFires() {
+    //FireplaceT = T(41.5, -8.5, 27.5) * Ry(-M_PI/2) * S(9);
+    fireT = T(currentTX, currentTY+2.7f, currentTZ) * Ry(currentRy) * S(0.1);
+    fireT2 = T(currentTX - 0.5f, currentTY+2.7f, currentTZ + 0.8f) * Ry(currentRy) * S(0.1);
+    logT = T(currentTX, currentTY+1.f, currentTZ) * Ry(currentRy-1.7f) * S(0.025);
+}
+void printFires() {
+    printf("FireplaceT = T(%.1f, %.1f, %.1f) * Ry(%.3f) * S(%.3f)\n",currentTX, currentTY, currentTZ, currentRy, currentScale);
+    printf("fireT = T(%.1f, %.1f, %.1f) * Ry(%.3f) \n", currentTX, currentTY+2.7f, currentTZ, currentRy);
+    printf("fireT2 = T(%.1f, %.1f, %.1f) * Ry(%.3f) \n", currentTX - 0.5f, currentTY+2.7f, currentTZ + 0.8f, currentRy);
+    printf("logT = T(%.1f, %.1f, %.1f) * Ry(%.3f) \n", currentTX, currentTY+1.f, currentTZ, currentRy-1.7f);
+}
+
+void MoveModel() {
+    // Movement speed, rotation angle, and scale factor
+    float moveSpeed = 0.5f;
+    float rotateAngle = M_PI / 180.0f * 5.0f;;
+
+    // Arrow key movement - update translation values
+    if (glutKeyIsDown(GLUT_KEY_LEFT)) {
+        currentTX -= moveSpeed;
+        *modelT = T(currentTX, currentTY, currentTZ) * Ry(currentRy) * S(currentScale);
+
+    }
+    if (glutKeyIsDown(GLUT_KEY_RIGHT)) {
+        currentTX += moveSpeed;
+        *modelT = T(currentTX, currentTY, currentTZ) * Ry(currentRy) * S(currentScale);
+
+    }
+    if (glutKeyIsDown(GLUT_KEY_UP)) {
+        currentTZ -= moveSpeed;
+        *modelT = T(currentTX, currentTY, currentTZ) * Ry(currentRy) * S(currentScale);
+
+    }
+    if (glutKeyIsDown(GLUT_KEY_DOWN)) {
+        currentTZ += moveSpeed;
+        *modelT = T(currentTX, currentTY, currentTZ) * Ry(currentRy) * S(currentScale);
+
+    }
+    // move up and down with 'i' and 'o' keys
+    if (glutKeyIsDown('i')) {
+        currentTY += moveSpeed;
+        *modelT = T(currentTX, currentTY, currentTZ) * Ry(currentRy) * S(currentScale);
+
+    }
+    if (glutKeyIsDown('o')) {
+        currentTY -= moveSpeed;
+        *modelT = T(currentTX, currentTY, currentTZ) * Ry(currentRy) * S(currentScale);
+
+    }
+
+    // Rotation with 'r' and 't' keys
+    if (glutKeyIsDown('r')) {
+        currentRy -= rotateAngle;
+        *modelT = T(currentTX, currentTY, currentTZ) * Ry(currentRy) * S(currentScale);
+
+    }
+    if (glutKeyIsDown('t')) {
+        currentRy += rotateAngle;
+        *modelT = T(currentTX, currentTY, currentTZ) * Ry(currentRy) * S(currentScale);
+
+    }
+    if (glutKeyIsDown('p')) {
+        printf("= T(%.1f, %.1f, %.1f) * Ry(%.3f) * S(%.3f);\n",currentTX, currentTY, currentTZ, currentRy, currentScale);
+        //printFires();
+
+    }
+    //moveFires();
 }
 
 void InstantiateTextures() {

@@ -8,7 +8,6 @@ Model *fireModel2;
 
 vec3 firePos = vec3(25.f, 10.0f, 20.f);
 vec3 fireColor = vec3(2.5f, 2.7f, 2.4f);
-vec3 fire_start_pos = vec3(35.5f, -2.5f, 25.5f);
 
 vec3 moonPos = vec3(120.0f, 70.0f, -120.f);
 vec3 moonColor = vec3(0.8f, 0.8f, 1.0f);
@@ -27,24 +26,29 @@ float flicker(const float time, float speed, const float intensity) {
     }
     return lastValue;
 }
-
 void UpdateLightSources() {
     const float fireJitterX = flicker(t, 10.0f, 0.5f);
     const float fireJitterY = flicker(t, 15.0f, 0.3f);
-    firePos = vec3(33 + fireJitterX, -1.0f + fireJitterY, 23);
+
+    // Fire animation updates - use smaller values to prevent runaway
+    const float f  = randFloat() / 1000.0f;  // Smaller values
+    const float f2 = randFloat() / 800.0f;   // Smaller values
+    const float f3 = sin(t/2) * sin(t/3) / 10.0f;  // Smaller amplitude
+    const float f4 = sin(t/3) / 10.0f;             // Smaller amplitude
+
+    // Update fireT - use base position + jitter + small animation
+    fireT = T(fireStartPosition.x + fireJitterX + f4,fireStartPosition.y, fireStartPosition.z+ fireJitterY+f3) * Ry(fireRotation) * S(0.1f);
+
+    // Update fireT2 - use base position + small animation
+    fireT2 = T(fireStartPosition.x - fireJitterX - f4,fireStartPosition.y,fireStartPosition.z - fireJitterY -f3 ) * Ry(fireRotation) * S(0.1f);
+
+    // Update fire position for lighting (jittered position only)
+    firePos = vec3(fireStartPosition.x + fireJitterX, fireStartPosition.y + fireJitterY, fireStartPosition.z);
     glUniform3fv(glGetUniformLocation(object_shader, "firePos"), 1, &firePos.x);
 
     float fireIntensity = 2.8f + 0.2f * flicker(t, 8.0f, 1.0f);
     fireColor = vec3(242.f/256, 125.f/256, 12.f/256) * fireIntensity;
     glUniform3fv(glGetUniformLocation(object_shader, "fireColor"), 1, &fireColor.x);
-
-    // Fire animation updates
-    const float f  = randFloat() / 400.0f;
-    const float f2 = randFloat() / 300.0f;
-    const float f3 = sin(t/2) * sin(t/3) / 2.0f;
-    const float f4 = sin(t/3) / 2.0f;
-    fireT =  T(fire_start_pos.x, fire_start_pos.y, fire_start_pos.z) * Ry(5*M_PI/4) * T(fire_start_pos.x*f, 0, 0) * T(f4, 0, 0) * S(0.1);
-    fireT2 =  T(fire_start_pos.x -0.5f, fire_start_pos.y, fire_start_pos.z -0.5f) * Ry(5*M_PI/4) * T((fire_start_pos.x-1)*f2, 0, 0) * T(f3, 0, 0) * Ry(M_PI) * S(0.07f);
 }
 
 void UpdateMoon() {

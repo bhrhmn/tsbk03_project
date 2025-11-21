@@ -21,6 +21,7 @@
 #define GROUND_SIZE 1000.0f
 #define WINDOW_SIZE 800.0f
 
+
 #define TEX_UNIT 0
 #define MOON_TEX_UNIT 1
 #define BLOOM_TEX_UNIT 16

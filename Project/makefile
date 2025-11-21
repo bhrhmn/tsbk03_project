@@ -10,6 +10,7 @@ scene: scene.cpp camera.cpp models.cpp rendering.cpp lighting.cpp shadows.cpp
 	-lXt -lX11 -lGL -lm -lstdc++ \
 	-lsfml-audio -lsfml-graphics -lsfml-window -lsfml-system
 
+
 fedora: scene.cpp camera.cpp models.cpp rendering.cpp lighting.cpp shadows.cpp
 	g++ -Wall -o scene -I$(commondir) -I../common/Linux -DGL_GLEXT_PROTOTYPES \
 	scene.cpp camera.cpp models.cpp rendering.cpp lighting.cpp shadows.cpp \

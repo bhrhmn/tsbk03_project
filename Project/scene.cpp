@@ -132,6 +132,7 @@ void display()
 	glBindTexture(GL_TEXTURE_2D,moonFbo->depth);
 
     moveCamera();
+	MoveModel();
 
     uploadMat4ToShader(object_shader, "world_To_View", worldCamera);
     DrawSkyBox();

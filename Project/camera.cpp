@@ -8,6 +8,7 @@ mat4 worldCamera;
 bool mouseCaptured = false;
 
 bool inCabin(vec3 newCameraP){
+    return true; // for developmet
     float minX = 0.f, maxX = 40.f;
     float minZ = -35.f, maxZ = 35.f;
     return !(newCameraP.x < minX || newCameraP.x > maxX || 

@@ -12,6 +12,8 @@ extern Model *treeBillboard, *tree_log, *door, *squareModel;
 // Transformation matrices
 extern mat4 totalGround, cabinT, FireplaceT, tableT, sofaT, newCabinT;
 extern mat4 fireT, fireT2, logT, wolfT, doorT;
+extern vec3 fireStartPosition;
+extern float fireRotation;
 
 
 // textures
@@ -41,5 +43,6 @@ extern GLuint tree_indices[6];
 // Model functions
 void InstantiateModels();
 void InstatiateTextures();
+void MoveModel();
 
 #endif
