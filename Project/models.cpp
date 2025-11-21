@@ -57,7 +57,7 @@ void InstantiateModels() {
             squareIndices, 4, 6);
 
     cabinT = T(20,-10,0) * S(1);
-    FireplaceT = FireplaceT = T(35,-5,25) * Ry(-M_PI/2) * S(9);
+    FireplaceT = T(35,-5,25) * Ry(-M_PI/2) * S(9);
     tableT = T(15.5, -15.5, 30.0) * Ry(0.000) * S(8.000);
     sofaT = T(-11.5, -8.5, 29.5) * Ry(1.571) * S(8.000);
     totalGround = T(0,-10,0);

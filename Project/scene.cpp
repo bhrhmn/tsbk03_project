@@ -46,7 +46,7 @@ void init() {
     InstantiateTextures();
     printError("Init Textures");
 
-    shadowProjectionMatrix = perspective(45, WINDOW_SIZE/WINDOW_SIZE, 10, 100);
+    shadowProjectionMatrix = perspective(45, WINDOW_WIDTH/WINDOW_HEIGHT, 10, 100);
     mat4 scaleBiasMatrix = T(0.5, 0.5, 0.0) * S(0.5, 0.5, 1.0);
     
     // Models
@@ -55,17 +55,17 @@ void init() {
     
     // Upload Projection Matrix Once to each shader (and scaleBiasMatrix)
     glUseProgram(shybox_shader);
-    glUniformMatrix4fv(glGetUniformLocation(shybox_shader, "projectionMatrix"), 1, GL_TRUE, projectionMatrix);
+    glUniformMatrix4fv(glGetUniformLocation(shybox_shader, "projectionMatrix"), 1, GL_TRUE, projectionMatrix.m);
 
     glUseProgram(shadow_shader);
     uploadMat4ToShader(shadow_shader, "projectionMatrix", shadowProjectionMatrix);
     uploadMat4ToShader(shadow_shader, "scaleBiasMatrix", scaleBiasMatrix);
 
     glUseProgram(tree_shader);
-    glUniformMatrix4fv(glGetUniformLocation(tree_shader, "projectionMatrix"), 1, GL_TRUE, projectionMatrix);
+    glUniformMatrix4fv(glGetUniformLocation(tree_shader, "projectionMatrix"), 1, GL_TRUE, projectionMatrix.m);
 
     glUseProgram(object_shader);
-	glUniformMatrix4fv(glGetUniformLocation(object_shader, "projectionMatrix"), 1, GL_TRUE, projectionMatrix);
+	glUniformMatrix4fv(glGetUniformLocation(object_shader, "projectionMatrix"), 1, GL_TRUE, projectionMatrix.m);
 	uploadMat4ToShader(object_shader, "scaleBiasMatrix", scaleBiasMatrix);
     glUniform3fv(glGetUniformLocation(object_shader, "firePos"), 1, &firePos.x);
     glUniform3fv(glGetUniformLocation(object_shader, "fireColor"), 1, &fireColor.x);
@@ -78,15 +78,15 @@ void init() {
 
     // init fbos
     glActiveTexture(GL_TEXTURE13);
-    fireFbo = initFBO2(WINDOW_SIZE, WINDOW_SIZE, 0, 1);
+    fireFbo = initFBO2(WINDOW_WIDTH, WINDOW_HEIGHT, 0, 1);
     glActiveTexture(GL_TEXTURE14);
-    moonFbo = initFBO2(WINDOW_SIZE, WINDOW_SIZE, 0, 1);
+    moonFbo = initFBO2(WINDOW_WIDTH, WINDOW_HEIGHT, 0, 1);
     glActiveTexture(GL_TEXTURE16);
-    bloomFbo = initFBO2(WINDOW_SIZE, WINDOW_SIZE, 0, 1);
+    bloomFbo = initFBO2(WINDOW_WIDTH, WINDOW_HEIGHT, 0, 1);
     glActiveTexture(GL_TEXTURE17);
-    overFlowFbo = initFBO2(WINDOW_SIZE, WINDOW_SIZE, 0, 1);
+    overFlowFbo = initFBO2(WINDOW_WIDTH, WINDOW_HEIGHT, 0, 1);
     glActiveTexture(GL_TEXTURE18);
-    tempFbo = initFBO2(WINDOW_SIZE, WINDOW_SIZE, 0, 1);
+    tempFbo = initFBO2(WINDOW_WIDTH, WINDOW_HEIGHT, 0, 1);
 
     printError("init arrays");
 }
@@ -115,7 +115,7 @@ void display()
     // Without bloom, also remove blooming() function call 
 	//useFBO(NULL, fireFbo, moonFbo);
 	
-    glViewport(0,0,WINDOW_SIZE,WINDOW_SIZE);
+    glViewport(0,0,WINDOW_WIDTH,WINDOW_HEIGHT);
     glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -154,7 +154,7 @@ int main(int argc, char *argv[])
     glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
 
 	glutInitContextVersion(3, 2);
-	glutInitWindowSize(WINDOW_SIZE, WINDOW_SIZE);
+	glutInitWindowSize(WINDOW_WIDTH, WINDOW_HEIGHT);
 	glutCreateWindow ("Cosy Cabin");
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);

@@ -19,22 +19,19 @@
 #define top 0.5
 #define bottom (-0.5)
 #define GROUND_SIZE 1000.0f
-#define WINDOW_SIZE 800.0f
+#define WINDOW_HEIGHT 1080.0f
+#define WINDOW_WIDTH 1920.0f
 
 
 #define TEX_UNIT 0
 #define MOON_TEX_UNIT 1
 #define BLOOM_TEX_UNIT 16
 
-constexpr GLfloat projectionMatrix[] = {
-    2.0f*near/(right-left), 0.0f, (right+left)/(right-left), 0.0f,
-    0.0f, 2.0f*near/(top-bottom), (top+bottom)/(top-bottom), 0.0f,
-    0.0f, 0.0f, -(far + near)/(far - near), -2*far*near/(far - near),
-    0.0f, 0.0f, -1.0f, 0.0f
-};
+inline mat4 projectionMatrix = perspective(45.0f, WINDOW_WIDTH/WINDOW_HEIGHT, near, far);
 
 inline mat4 modelViewMatrix;
 inline mat4 shadowProjectionMatrix;
+
 
 // Vertex data
 inline vec3 vertices[] = {

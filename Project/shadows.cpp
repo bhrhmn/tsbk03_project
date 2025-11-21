@@ -8,7 +8,7 @@
 
 void fireShadow() {
     // Setup the modelview from the light source
-    vec3 table_pos = vec3(20,0.0f,-10);
+    vec3 table_pos =vec3(tableT.m[3],tableT.m[7],tableT.m[11]);
     modelViewMatrix = lookAt(firePos, table_pos, vec3(0,1,0));
 
     mat4 lightViewProj = shadowProjectionMatrix * modelViewMatrix;
@@ -23,7 +23,7 @@ void fireShadow() {
 
     // Render scene to FBO
     useFBO(fireFbo, NULL, NULL);
-    glViewport(0,0,WINDOW_SIZE,WINDOW_SIZE);
+    glViewport(0,0,WINDOW_WIDTH,WINDOW_HEIGHT);
     glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_TRUE);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -38,7 +38,7 @@ void moonShadow() {
     vec3 table_pos = vec3(20,8,-10);
     modelViewMatrix = lookAt(moonPos, table_pos, vec3(0,1,0));
 
-    mat4 shadowProjectionMatrixMoon = perspective(45, WINDOW_SIZE/WINDOW_SIZE, 10, 500);
+    mat4 shadowProjectionMatrixMoon = perspective(45, WINDOW_WIDTH/WINDOW_HEIGHT, 10, 500);
     mat4 lightViewProj = shadowProjectionMatrixMoon * modelViewMatrix;
 
     glUseProgram(object_shader);
@@ -49,7 +49,7 @@ void moonShadow() {
     uploadMat4ToShader(shadow_shader, "lightViewProjMatrix", lightViewProj);
 
     useFBO(moonFbo, NULL, NULL);
-    glViewport(0,0,WINDOW_SIZE,WINDOW_SIZE);
+    glViewport(0,0,WINDOW_WIDTH,WINDOW_HEIGHT);
     glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_TRUE);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 

@@ -15,39 +15,6 @@ bool inCabin(vec3 newCameraP){
              newCameraP.z < minZ || newCameraP.z > maxZ);
 }
 
-void mouseMotion(int x, int y) {
-    static bool ignoreNextEvent = false;
-
-    if (!mouseCaptured) {
-        ignoreNextEvent = false;
-        return;
-    }
-
-    if (ignoreNextEvent) {
-        ignoreNextEvent = false;
-        return;
-    }
-
-    float dx = static_cast<float>(x) - WINDOW_SIZE/2.f;
-    float dy = WINDOW_SIZE/2.f - static_cast<float>(y);
-
-    if (dx != 0 || dy != 0) {
-        // Mouse rotation code here
-        
-        glutWarpPointer(WINDOW_SIZE/2.f, WINDOW_SIZE/2.f);
-        ignoreNextEvent = true;
-    }
-}
-
-void mouseClick(int button, int state, int x, int y) {
-    if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
-        mouseCaptured = !mouseCaptured;
-        if (mouseCaptured) {
-            glutWarpPointer(WINDOW_SIZE/2, WINDOW_SIZE/2);
-        }
-    }
-}
-
 void moveCamera(){
     vec3 direction = normalize(worldCameraL - worldCameraP);
     vec3 side_dir = normalize(cross(vec3(0,1,0), direction));

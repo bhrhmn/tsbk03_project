@@ -16,7 +16,7 @@ float randFloat() {
     return static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
 }
 
-float flicker(const float time, float speed, const float intensity) {
+float flicker(const float time, const float intensity) {
     static float lastValue = 0.5f;
     static float lastChangeTime = 0.0f;
 
@@ -27,26 +27,24 @@ float flicker(const float time, float speed, const float intensity) {
     return lastValue;
 }
 void UpdateLightSources() {
-    const float fireJitterX = flicker(t, 10.0f, 0.5f);
-    const float fireJitterY = flicker(t, 15.0f, 0.3f);
+    const float fireJitterX = flicker(t, 0.1f);
+    const float fireJitterY = flicker(t, 0.1f);
 
     // Fire animation updates - use smaller values to prevent runaway
-    const float f  = randFloat() / 1000.0f;  // Smaller values
-    const float f2 = randFloat() / 800.0f;   // Smaller values
     const float f3 = sin(t/2) * sin(t/3) / 10.0f;  // Smaller amplitude
     const float f4 = sin(t/3) / 10.0f;             // Smaller amplitude
 
     // Update fireT - use base position + jitter + small animation
-    fireT = T(fireStartPosition.x + fireJitterX + f4,fireStartPosition.y, fireStartPosition.z+ fireJitterY+f3) * Ry(fireRotation) * S(0.1f);
+    fireT = T(fireStartPosition.x + fireJitterX + f4,fireStartPosition.y + fireJitterY+f3, fireStartPosition.z) * Ry(fireRotation) * S(0.1f);
 
     // Update fireT2 - use base position + small animation
-    fireT2 = T(fireStartPosition.x - fireJitterX - f4,fireStartPosition.y,fireStartPosition.z - fireJitterY -f3 ) * Ry(fireRotation) * S(0.1f);
+    fireT2 = T(fireStartPosition.x - fireJitterX - f4,fireStartPosition.y- fireJitterY -f3 ,fireStartPosition.z ) * Ry(fireRotation) * S(0.1f);
 
     // Update fire position for lighting (jittered position only)
     firePos = vec3(fireStartPosition.x + fireJitterX, fireStartPosition.y + fireJitterY, fireStartPosition.z);
     glUniform3fv(glGetUniformLocation(object_shader, "firePos"), 1, &firePos.x);
 
-    float fireIntensity = 2.8f + 0.2f * flicker(t, 8.0f, 1.0f);
+    float fireIntensity = 1.5f + flicker(t, 1.0f);
     fireColor = vec3(242.f/256, 125.f/256, 12.f/256) * fireIntensity;
     glUniform3fv(glGetUniformLocation(object_shader, "fireColor"), 1, &fireColor.x);
 }
