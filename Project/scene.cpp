@@ -6,6 +6,7 @@
 #include "rendering.h"
 #include "lighting.h"
 #include "shadows.h"
+#include "rain.h"
 //#include "sounds.h"
 
 FBOstruct *fireFbo, *moonFbo, *bloomFbo, *overFlowFbo, *tempFbo;
@@ -88,6 +89,8 @@ void init() {
     glActiveTexture(GL_TEXTURE18);
     tempFbo = initFBO2(WINDOW_SIZE, WINDOW_SIZE, 0, 1);
 
+    rain_init();
+    
     printError("init arrays");
 }
 
@@ -141,6 +144,8 @@ void display()
 	DrawFire();
 	DrawWolf();
     blooming();
+
+    rain(); 
 
 	glutSwapBuffers();
 }

@@ -28,6 +28,7 @@ unsigned int fire2Tex;
 unsigned int logTex;
 unsigned int wolfTex;
 unsigned int doorTex;
+unsigned int rainTex;
 
 void InstantiateModels() {
     ground = LoadDataToModel(vertices, vertex_normals, tex_coords, vertex_normals, indices, 4, 6);
@@ -133,6 +134,9 @@ void InstantiateTextures() {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
+    glActiveTexture(GL_TEXTURE0 + RAIN_TEX_UNIT);
+    LoadTGATextureSimple("Models/waterdroplet.tga", &rainTex);
+    glBindTexture(GL_TEXTURE_2D, rainTex);
 
     glActiveTexture(GL_TEXTURE13);
 

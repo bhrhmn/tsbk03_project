@@ -24,6 +24,8 @@
 #define TEX_UNIT 0
 #define MOON_TEX_UNIT 1
 #define BLOOM_TEX_UNIT 16
+#define RAIN_TEX_UNIT 30
+
 
 constexpr GLfloat projectionMatrix[] = {
     2.0f*near/(right-left), 0.0f, (right+left)/(right-left), 0.0f,
