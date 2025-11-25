@@ -29,6 +29,7 @@ unsigned int logTex;
 unsigned int wolfTex;
 unsigned int doorTex;
 unsigned int rainTex;
+unsigned int noiseTex;
 
 void InstantiateModels() {
     ground = LoadDataToModel(vertices, vertex_normals, tex_coords, vertex_normals, indices, 4, 6);
@@ -137,6 +138,10 @@ void InstantiateTextures() {
     glActiveTexture(GL_TEXTURE0 + RAIN_TEX_UNIT);
     LoadTGATextureSimple("Models/waterdroplet.tga", &rainTex);
     glBindTexture(GL_TEXTURE_2D, rainTex);
+
+    glActiveTexture(GL_TEXTURE19);
+    LoadTGATextureSimple("Models/noise.tga", &noiseTex);
+    glBindTexture(GL_TEXTURE_2D, noiseTex);
 
     glActiveTexture(GL_TEXTURE13);
 
