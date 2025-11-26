@@ -2,7 +2,8 @@ cmake_minimum_required(VERSION 3.20)
 project(SceneProject)
 
 # Set vcpkg toolchain
-set(CMAKE_TOOLCHAIN_FILE "C:/Users/lunas/Documents/tsbk03_project/vcpkg/scripts/buildsystems/vcpkg.cmake")
+#set(CMAKE_TOOLCHAIN_FILE "C:/Users/lunas/Documents/tsbk03_project/vcpkg/scripts/buildsystems/vcpkg.cmake")
+set(CMAKE_TOOLCHAIN_FILE "C:/Users/jorun/Kod/vcpkg/scripts/buildsystems/vcpkg.cmake")
 
 set(CMAKE_CXX_STANDARD 17)
 enable_language(C)
@@ -34,14 +35,7 @@ set(SOURCES
 add_executable(scene ${SOURCES})
 
 # Link libraries - ADD GLEW
-target_link_libraries(scene
-        GLEW::GLEW        # Add this line
-        SFML::Audio
-        SFML::Graphics
-        SFML::Window
-        SFML::System
-        OpenGL::GL
-)
+
 
 # Windows-specific libraries
 if(WIN32)
@@ -50,6 +44,7 @@ if(WIN32)
             glu32
             gdi32
             winmm
+            GLEW::GLEW
     )
 
     target_compile_definitions(scene PRIVATE
