@@ -7,7 +7,7 @@ unsigned int vertexArrayObjID;
 GLuint rain_program;
 GLfloat slope = 10;
 GLfloat a = 0.5;
-GLuint count = 10;
+GLuint count = 1000000;
 GLuint tex;
 GLfloat position_data[256*256*3]; // random data kanske hmm öööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööö 
 FBOstruct *pos1;

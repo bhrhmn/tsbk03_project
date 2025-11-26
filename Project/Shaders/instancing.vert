@@ -19,8 +19,16 @@ void main(void)
 
 	vec4 pos = texture(pos1, vec2(x, y));	
 
+	pos = vec4(gl_InstanceID*15, 0, 0, 1);
+	pos = world_to_view * pos;
+	mat4 view = world_to_view;
+	
+	view[3][0] += pos.x;
+	view[3][1] += pos.y;
+	view[3][2] += pos.z;
+
 	//gl_Position = projectionMatrix * world_to_view * vec4(rain_pos[gl_InstanceID], 1.0);
-	gl_Position = projectionMatrix * world_to_view * model_to_world * pos * vec4(in_Position, 1.0);
+	gl_Position = projectionMatrix * view * vec4(in_Position, 1.0);
 	
 	//gl_Position = vec4(2*gl_InstanceID, 0.f, 0.f, 1.f);
 
