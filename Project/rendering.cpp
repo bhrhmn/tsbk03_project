@@ -26,7 +26,7 @@ void DrawRoof(GLuint shader)
 {
     glActiveTexture(GL_TEXTURE21);
     glUniform1i(glGetUniformLocation(shader, "texUnit"), 21);
-    uploadMat4ToShader(shader, "model_To_World", cabinT);
+    uploadMat4ToShader(shader, "model_To_World", roofT);
     DrawModel(roof, shader, "in_Position", "inNormal", "inTexCord");
     printError("DrawCabin");
 }
@@ -193,14 +193,14 @@ void UpdateWolf() {
 void drawObjects(GLuint shader){
     glUseProgram(shader);
     DrawGround(shader);
-    //DrawCabin(shader);
+    DrawCabin(shader);
     DrawFireplace(shader);
     DrawSofa(shader);
     DrawTable(shader);
     DrawLog(shader);
     DrawDoor(shader);
     //DrawNewCabin(shader);
-    DrawFloor(shader);
-    DrawRoof(shader);
+    //DrawFloor(shader);
+    //DrawRoof(shader);
 
 }
