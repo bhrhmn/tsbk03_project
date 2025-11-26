@@ -4,9 +4,9 @@
 #include "scene.h"
 
 // Model variables
-Model *ground, *skybox, *sofa, *table, *cabin, *fireplace, *newCabin;
+Model *ground, *skybox, *sofa, *table, *cabin, *fireplace, *newCabin, *roof, *floorObj, *wind1, *wind2, *wind3, *wind4;
 Model *treeBillboard, *tree_log, *door, *squareModel;
-mat4 totalGround, cabinT, FireplaceT, tableT, sofaT;
+mat4 totalGround, cabinT, FireplaceT, tableT, sofaT, roofT, floorT, windowT;
 mat4 fireT, fireT2, logT, wolfT, doorT, newCabinT;
 vec3 fireStartPosition;
 float fireRotation;
@@ -32,6 +32,7 @@ unsigned int fire2Tex;
 unsigned int logTex;
 unsigned int wolfTex;
 unsigned int doorTex;
+unsigned int roofTex;
 
 // for moving model
 mat4* modelT;
@@ -51,7 +52,10 @@ void InstantiateModels() {
     fireplace = LoadModel("Models/fireplace_blender.obj");
     tree_log = LoadModel("Models/tree_log/low_poly_log.obj");
     door = LoadModel("Models/newdoor.obj");
-    newCabin = LoadModel("Models/Cottage.obj");
+    newCabin = LoadModel("Models/maincottage.obj");
+    floorObj = LoadModel("Models/floor.obj");
+    roof = LoadModel("Models/roof.obj");
+
     squareModel = LoadDataToModel(
             reinterpret_cast<vec3 *>(square), nullptr, reinterpret_cast<vec2 *>(squareTexCoord), nullptr,
             squareIndices, 4, 6);
@@ -212,8 +216,12 @@ void InstantiateTextures() {
     glBindTexture(GL_TEXTURE_2D, doorTex);
 
     glActiveTexture(GL_TEXTURE20);
-    LoadTGATextureSimple("Models/DoorColor.tga", &newCabinTex);
+    LoadTGATextureSimple("Models/wall.tga", &newCabinTex);
     glBindTexture(GL_TEXTURE_2D, newCabinTex);
+
+    glActiveTexture(GL_TEXTURE21);
+    LoadTGATextureSimple("Models/roof.tga", &roofTex);
+    glBindTexture(GL_TEXTURE_2D, roofTex);
 
     glActiveTexture(GL_TEXTURE12);
     // LoadTGATextureSimple("Models/wolf.tga", &wolfTex);

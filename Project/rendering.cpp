@@ -12,9 +12,29 @@ void DrawCabin(GLuint shader){
 }
 
 
+void DrawFloor(GLuint shader)
+{
+    glActiveTexture(GL_TEXTURE21);
+    glUniform1i(glGetUniformLocation(shader, "texUnit"), 21);
+    uploadMat4ToShader(shader, "model_To_World", floorT);
+    DrawModel(floorObj, shader, "in_Position", "inNormal", "inTexCord");
+    printError("DrawCabin");
+}
+
+
+void DrawRoof(GLuint shader)
+{
+    glActiveTexture(GL_TEXTURE21);
+    glUniform1i(glGetUniformLocation(shader, "texUnit"), 21);
+    uploadMat4ToShader(shader, "model_To_World", cabinT);
+    DrawModel(roof, shader, "in_Position", "inNormal", "inTexCord");
+    printError("DrawCabin");
+}
+
+
 void DrawNewCabin(GLuint shader){
-    glActiveTexture(GL_TEXTURE15);
-    glUniform1i(glGetUniformLocation(shader, "texUnit"), 15);
+    glActiveTexture(GL_TEXTURE20);
+    glUniform1i(glGetUniformLocation(shader, "texUnit"), 20);
     uploadMat4ToShader(shader, "model_To_World", newCabinT);
 	DrawModel(newCabin, shader, "in_Position", "inNormal", "inTexCord");
     printError("DrawNewCabin");
@@ -178,8 +198,9 @@ void drawObjects(GLuint shader){
     DrawSofa(shader);
     DrawTable(shader);
     DrawLog(shader);
-    //DrawDoor(shader);
-    DrawNewCabin(shader);
-
+    DrawDoor(shader);
+    //DrawNewCabin(shader);
+    DrawFloor(shader);
+    DrawRoof(shader);
 
 }
