@@ -12,6 +12,7 @@ uniform mat4 lightViewProjMatrixMoon;
 in vec3 inNormal; 
 in vec2 inTexCord;
 out vec2 outTexCord;
+out vec3 fragPosWorld;  // for shadow cube
 
 uniform mat4 scaleBiasMatrix;
 out vec4 lightSourceCoord;
@@ -35,4 +36,6 @@ void main(void)
     SurfacePos = world_To_View*model_To_World*vec4(in_Position, 1.0);
 
     transformedNormal = mat3(world_To_View)*mat3(model_To_World) * inNormal;
+
+    fragPosWorld = vec3(model_To_World * vec4(in_Position, 1.0));
 }

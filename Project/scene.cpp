@@ -8,7 +8,7 @@
 #include "shadows.h"
 //#include "sounds.h"
 
-FBOstruct *fireFbo, *moonFbo, *bloomFbo, *overFlowFbo, *tempFbo;
+FBOstruct *fireFbo, *moonFbo, *bloomFbo, *overFlowFbo, *tempFbo, *shadowCubeFBO;
 
 GLuint shybox_shader;
 GLuint object_shader;
@@ -17,6 +17,9 @@ GLuint tree_shader;
 GLuint overflow_shader;
 GLuint lowpass_shader;
 GLuint bloom_shader;
+
+GLuint shadow_cube_shader;
+
 
 GLfloat t = 0;
 
@@ -33,6 +36,7 @@ void init() {
     glClearColor(0.8,0.8,0.8,0);
 
     // Load and compile shader
+	shadow_cube_shader = loadShadersG("Shaders/shadow_cube.vert", "Shaders/shadow_cube.frag", "Shaders/shadow_cube.geom");
     shybox_shader = loadShaders("Shaders/skybox.vert", "Shaders/skybox.frag");
     shadow_shader = loadShaders("Shaders/shadow.vert", "Shaders/shadow.frag");
     object_shader = loadShaders("Shaders/object.vert", "Shaders/object.frag");
@@ -46,20 +50,21 @@ void init() {
     InstantiateTextures();
     printError("Init Textures");
 
-    shadowProjectionMatrixFire = perspective(45, WINDOW_WIDTH/WINDOW_HEIGHT, 10, 100);
-    mat4 scaleBiasMatrix = T(0.5, 0.5, 0.0) * S(0.5, 0.5, 1.0);
+
     
     // Models
     InstantiateModels();
     printError("Init Models");
-    
     // Upload Projection Matrix Once to each shader (and scaleBiasMatrix)
     glUseProgram(shybox_shader);
     glUniformMatrix4fv(glGetUniformLocation(shybox_shader, "projectionMatrix"), 1, GL_TRUE, projectionMatrix.m);
 
-    glUseProgram(shadow_shader);
-    uploadMat4ToShader(shadow_shader, "projectionMatrix", shadowProjectionMatrixFire);
-    uploadMat4ToShader(shadow_shader, "scaleBiasMatrix", scaleBiasMatrix);
+	glUseProgram(shadow_shader);
+	shadowProjectionMatrixFire = perspective(45, WINDOW_WIDTH/WINDOW_HEIGHT, 10, 100);
+	uploadMat4ToShader(shadow_shader, "projectionMatrix", shadowProjectionMatrixFire);
+	uploadMat4ToShader(shadow_shader, "scaleBiasMatrix", scaleBiasMatrix);
+
+
 
     glUseProgram(tree_shader);
     glUniformMatrix4fv(glGetUniformLocation(tree_shader, "projectionMatrix"), 1, GL_TRUE, projectionMatrix.m);
@@ -84,6 +89,8 @@ void init() {
     overFlowFbo = initFBO2(WINDOW_WIDTH, WINDOW_HEIGHT, 0, 1);
     glActiveTexture(GL_TEXTURE18);
     tempFbo = initFBO2(WINDOW_WIDTH, WINDOW_HEIGHT, 0, 1);
+	glActiveTexture(GL_TEXTURE19);
+	shadowCubeFBO = initCubeFBO(WINDOW_HEIGHT);
 
     printError("init arrays");
 }
@@ -102,12 +109,13 @@ void display()
     
     UpdateLightSources();
     UpdateWolf();
-    fireShadow();
+    //fireShadow();
+	renderCubeShadowMap();
     moonShadow();
 
     //2. Render from camera.
     // With bloom
-	useFBO(bloomFbo, fireFbo, moonFbo);
+	useFBO(bloomFbo, shadowCubeFBO, moonFbo);
     // Without bloom, also remove blooming() function call 
 	//useFBO(NULL, fireFbo, moonFbo);
 	
@@ -121,7 +129,7 @@ void display()
 	//load both fbo depth maps to shader
 	glUniform1i(glGetUniformLocation(object_shader, "textureUnit"),TEX_UNIT);
 	glActiveTexture(GL_TEXTURE0 + TEX_UNIT);
-	glBindTexture(GL_TEXTURE_2D,fireFbo->depth);
+	glBindTexture(GL_TEXTURE_2D,shadowCubeFBO->depth);
 
 	glUniform1i(glGetUniformLocation(object_shader, "textureUnitMoon"),MOON_TEX_UNIT);
 	glActiveTexture(GL_TEXTURE0 + MOON_TEX_UNIT);
@@ -135,7 +143,8 @@ void display()
 
     drawObjects(object_shader);
 	DrawTree();
-	DrawFire();
+	//DrawFire();
+	renderCubeShadowMap();
 	DrawWolf();
     blooming();
 

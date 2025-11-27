@@ -23,11 +23,11 @@
 #define WINDOW_WIDTH 1920.0f
 
 
-#define TEX_UNIT 0
-#define MOON_TEX_UNIT 1
+
 #define BLOOM_TEX_UNIT 16
 
 inline mat4 projectionMatrix = perspective(45.0f, WINDOW_WIDTH/WINDOW_HEIGHT, near, far);
+inline mat4 scaleBiasMatrix = T(0.5, 0.5, 0.0) * S(0.5, 0.5, 1.0);
 
 inline mat4 modelViewMatrix;
 inline mat4 shadowProjectionMatrixFire;
@@ -102,7 +102,9 @@ extern vec3 moonPos;
 extern vec3 moonColor;
 
 // Shaders
+
 extern GLuint shybox_shader;
+extern GLuint shadow_cube_shader;
 extern GLuint object_shader;
 extern GLuint shadow_shader;
 extern GLuint tree_shader;
@@ -112,6 +114,7 @@ extern GLuint bloom_shader;
 
 // FBOs
 extern FBOstruct *fireFbo, *moonFbo, *bloomFbo, *overFlowFbo, *tempFbo;
+extern FBOstruct *shadowCubeFBO;
 
 // Time
 extern GLfloat t;

@@ -350,6 +350,52 @@ FBOstruct *initFBO2(int width, int height, int int_method, int create_depthimage
     return fbo;
 }
 
+
+FBOstruct *initCubeFBO(int width)
+{
+    FBOstruct *fbo = (FBOstruct *)malloc(sizeof(FBOstruct));
+
+    fbo->width = width;
+    fbo->height = width;
+
+    // create objects
+    glGenFramebuffers(1, &fbo->fb); // frame buffer id
+    glBindFramebuffer(GL_FRAMEBUFFER, fbo->fb);
+
+    glGenTextures(1, &fbo->depth);
+    fprintf(stderr, "%i \n",fbo->depth);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, fbo->depth);
+
+	for (unsigned int i = 0; i < 6; ++i) {
+		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_DEPTH_COMPONENT,
+					 width, width, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+	}
+
+	// Set texture parameters as per LearnOpenGL
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+	glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, fbo->depth, 0);
+	glDrawBuffer(GL_NONE);
+	glReadBuffer(GL_NONE);
+    // Renderbuffer
+    // initialize depth renderbuffer
+    CHECK_FRAMEBUFFER_STATUS();
+
+    fprintf(stderr, "Framebuffer object %d\n", fbo->fb);
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+		fprintf(stderr, "Cube shadow FBO not complete!\n");
+	} else {
+		fprintf(stderr, "Cube shadow FBO created successfully\n");
+	}
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    return fbo;
+}
+
 static int lastw = 0;
 static int lasth = 0;
 

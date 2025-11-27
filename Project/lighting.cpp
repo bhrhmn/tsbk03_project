@@ -36,13 +36,8 @@ void UpdateLightSources() {
     const float f3 = sin(t/2) * sin(t/3) / 10.0f;  // Smaller amplitude
     const float f4 = sin(t/3) / 10.0f;             // Smaller amplitude
 
-    // Update fireT - use base position + jitter + small animation
     fireT = T(fireStartPosition.x + fireJitterX + f4,fireStartPosition.y + fireJitterY+f3, fireStartPosition.z) * Ry(fireRotation) * S(0.1f);
-
-    // Update fireT2 - use base position + small animation
     fireT2 = T(fireStartPosition.x - fireJitterX - f4,fireStartPosition.y- fireJitterY -f3 ,fireStartPosition.z ) * Ry(fireRotation) * S(0.1f);
-
-    // Update fire position for lighting (jittered position only)
     firePos = vec3(fireStartPosition.x + fireJitterX, fireStartPosition.y + 4 + fireJitterY, fireStartPosition.z);
     glUniform3fv(glGetUniformLocation(object_shader, "firePos"), 1, &firePos.x);
 
