@@ -67,10 +67,7 @@ void init() {
     glUseProgram(object_shader);
 	glUniformMatrix4fv(glGetUniformLocation(object_shader, "projectionMatrix"), 1, GL_TRUE, projectionMatrix.m);
 	uploadMat4ToShader(object_shader, "scaleBiasMatrix", scaleBiasMatrix);
-    glUniform3fv(glGetUniformLocation(object_shader, "firePos"), 1, &firePos.x);
-    glUniform3fv(glGetUniformLocation(object_shader, "fireColor"), 1, &fireColor.x);
-    glUniform3fv(glGetUniformLocation(object_shader, "moonPos"), 1, &moonPos.x);
-    glUniform3fv(glGetUniformLocation(object_shader, "moonColor"), 1, &moonColor.x);
+	initLighting();
     
     // Start timer
     glutTimerFunc(20, &OnTimer, 0);
@@ -104,7 +101,6 @@ void display()
 	glUseProgram(object_shader);
     
     UpdateLightSources();
-    UpdateMoon();
     UpdateWolf();
     fireShadow();
     moonShadow();

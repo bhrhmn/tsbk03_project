@@ -1,4 +1,7 @@
 #include "camera.h"
+
+#include "lighting.h"
+#include "models.h"
 #include "scene.h"
 // Camera variables
 vec3 worldCameraP = { 25.0f, 8.0f, 0.0f };
@@ -64,10 +67,18 @@ void moveCamera(){
         worldCameraP = oldCameraP;
         worldCameraL = oldCameraL;
     }
-    worldCamera = lookAtv(worldCameraP, worldCameraL, worldCameraV);
-
     if (glutKeyIsDown('c')) {
         //worldCamera = modelViewMatrix;
     }
+    //look from Moon pov
+    if (glutKeyIsDown('1')) {
+        worldCameraP = moonPos;
+        worldCameraL = moonLookAt;
+    }
+    if (glutKeyIsDown('2')) {
+        worldCameraP = firePos;
+        worldCameraL = fireLookAt;
+    }
+    worldCamera = lookAtv(worldCameraP, worldCameraL, worldCameraV);
 
 }

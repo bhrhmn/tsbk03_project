@@ -1,5 +1,7 @@
 // shadows.cpp
 #include "shadows.h"
+
+#include "lighting.h"
 #include "scene.h"
 #include "models.h"
 #include "rendering.h"
@@ -8,8 +10,7 @@
 
 void fireShadow() {
     // Setup the modelview from the light source
-    vec3 table_pos =vec3(tableT.m[3],tableT.m[7],tableT.m[11]);
-    modelViewMatrix = lookAt(firePos, table_pos, vec3(0,1,0));
+    modelViewMatrix = lookAt(firePos, fireLookAt, vec3(0,1,0));
 
     mat4 lightViewProj = shadowProjectionMatrix * modelViewMatrix;
 
@@ -35,8 +36,7 @@ void fireShadow() {
 }
 
 void moonShadow() {
-    vec3 table_pos = vec3(20,8,-10);
-    modelViewMatrix = lookAt(moonPos, table_pos, vec3(0,1,0));
+    modelViewMatrix = lookAt(moonPos, moonLookAt, vec3(0,1,0));
 
     mat4 shadowProjectionMatrixMoon = perspective(45, WINDOW_WIDTH/WINDOW_HEIGHT, 10, 500);
     mat4 lightViewProj = shadowProjectionMatrixMoon * modelViewMatrix;

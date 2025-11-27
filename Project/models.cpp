@@ -8,7 +8,7 @@ Model *ground, *skybox, *sofa, *table, *cabin, *fireplace, *newCabin;
 Model *treeBillboard, *tree_log, *door, *squareModel;
 mat4 totalGround, cabinT, FireplaceT, tableT, sofaT;
 mat4 fireT, fireT2, logT, wolfT, doorT, newCabinT;
-vec3 fireStartPosition;
+vec3 fireStartPosition, cabinCenter;
 float fireRotation;
 const int FOREST_SIZE = 12;
 mat4 treeMat[FOREST_SIZE];
@@ -61,6 +61,7 @@ void InstantiateModels() {
     tableT = T(15.5, -15.5, 30.0) * Ry(0.000) * S(8.000);
     sofaT = T(-11.5, -8.5, 29.5) * Ry(1.571) * S(8.000);
     totalGround = T(0,-10,0);
+
     //fireplace
     FireplaceT = T(41.5, -8.0, 29.0) * Ry(-1.571) * S(9.000);
     fireT = T(40.5, -5.0, 29.0) * Ry(-1.571) * S(0.1);
@@ -72,6 +73,8 @@ void InstantiateModels() {
     wolfT = T(150, 3.5, 0) * Ry(M_PI_2*3) * Rx(M_PI) * S(0.4);
     doorT = T(13,-2,40)*Ry(M_PI*3/2)* S(5.8);
     newCabinT = T(-15,2,10)*Ry(M_PI*3/2)* S(5.8);
+
+    cabinCenter = vec3(tableT.m[3], tableT.m[7], tableT.m[11]);
 
     treeMat[0] = T(150, -5, -10);
     treeMat[1] = T(200, -5, 20);

@@ -6,11 +6,13 @@
 Model *fireModel;
 Model *fireModel2;
 
-vec3 firePos = vec3(25.f, 10.0f, 20.f);
+vec3 firePos;
 vec3 fireColor = vec3(2.5f, 2.7f, 2.4f);
+vec3 fireLookAt;
 
-vec3 moonPos = vec3(120.0f, 70.0f, -120.f);
+vec3 moonPos = vec3(120.0f, 200.0f, -120.f);
 vec3 moonColor = vec3(0.8f, 0.8f, 1.0f);
+vec3 moonLookAt;
 
 float randFloat() {
     return static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
@@ -47,8 +49,17 @@ void UpdateLightSources() {
     float fireIntensity = 1.5f + flicker(t, 1.0f);
     fireColor = vec3(242.f/256, 125.f/256, 12.f/256) * fireIntensity;
     glUniform3fv(glGetUniformLocation(object_shader, "fireColor"), 1, &fireColor.x);
+    UpdateMoon();
 }
-
+void initLighting() {
+    firePos = vec3(fireStartPosition.x, fireStartPosition.y, fireStartPosition.z);
+    moonLookAt = cabinCenter;
+    fireLookAt = vec3(cabinCenter.x, cabinCenter.y + 20, cabinCenter.z);
+    glUniform3fv(glGetUniformLocation(object_shader, "firePos"), 1, &firePos.x);
+    glUniform3fv(glGetUniformLocation(object_shader, "fireColor"), 1, &fireColor.x);
+    glUniform3fv(glGetUniformLocation(object_shader, "moonPos"), 1, &moonPos.x);
+    glUniform3fv(glGetUniformLocation(object_shader, "moonColor"), 1, &moonColor.x);
+}
 void UpdateMoon() {
     if (moonPos.z >= 90) return;
     moonPos = moonPos + vec3(0, 0, 0.05);
