@@ -4,9 +4,9 @@
 #include "scene.h"
 
 // Model variables
-Model *ground, *skybox, *sofa, *table, *cabin, *fireplace, *newCabin;
+Model *ground, *skybox, *sofa, *table, *cabin, *fireplace, *newCabin, *roof, *floorObj, *wind1, *wind2, *wind3, *wind4;
 Model *treeBillboard, *tree_log, *door, *squareModel;
-mat4 totalGround, cabinT, FireplaceT, tableT, sofaT;
+mat4 totalGround, cabinT, FireplaceT, tableT, sofaT, roofT, floorT, windowT;
 mat4 fireT, fireT2, logT, wolfT, doorT, newCabinT;
 vec3 fireStartPosition, cabinCenter;
 float fireRotation;
@@ -32,6 +32,7 @@ unsigned int fire2Tex;
 unsigned int logTex;
 unsigned int wolfTex;
 unsigned int doorTex;
+unsigned int roofTex;
 
 // for moving model
 mat4* modelT;
@@ -51,7 +52,10 @@ void InstantiateModels() {
     fireplace = LoadModel("Models/fireplace_blender.obj");
     tree_log = LoadModel("Models/tree_log/low_poly_log.obj");
     door = LoadModel("Models/newdoor.obj");
-    newCabin = LoadModel("Models/Cottage.obj");
+    newCabin = LoadModel("Models/maincottage.obj");
+    floorObj = LoadModel("Models/floor.obj");
+    roof = LoadModel("Models/roof.obj");
+
     squareModel = LoadDataToModel(
             reinterpret_cast<vec3 *>(square), nullptr, reinterpret_cast<vec2 *>(squareTexCoord), nullptr,
             squareIndices, 4, 6);
@@ -60,6 +64,7 @@ void InstantiateModels() {
     FireplaceT = T(35,-5,25) * Ry(-M_PI/2) * S(9);
     tableT = T(15.5, -15.5, 30.0) * Ry(0.000) * S(8.000);
     sofaT = T(-11.5, -8.5, 29.5) * Ry(1.571) * S(8.000);
+    roofT = T(-15,2,10)*Ry(M_PI*3/2)* S(5.8);
     totalGround = T(0,-10,0);
 
     //fireplace
@@ -71,7 +76,7 @@ void InstantiateModels() {
     fireRotation = atan2(fireT.m[2], fireT.m[0]);
 
     wolfT = T(150, 3.5, 0) * Ry(M_PI_2*3) * Rx(M_PI) * S(0.4);
-    doorT = T(13,-2,40)*Ry(M_PI*3/2)* S(5.8);
+    doorT = T(-5.0, -2.0, -3.5) * Ry(-1.571) * S(5.800);
     newCabinT = T(-15,2,10)*Ry(M_PI*3/2)* S(5.8);
 
     cabinCenter = vec3(tableT.m[3], tableT.m[7], tableT.m[11]);
@@ -90,7 +95,7 @@ void InstantiateModels() {
     treeMat[11] = T(100, -5, 80);
 
 
-    modelT = &tableT; // change to desired model
+    modelT = &roofT; // change to desired model
     currentScale = modelT->m[5];
     currentRy = atan2(modelT->m[2]* currentScale, modelT->m[0]* currentScale);
     currentTX = modelT->m[3];
@@ -215,8 +220,12 @@ void InstantiateTextures() {
     glBindTexture(GL_TEXTURE_2D, doorTex);
 
     glActiveTexture(GL_TEXTURE20);
-    LoadTGATextureSimple("Models/DoorColor.tga", &newCabinTex);
+    LoadTGATextureSimple("Models/wall.tga", &newCabinTex);
     glBindTexture(GL_TEXTURE_2D, newCabinTex);
+
+    glActiveTexture(GL_TEXTURE21);
+    LoadTGATextureSimple("Models/roof.tga", &roofTex);
+    glBindTexture(GL_TEXTURE_2D, roofTex);
 
     glActiveTexture(GL_TEXTURE12);
     // LoadTGATextureSimple("Models/wolf.tga", &wolfTex);
