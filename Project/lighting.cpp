@@ -43,7 +43,7 @@ void UpdateLightSources() {
     fireT2 = T(fireStartPosition.x - fireJitterX - f4,fireStartPosition.y- fireJitterY -f3 ,fireStartPosition.z ) * Ry(fireRotation) * S(0.1f);
 
     // Update fire position for lighting (jittered position only)
-    firePos = vec3(fireStartPosition.x + fireJitterX, fireStartPosition.y + fireJitterY, fireStartPosition.z);
+    firePos = vec3(fireStartPosition.x + fireJitterX, fireStartPosition.y + 4 + fireJitterY, fireStartPosition.z);
     glUniform3fv(glGetUniformLocation(object_shader, "firePos"), 1, &firePos.x);
 
     float fireIntensity = 1.5f + flicker(t, 1.0f);

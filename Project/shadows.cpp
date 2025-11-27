@@ -11,8 +11,7 @@
 void fireShadow() {
     // Setup the modelview from the light source
     modelViewMatrix = lookAt(firePos, fireLookAt, vec3(0,1,0));
-
-    mat4 lightViewProj = shadowProjectionMatrix * modelViewMatrix;
+    mat4 lightViewProj = shadowProjectionMatrixFire * modelViewMatrix;
 
     glUseProgram(object_shader);
     uploadMat4ToShader(object_shader, "lightViewProjMatrix", lightViewProj);

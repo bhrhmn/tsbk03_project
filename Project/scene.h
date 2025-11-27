@@ -30,7 +30,7 @@
 inline mat4 projectionMatrix = perspective(45.0f, WINDOW_WIDTH/WINDOW_HEIGHT, near, far);
 
 inline mat4 modelViewMatrix;
-inline mat4 shadowProjectionMatrix;
+inline mat4 shadowProjectionMatrixFire;
 
 
 // Vertex data
@@ -79,7 +79,6 @@ extern unsigned int fire2Tex;
 extern unsigned int logTex;
 extern unsigned int wolfTex;
 extern unsigned int doorTex;
-extern unsigned int newCabinTex;
 
 extern void drawObjects(GLuint shader);
 
@@ -94,7 +93,6 @@ extern mat4 fireT2;
 extern mat4 logT;
 extern mat4 wolfT;
 extern mat4 doorT;
-extern mat4 newCabinT;
 
 // Fire
 extern vec3 firePos;

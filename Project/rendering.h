@@ -7,7 +7,6 @@
 // Rendering functions
 void DrawCabin(GLuint shader);
 void DrawDoor(GLuint shader);
-void DrawNewCabin(GLuint shader);
 void DrawFireplace(GLuint shader);
 void DrawLog(GLuint shader);
 void DrawSofa(GLuint shader);

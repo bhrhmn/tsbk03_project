@@ -4,10 +4,10 @@
 #include "scene.h"
 
 // Model variables
-Model *ground, *skybox, *sofa, *table, *cabin, *fireplace, *newCabin, *roof, *floorObj, *wind1, *wind2, *wind3, *wind4;
+Model *ground, *skybox, *sofa, *table, *cabin, *fireplace, *roof, *floorObj, *wind1, *wind2, *wind3, *wind4;
 Model *treeBillboard, *tree_log, *door, *squareModel;
 mat4 totalGround, cabinT, FireplaceT, tableT, sofaT, roofT, floorT, windowT;
-mat4 fireT, fireT2, logT, wolfT, doorT, newCabinT;
+mat4 fireT, fireT2, logT, wolfT, doorT;
 vec3 fireStartPosition, cabinCenter;
 float fireRotation;
 const int FOREST_SIZE = 12;
@@ -21,8 +21,7 @@ GLuint squareIndices[] = {0,1,2, 0,2,3};
 
 unsigned int myTex;
 unsigned int myTex2;
-unsigned int cabintex;
-unsigned int newCabinTex;
+unsigned int cabinTex;
 unsigned int sofatex;
 unsigned int fireplacetex;
 unsigned int maskrosTex;
@@ -48,11 +47,10 @@ void InstantiateModels() {
     skybox = LoadModel("skybox/skybox.obj");
     sofa = LoadModel("Models/sofa/model/SOFA.obj.obj");
     table = LoadModel("Models/Table.obj");
-    cabin = LoadModel("Models/WoodenCabinObj.obj");
     fireplace = LoadModel("Models/fireplace_blender.obj");
     tree_log = LoadModel("Models/tree_log/low_poly_log.obj");
     door = LoadModel("Models/newdoor.obj");
-    newCabin = LoadModel("Models/maincottage.obj");
+    cabin = LoadModel("Models/maincottage.obj");
     floorObj = LoadModel("Models/floor.obj");
     roof = LoadModel("Models/roof.obj");
 
@@ -60,7 +58,6 @@ void InstantiateModels() {
             reinterpret_cast<vec3 *>(square), nullptr, reinterpret_cast<vec2 *>(squareTexCoord), nullptr,
             squareIndices, 4, 6);
 
-    cabinT = T(20,-10,0) * S(1);
     FireplaceT = T(35,-5,25) * Ry(-M_PI/2) * S(9);
     tableT = T(15.5, -15.5, 30.0) * Ry(0.000) * S(8.000);
     sofaT = T(-11.5, -8.5, 29.5) * Ry(1.571) * S(8.000);
@@ -77,7 +74,7 @@ void InstantiateModels() {
 
     wolfT = T(150, 3.5, 0) * Ry(M_PI_2*3) * Rx(M_PI) * S(0.4);
     doorT = T(-5.0, -2.0, -3.5) * Ry(-1.571) * S(5.800);
-    newCabinT = T(-15,2,10)*Ry(M_PI*3/2)* S(5.8);
+    cabinT = T(-15,2,10)*Ry(M_PI*3/2)* S(5.8);
 
     cabinCenter = vec3(tableT.m[3], tableT.m[7], tableT.m[11]);
 
@@ -117,11 +114,9 @@ void printFires() {
 }
 
 void MoveModel() {
-    // Movement speed, rotation angle, and scale factor
     float moveSpeed = 0.5f;
     float rotateAngle = M_PI / 180.0f * 5.0f;;
 
-    // Arrow key movement - update translation values
     if (glutKeyIsDown(GLUT_KEY_LEFT)) {
         currentTX -= moveSpeed;
         *modelT = T(currentTX, currentTY, currentTZ) * Ry(currentRy) * S(currentScale);
@@ -151,7 +146,6 @@ void MoveModel() {
     if (glutKeyIsDown('o')) {
         currentTY -= moveSpeed;
         *modelT = T(currentTX, currentTY, currentTZ) * Ry(currentRy) * S(currentScale);
-
     }
 
     // Rotation with 'r' and 't' keys
@@ -174,10 +168,6 @@ void MoveModel() {
 }
 
 void InstantiateTextures() {
-
-    glActiveTexture(GL_TEXTURE2);
-    LoadTGATextureSimple("Models/WoodCabinDif.tga", &cabintex);
-    glBindTexture(GL_TEXTURE_2D, cabintex);
 
     glActiveTexture(GL_TEXTURE3);
     LoadTGATextureSimple("Models/stonebrick.tga", &fireplacetex);
@@ -220,8 +210,8 @@ void InstantiateTextures() {
     glBindTexture(GL_TEXTURE_2D, doorTex);
 
     glActiveTexture(GL_TEXTURE20);
-    LoadTGATextureSimple("Models/wall.tga", &newCabinTex);
-    glBindTexture(GL_TEXTURE_2D, newCabinTex);
+    LoadTGATextureSimple("Models/wall.tga", &cabinTex);
+    glBindTexture(GL_TEXTURE_2D, cabinTex);
 
     glActiveTexture(GL_TEXTURE21);
     LoadTGATextureSimple("Models/roof.tga", &roofTex);

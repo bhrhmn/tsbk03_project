@@ -46,7 +46,7 @@ void init() {
     InstantiateTextures();
     printError("Init Textures");
 
-    shadowProjectionMatrix = perspective(45, WINDOW_WIDTH/WINDOW_HEIGHT, 10, 100);
+    shadowProjectionMatrixFire = perspective(45, WINDOW_WIDTH/WINDOW_HEIGHT, 10, 100);
     mat4 scaleBiasMatrix = T(0.5, 0.5, 0.0) * S(0.5, 0.5, 1.0);
     
     // Models
@@ -58,7 +58,7 @@ void init() {
     glUniformMatrix4fv(glGetUniformLocation(shybox_shader, "projectionMatrix"), 1, GL_TRUE, projectionMatrix.m);
 
     glUseProgram(shadow_shader);
-    uploadMat4ToShader(shadow_shader, "projectionMatrix", shadowProjectionMatrix);
+    uploadMat4ToShader(shadow_shader, "projectionMatrix", shadowProjectionMatrixFire);
     uploadMat4ToShader(shadow_shader, "scaleBiasMatrix", scaleBiasMatrix);
 
     glUseProgram(tree_shader);

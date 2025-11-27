@@ -3,13 +3,7 @@
 #include "camera.h"
 #include "scene.h"
 
-void DrawCabin(GLuint shader){
-    glActiveTexture(GL_TEXTURE2);
-    glUniform1i(glGetUniformLocation(shader, "texUnit"), 2);
-    uploadMat4ToShader(shader, "model_To_World", cabinT);
-	DrawModel(cabin, shader, "in_Position", "inNormal", "inTexCord");
-    printError("DrawCabin");
-}
+
 
 
 void DrawFloor(GLuint shader)
@@ -32,12 +26,12 @@ void DrawRoof(GLuint shader)
 }
 
 
-void DrawNewCabin(GLuint shader){
+void DrawCabin(GLuint shader){
     glActiveTexture(GL_TEXTURE20);
     glUniform1i(glGetUniformLocation(shader, "texUnit"), 20);
-    uploadMat4ToShader(shader, "model_To_World", newCabinT);
-	DrawModel(newCabin, shader, "in_Position", "inNormal", "inTexCord");
-    printError("DrawNewCabin");
+    uploadMat4ToShader(shader, "model_To_World", cabinT);
+	DrawModel(cabin, shader, "in_Position", "inNormal", "inTexCord");
+    printError("drawCabin");
 }
 
 
@@ -74,8 +68,8 @@ void DrawSofa(GLuint shader){
 }
 
 void DrawTable(GLuint shader){
-    glActiveTexture(GL_TEXTURE2);
-    glUniform1i(glGetUniformLocation(shader, "texUnit"), 2);
+    glActiveTexture(GL_TEXTURE11);
+    glUniform1i(glGetUniformLocation(shader, "texUnit"), 11);
 	uploadMat4ToShader(shader, "model_To_World", tableT);
 	DrawModel(table, shader, "in_Position", "inNormal", "inTexCord");
     printError("DrawTable");
@@ -199,8 +193,7 @@ void drawObjects(GLuint shader){
     DrawTable(shader);
     DrawLog(shader);
     DrawDoor(shader);
-    //DrawNewCabin(shader);
-    //DrawFloor(shader);
-    //DrawRoof(shader);
+    DrawFloor(shader);
+    DrawRoof(shader);
 
 }
