@@ -10,7 +10,7 @@ extern Model *ground, *skybox, *sofa, *table, *cabin, *fireplace, *newCabin, *ro
 extern Model *treeBillboard, *tree_log, *door, *squareModel;
 
 // Transformation matrices
-extern mat4 totalGround, cabinT, FireplaceT, tableT, sofaT, newCabinT, mainCottageT, roofT, floorT, windowT;
+extern mat4 totalGround, cabinT, FireplaceT, tableT, sofaT, newCabinT, mainCottageT, roofT, floorT, window1T, window2T, window3T, window4T;
 extern mat4 fireT, fireT2, logT, wolfT, doorT;
 extern vec3 fireStartPosition;
 extern float fireRotation;
@@ -32,6 +32,8 @@ extern unsigned int wolfTex;
 extern unsigned int doorTex;
 extern unsigned int newCabinTex;
 extern unsigned int roofTex;
+extern unsigned int windowTex;
+
 
 extern const int FOREST_SIZE;
 extern mat4 treeMat[12]; // FOREST_SIZE = 12

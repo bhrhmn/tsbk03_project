@@ -12,6 +12,16 @@ void DrawCabin(GLuint shader){
 }
 
 
+void DrawWindow(GLuint shader, mat4 windowTranslation, Model *window)
+{
+    glActiveTexture(GL_TEXTURE22);
+    glUniform1i(glGetUniformLocation(shader, "texUnit"), 22);
+    uploadMat4ToShader(shader, "model_To_World", windowTranslation);
+    DrawModel(window, shader, "in_Position", "inNormal", "inTexCord");
+    printError("DrawCabin");
+}
+
+
 void DrawFloor(GLuint shader)
 {
     glActiveTexture(GL_TEXTURE21);
@@ -193,14 +203,18 @@ void UpdateWolf() {
 void drawObjects(GLuint shader){
     glUseProgram(shader);
     DrawGround(shader);
-    DrawCabin(shader);
+    //DrawCabin(shader);
     DrawFireplace(shader);
     DrawSofa(shader);
     DrawTable(shader);
     DrawLog(shader);
     DrawDoor(shader);
-    //DrawNewCabin(shader);
-    //DrawFloor(shader);
-    //DrawRoof(shader);
+    DrawNewCabin(shader);
+    DrawFloor(shader);
+    DrawRoof(shader);
+    DrawWindow(shader, window1T ,wind1 );
+    DrawWindow(shader, window2T ,wind1 );
+    DrawWindow(shader, window3T ,wind1 );
+    DrawWindow(shader, window4T ,wind1 );
 
 }
