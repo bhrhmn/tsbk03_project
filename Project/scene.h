@@ -117,7 +117,7 @@ extern GLuint lowpass_shader;
 extern GLuint bloom_shader;
 
 // FBOs
-extern FBOstruct *fireFbo, *moonFbo, *bloomFbo, *overFlowFbo, *tempFbo;
+extern FBOstruct *fireFbo, *moonFbo, *bloomFbo, *overFlowFbo, *tempFbo, *pos1FBO, *pos2FBO, *vel1FBO, *vel2FBO;
 
 // Time
 extern GLfloat t;

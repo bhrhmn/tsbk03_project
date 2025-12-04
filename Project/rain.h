@@ -10,7 +10,7 @@
 
 //  functions
 void rain_init();
-void rain();
+void rain(GLfloat time);
 void DrawModelInstanced(Model *m, GLuint program, const char* vertexVariableName, const char* normalVariableName, const char* texCoordVariableName, int count);
 
 #endif

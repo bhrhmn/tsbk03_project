@@ -95,7 +95,7 @@ void InstantiateTextures() {
     glBindTexture(GL_TEXTURE_2D, myTex2);
 
     glActiveTexture(GL_TEXTURE7);
-    LoadTGATextureSimple("Models/flames.tga", &maskrosTex);
+    LoadTGATextureSimple("Models/maskros512.tga", &maskrosTex);
     glBindTexture(GL_TEXTURE_2D, maskrosTex);
 
     glActiveTexture(GL_TEXTURE8);

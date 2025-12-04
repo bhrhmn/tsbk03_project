@@ -4,16 +4,15 @@
 #include "models.h"
 
 unsigned int vertexArrayObjID;
-GLuint rain_program;
+GLuint rain_program, pos_program, vel_program;
 GLfloat slope = 10;
 GLfloat a = 0.5;
-GLuint count = 1000000;
+GLuint count = 1000;
 GLuint tex;
-GLfloat position_data[256*256*3]; // random data kanske hmm öööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööö 
-FBOstruct *pos1;
 
 void DrawModelInstanced(Model *m, GLuint program, const char* vertexVariableName, const char* normalVariableName, const char* texCoordVariableName, int count)
 {
+	// Ragnemalm's DrawModel but with instancing
 	if (m != NULL)
 	{
 		GLint loc;
@@ -61,62 +60,62 @@ void DrawModelInstanced(Model *m, GLuint program, const char* vertexVariableName
 
 void rain_init() 
 {
-	// unsigned int vertexBufferObjID;
 
     rain_program = loadShaders("Shaders/instancing.vert", "Shaders/instancing.frag");
+	pos_program = loadShaders("Shaders/minimal.vert", "Shaders/pos.frag");
+	vel_program = loadShaders("Shaders/minimal.vert", "Shaders/vel.frag");
+	
+	uploadUniformIntToShader(pos_program, "posTex", 0);
+	uploadUniformIntToShader(pos_program, "velTex", 1);
+	uploadUniformIntToShader(vel_program, "posTex", 0);
+	uploadUniformIntToShader(vel_program, "velTex", 1);
+	uploadUniformIntToShader(rain_program, "posTex", 0);
+	
 	glUseProgram(rain_program);
-	printError("init shader");
-    // Upload geometry to the GPU:
-
     glUniformMatrix4fv(glGetUniformLocation(rain_program, "projectionMatrix"), 1, GL_TRUE, projectionMatrix);
-
-	//glActiveTexture(GL_TEXTURE19);
-    //pos1 = initFBO2(WINDOW_SIZE, WINDOW_SIZE, 0, 1);
-
-	// End of upload of geometry
+	
+	printError("rain_init");
 }
 
-void rain() 
+void rain(GLfloat time) 
 {
+
+	// don't forget chmod +x efter merge
+
 	glClearColor(0.2,0.2,0.5,0);
 	//glDisable(GL_DEPTH_TEST);
-	//glEnable(GL_DEPTH_TEST);
-    //glDisable(GL_CULL_FACE);  // TA BORT, väggar försvinner :(
-	
-	vec3 rain_pos[] {
-		vec3(0.f, 0.f, 0.f), 
-		vec3(10.f, 0.f, 0.f),
-		vec3(10.f, 0.f, 10.f),
-		vec3(0.f, 0.f, 10.f),
-		vec3(5.f, 0.f, 0.f),
-	};
-	
+	glEnable(GL_DEPTH_TEST);
+    //glDisable(GL_CULL_FACE);  
 	//glEnable(GL_BLEND);
 	//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	
+
+	// update position
+	glUseProgram(pos_program);
+	useFBO(pos2FBO, pos1FBO, vel1FBO);
+	DrawModel(treeBillboard, pos_program, "inPosition", NULL, "inTexCord");
+	glUseProgram(vel_program);
+	uploadUniformFloatToShader(vel_program, "time", time);
+	useFBO(vel2FBO, pos1FBO, vel1FBO);
+	DrawModel(treeBillboard, vel_program, "inPosition", NULL, "inTexCord");
+	glFlush();
+	// swap 
+	std::swap(pos1FBO, pos2FBO);
+	std::swap(vel1FBO, vel2FBO);
+	useFBO(NULL, pos1FBO, vel1FBO);
+
+	// draw rain
 	glUseProgram(rain_program);
-	
-    mat4 rot, trans, total;
 	glActiveTexture(GL_TEXTURE0 + 8); //RAIN_TEX_UNIT);
     glUniform1i(glGetUniformLocation(rain_program, "tex"), 8); //RAIN_TEX_UNIT);
-	glActiveTexture(GL_TEXTURE19); 	
-    glUniform1i(glGetUniformLocation(rain_program, "pos1"), 19); //RAIN_TEX_UNIT); 	
-    //glUniform3fv(glGetUniformLocation(rain_program, "rain_pos"), 5, &rain_pos->x);
-    glUniform1i(glGetUniformLocation(rain_program, "texsize"), 256); //RAIN_TEX_UNIT); 	
-	trans = T(-50.0, 10.0, 0.0) * S(1);
+	glActiveTexture(GL_TEXTURE0 + 7); 
+    glUniform1i(glGetUniformLocation(rain_program, "pos1"), 7); 	
+    glUniform1i(glGetUniformLocation(rain_program, "texSize"), 256); 	// lärdom, kolla ALLTID att man använder rätt namn på variabler 🙃🙃🙃🙃🙃🙃🙃🙃🙃
 	uploadMat4ToShader(rain_program, "world_to_view", worldCamera);
-	uploadMat4ToShader(rain_program, "model_to_world", trans);
 	
-	// int 😎 {0};
-	// std::cout << 😎 << std::endl;
-	
-	glBindVertexArray(vertexArrayObjID);	// Select VAO
-	// Draw the triangle "count" times!
-	// glDrawArraysInstanced(GL_TRIANGLES, 0, 3, count);
+	glBindVertexArray(vertexArrayObjID);
 
-	DrawModelInstanced(treeBillboard, rain_program, "in_Position", "inNormal", "inTexCord", count);
+	DrawModelInstanced(treeBillboard, rain_program, "inPosition", "inNormal", "inTexCord", count);
 	
     // glEnable(GL_CULL_FACE); // TA BORT
-
 	printError("rain in display()\n");
 }

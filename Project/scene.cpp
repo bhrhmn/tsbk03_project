@@ -9,7 +9,7 @@
 #include "rain.h"
 //#include "sounds.h"
 
-FBOstruct *fireFbo, *moonFbo, *bloomFbo, *overFlowFbo, *tempFbo;
+FBOstruct *fireFbo, *moonFbo, *bloomFbo, *overFlowFbo, *tempFbo, *pos1FBO, *pos2FBO, *vel1FBO, *vel2FBO;
 
 GLuint shybox_shader;
 GLuint object_shader;
@@ -88,6 +88,14 @@ void init() {
     overFlowFbo = initFBO2(WINDOW_SIZE, WINDOW_SIZE, 0, 1);
     glActiveTexture(GL_TEXTURE18);
     tempFbo = initFBO2(WINDOW_SIZE, WINDOW_SIZE, 0, 1);
+    glActiveTexture(GL_TEXTURE19);
+    pos1FBO = initFBO2(WINDOW_SIZE, WINDOW_SIZE, 0, 1);
+    glActiveTexture(GL_TEXTURE20);
+    pos2FBO = initFBO2(WINDOW_SIZE, WINDOW_SIZE, 0, 1);
+    glActiveTexture(GL_TEXTURE21);
+    vel1FBO = initFBO2(WINDOW_SIZE, WINDOW_SIZE, 0, 1);
+    glActiveTexture(GL_TEXTURE22);
+    vel2FBO = initFBO2(WINDOW_SIZE, WINDOW_SIZE, 0, 1);
 
     rain_init();
     
@@ -145,7 +153,7 @@ void display()
 	DrawWolf();
     blooming();
 
-    rain(); 
+    rain(t); 
 
 	glutSwapBuffers();
 }
