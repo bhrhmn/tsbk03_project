@@ -13,6 +13,7 @@ extern Model *treeBillboard, *tree_log, *door, *squareModel;
 extern mat4 totalGround, cabinT, FireplaceT, tableT, sofaT, newCabinT, mainCottageT, roofT, floorT, window1T, window2T, window3T, window4T;
 extern mat4 fireT, fireT2, logT, wolfT, doorT;
 extern vec3 fireStartPosition;
+extern vec3 cabinCenter;
 extern float fireRotation;
 
 

@@ -6,15 +6,11 @@
 // Model variables
 Model *ground, *skybox, *sofa, *table, *cabin, *fireplace, *roof, *floorObj, *wind1, *wind2, *wind3, *wind4;
 Model *treeBillboard, *tree_log, *door, *squareModel;
-<<<<<<< HEAD
-mat4 totalGround, cabinT, FireplaceT, tableT, sofaT, roofT, floorT, windowT;
-mat4 fireT, fireT2, logT, wolfT, doorT;
-vec3 fireStartPosition, cabinCenter;
-=======
+
 mat4 totalGround, cabinT, FireplaceT, tableT, sofaT, roofT, floorT, window1T, window2T, window3T, window4T;
 mat4 fireT, fireT2, logT, wolfT, doorT, newCabinT;
-vec3 fireStartPosition;
->>>>>>> ModelsBranch
+vec3 fireStartPosition, cabinCenter;
+
 float fireRotation;
 const int FOREST_SIZE = 12;
 mat4 treeMat[FOREST_SIZE];

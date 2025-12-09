@@ -4,8 +4,8 @@
 #include "scene.h"
 
 void DrawCabin(GLuint shader){
-    glActiveTexture(GL_TEXTURE2);
-    glUniform1i(glGetUniformLocation(shader, "texUnit"), 2);
+    glActiveTexture(GL_TEXTURE20);
+    glUniform1i(glGetUniformLocation(shader, "texUnit"), 20);
     uploadMat4ToShader(shader, "model_To_World", cabinT);
 	DrawModel(cabin, shader, "in_Position", "inNormal", "inTexCord");
     printError("DrawCabin");
@@ -41,14 +41,6 @@ void DrawRoof(GLuint shader)
     printError("DrawCabin");
 }
 
-
-void DrawNewCabin(GLuint shader){
-    glActiveTexture(GL_TEXTURE20);
-    glUniform1i(glGetUniformLocation(shader, "texUnit"), 20);
-    uploadMat4ToShader(shader, "model_To_World", newCabinT);
-	DrawModel(newCabin, shader, "in_Position", "inNormal", "inTexCord");
-    printError("DrawNewCabin");
-}
 
 
 void DrawDoor(GLuint shader){
@@ -203,13 +195,12 @@ void UpdateWolf() {
 void drawObjects(GLuint shader){
     glUseProgram(shader);
     DrawGround(shader);
-    //DrawCabin(shader);
+    DrawCabin(shader);
     DrawFireplace(shader);
     DrawSofa(shader);
     DrawTable(shader);
     DrawLog(shader);
     DrawDoor(shader);
-    DrawNewCabin(shader);
     DrawFloor(shader);
     DrawRoof(shader);
     DrawWindow(shader, window1T ,wind1 );
