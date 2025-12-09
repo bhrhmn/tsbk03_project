@@ -1,6 +1,7 @@
 
 #define MAIN
 #include "scene.h"
+
 #include "camera.h"
 #include "models.h"
 #include "rendering.h"
@@ -138,7 +139,6 @@ void display()
 	DrawFire();
 	DrawWolf();
     blooming();
-
 	glutSwapBuffers();
 }
 
