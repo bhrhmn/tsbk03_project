@@ -6,9 +6,15 @@
 // Model variables
 Model *ground, *skybox, *sofa, *table, *cabin, *fireplace, *roof, *floorObj, *wind1, *wind2, *wind3, *wind4;
 Model *treeBillboard, *tree_log, *door, *squareModel;
+<<<<<<< HEAD
 mat4 totalGround, cabinT, FireplaceT, tableT, sofaT, roofT, floorT, windowT;
 mat4 fireT, fireT2, logT, wolfT, doorT;
 vec3 fireStartPosition, cabinCenter;
+=======
+mat4 totalGround, cabinT, FireplaceT, tableT, sofaT, roofT, floorT, window1T, window2T, window3T, window4T;
+mat4 fireT, fireT2, logT, wolfT, doorT, newCabinT;
+vec3 fireStartPosition;
+>>>>>>> ModelsBranch
 float fireRotation;
 const int FOREST_SIZE = 12;
 mat4 treeMat[FOREST_SIZE];
@@ -32,6 +38,7 @@ unsigned int logTex;
 unsigned int wolfTex;
 unsigned int doorTex;
 unsigned int roofTex;
+unsigned int windowTex;
 
 // for moving model
 mat4* modelT;
@@ -53,6 +60,7 @@ void InstantiateModels() {
     cabin = LoadModel("Models/maincottage.obj");
     floorObj = LoadModel("Models/floor.obj");
     roof = LoadModel("Models/roof.obj");
+    wind1 = LoadModel("Models/window.obj");
 
     squareModel = LoadDataToModel(
             reinterpret_cast<vec3 *>(square), nullptr, reinterpret_cast<vec2 *>(squareTexCoord), nullptr,
@@ -62,10 +70,16 @@ void InstantiateModels() {
     tableT = T(15.5, -15.5, 30.0) * Ry(0.000) * S(8.000);
     sofaT = T(-11.5, -8.5, 29.5) * Ry(1.571) * S(8.000);
     roofT = T(-15,2,10)*Ry(M_PI*3/2)* S(5.8);
+    window1T = T(-52.5, 8.0, 17.5) * Ry(-0.000) * S(5.800);
+    window2T = T(-52.5, 7.5, 48.5) * Ry(0.000) * S(5.800);
+
+    window3T = T(50.0, 7.5, 46.5) * Ry(-3.142) * S(5.800);
+    window4T = T(49.5, 8.0, 16.0) * Ry(-3.142) * S(5.800);
+
     totalGround = T(0,-10,0);
 
     //fireplace
-    FireplaceT = T(41.5, -8.0, 29.0) * Ry(-1.571) * S(9.000);
+    FireplaceT = T(41.5, -8.0, 29.5) * Ry(-1.571) * S(9.000);
     fireT = T(40.5, -5.0, 29.0) * Ry(-1.571) * S(0.1);
     fireT2 = T(41.0, -5.0, 29.8) * Ry(-1.571) * S(0.8);
     logT = T(40.0, -7.0, 29.0) * Ry(-3.271)* S(0.025);
@@ -74,9 +88,15 @@ void InstantiateModels() {
 
     wolfT = T(150, 3.5, 0) * Ry(M_PI_2*3) * Rx(M_PI) * S(0.4);
     doorT = T(-5.0, -2.0, -3.5) * Ry(-1.571) * S(5.800);
+
     cabinT = T(-15,2,10)*Ry(M_PI*3/2)* S(5.8);
 
     cabinCenter = vec3(tableT.m[3], tableT.m[7], tableT.m[11]);
+
+    newCabinT = T(-15,2,10)*Ry(M_PI*3/2)* S(5.8);
+    floorT = T(-15,2,10)*Ry(M_PI*3/2)* S(5.8);
+
+
 
     treeMat[0] = T(150, -5, -10);
     treeMat[1] = T(200, -5, 20);
@@ -92,7 +112,7 @@ void InstantiateModels() {
     treeMat[11] = T(100, -5, 80);
 
 
-    modelT = &roofT; // change to desired model
+    modelT = &window4T; // change to desired model
     currentScale = modelT->m[5];
     currentRy = atan2(modelT->m[2]* currentScale, modelT->m[0]* currentScale);
     currentTX = modelT->m[3];
@@ -216,6 +236,10 @@ void InstantiateTextures() {
     glActiveTexture(GL_TEXTURE21);
     LoadTGATextureSimple("Models/roof.tga", &roofTex);
     glBindTexture(GL_TEXTURE_2D, roofTex);
+
+    glActiveTexture(GL_TEXTURE22);
+    LoadTGATextureSimple("Models/window.tga", &windowTex);
+    glBindTexture(GL_TEXTURE_2D, windowTex);
 
     glActiveTexture(GL_TEXTURE12);
     // LoadTGATextureSimple("Models/wolf.tga", &wolfTex);

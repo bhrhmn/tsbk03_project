@@ -3,7 +3,23 @@
 #include "camera.h"
 #include "scene.h"
 
+void DrawCabin(GLuint shader){
+    glActiveTexture(GL_TEXTURE2);
+    glUniform1i(glGetUniformLocation(shader, "texUnit"), 2);
+    uploadMat4ToShader(shader, "model_To_World", cabinT);
+	DrawModel(cabin, shader, "in_Position", "inNormal", "inTexCord");
+    printError("DrawCabin");
+}
 
+
+void DrawWindow(GLuint shader, mat4 windowTranslation, Model *window)
+{
+    glActiveTexture(GL_TEXTURE22);
+    glUniform1i(glGetUniformLocation(shader, "texUnit"), 22);
+    uploadMat4ToShader(shader, "model_To_World", windowTranslation);
+    DrawModel(window, shader, "in_Position", "inNormal", "inTexCord");
+    printError("DrawCabin");
+}
 
 
 void DrawFloor(GLuint shader)
@@ -26,12 +42,12 @@ void DrawRoof(GLuint shader)
 }
 
 
-void DrawCabin(GLuint shader){
+void DrawNewCabin(GLuint shader){
     glActiveTexture(GL_TEXTURE20);
     glUniform1i(glGetUniformLocation(shader, "texUnit"), 20);
-    uploadMat4ToShader(shader, "model_To_World", cabinT);
-	DrawModel(cabin, shader, "in_Position", "inNormal", "inTexCord");
-    printError("drawCabin");
+    uploadMat4ToShader(shader, "model_To_World", newCabinT);
+	DrawModel(newCabin, shader, "in_Position", "inNormal", "inTexCord");
+    printError("DrawNewCabin");
 }
 
 
@@ -68,8 +84,8 @@ void DrawSofa(GLuint shader){
 }
 
 void DrawTable(GLuint shader){
-    glActiveTexture(GL_TEXTURE11);
-    glUniform1i(glGetUniformLocation(shader, "texUnit"), 11);
+    glActiveTexture(GL_TEXTURE2);
+    glUniform1i(glGetUniformLocation(shader, "texUnit"), 2);
 	uploadMat4ToShader(shader, "model_To_World", tableT);
 	DrawModel(table, shader, "in_Position", "inNormal", "inTexCord");
     printError("DrawTable");
@@ -187,13 +203,18 @@ void UpdateWolf() {
 void drawObjects(GLuint shader){
     glUseProgram(shader);
     DrawGround(shader);
-    DrawCabin(shader);
+    //DrawCabin(shader);
     DrawFireplace(shader);
     DrawSofa(shader);
     DrawTable(shader);
     DrawLog(shader);
     DrawDoor(shader);
+    DrawNewCabin(shader);
     DrawFloor(shader);
     DrawRoof(shader);
+    DrawWindow(shader, window1T ,wind1 );
+    DrawWindow(shader, window2T ,wind1 );
+    DrawWindow(shader, window3T ,wind1 );
+    DrawWindow(shader, window4T ,wind1 );
 
 }
