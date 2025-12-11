@@ -24,5 +24,8 @@ void main(void)
 		vel.y = 0.8*abs(vel.y);
 	vel.y -= 0.001;
 
+	// // test
+	// outColor = vec4(1.0, 1.0, 0.0, 1.0);
+
 	outColor = vel;
 }

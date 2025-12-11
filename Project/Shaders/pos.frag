@@ -4,6 +4,7 @@ out vec4 outColor;
 in vec2 texCoord;
 uniform sampler2D posTex;
 uniform sampler2D velTex;
+uniform float time;
 
 void main(void)
 {
@@ -20,4 +21,7 @@ void main(void)
 	}
 	else
 		outColor = pos + vel;
+
+	// outColor = pos + vec4(0.0, -0.1, 0.0, 1.0);
+	// outColor = vec4(0.0, 1.0, 0.0, 1.0);
 }

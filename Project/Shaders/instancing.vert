@@ -5,8 +5,8 @@ in vec2 inTexCord;
 uniform mat4 model_to_world;
 uniform mat4 world_to_view;
 uniform mat4 projectionMatrix;
-uniform sampler2D posTex;
 uniform int texSize;	
+uniform sampler2D posTex;
 
 out vec2 texCoord;
 
@@ -17,7 +17,7 @@ void main(void)
 	float y = i % texSize;
 	vec2 tc = vec2((float(x)+0.5) / texSize, (float(y)+0.5) / texSize);
 	//vec2 tc = vec2(x, y);
-	vec4 p = texture(posTex, tc) * 1000;
+	vec4 p = texture(posTex, tc) * 100;
 	vec4 pos = vec4(p.x, p.y, p.z, 1);	
 	// pos[3] = 1;
 

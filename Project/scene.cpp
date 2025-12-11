@@ -88,14 +88,14 @@ void init() {
     overFlowFbo = initFBO2(WINDOW_SIZE, WINDOW_SIZE, 0, 1);
     glActiveTexture(GL_TEXTURE18);
     tempFbo = initFBO2(WINDOW_SIZE, WINDOW_SIZE, 0, 1);
-    glActiveTexture(GL_TEXTURE19);
-    pos1FBO = initFBO2(WINDOW_SIZE, WINDOW_SIZE, 0, 1);
-    glActiveTexture(GL_TEXTURE20);
-    pos2FBO = initFBO2(WINDOW_SIZE, WINDOW_SIZE, 0, 1);
-    glActiveTexture(GL_TEXTURE21);
-    vel1FBO = initFBO2(WINDOW_SIZE, WINDOW_SIZE, 0, 1);
-    glActiveTexture(GL_TEXTURE22);
-    vel2FBO = initFBO2(WINDOW_SIZE, WINDOW_SIZE, 0, 1);
+    // glActiveTexture(GL_TEXTURE19);
+    pos1FBO = initFBO(WINDOW_SIZE, WINDOW_SIZE, 0);
+    // glActiveTexture(GL_TEXTURE20);
+    pos2FBO = initFBO(WINDOW_SIZE, WINDOW_SIZE, 0);
+    // glActiveTexture(GL_TEXTURE21);
+    vel1FBO = initFBO(WINDOW_SIZE, WINDOW_SIZE, 0);
+    // glActiveTexture(GL_TEXTURE22);
+    vel2FBO = initFBO(WINDOW_SIZE, WINDOW_SIZE, 0);
 
     rain_init();
     
