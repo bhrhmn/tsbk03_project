@@ -140,7 +140,7 @@ void InstantiateTextures() {
     glBindTexture(GL_TEXTURE_2D, rainTex);
 
     glActiveTexture(GL_TEXTURE19);
-    LoadTGATextureSimple("Models/noise.tga", &noiseTex);
+    LoadTGATextureSimple("Models/noise_colors.tga", &noiseTex);
     glBindTexture(GL_TEXTURE_2D, noiseTex);
 
     glActiveTexture(GL_TEXTURE13);

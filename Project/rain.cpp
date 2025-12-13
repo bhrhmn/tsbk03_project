@@ -4,11 +4,12 @@
 #include "models.h"
 
 unsigned int vertexArrayObjID;
-GLuint rain_program, pos_program, vel_program;
+GLuint rain_program, pos_program, vel_program, simple_program;
 GLfloat slope = 10;
 GLfloat a = 0.5;
 GLuint count = 5000;
 GLuint tex;
+GLfloat prev_time = 0.0;
 
 bool ping = true;
 
@@ -66,6 +67,7 @@ void rain_init()
     rain_program = loadShaders("Shaders/instancing.vert", "Shaders/instancing.frag");
 	pos_program = loadShaders("Shaders/minimal.vert", "Shaders/pos.frag");
 	vel_program = loadShaders("Shaders/minimal.vert", "Shaders/vel.frag");
+	simple_program = loadShaders("Shaders/minimal.vert", "Shaders/simple.frag");
 	
 	uploadUniformIntToShader(pos_program, "posTex", 0);
 	uploadUniformIntToShader(pos_program, "velTex", 1);
@@ -75,7 +77,7 @@ void rain_init()
 	
 	glUseProgram(rain_program);
     glUniformMatrix4fv(glGetUniformLocation(rain_program, "projectionMatrix"), 1, GL_TRUE, projectionMatrix);
-	
+
 	printError("rain_init");
 }
 
@@ -83,8 +85,6 @@ void rain(GLfloat time)
 {
 
 	// don't forget chmod +x efter merge
-
-	printf((std::to_string(time) + "\n").c_str());
 
 	glClearColor(0.2,0.2,0.5,0);
 	//glEnable(GL_DEPTH_TEST);
@@ -95,42 +95,53 @@ void rain(GLfloat time)
 
 	// update position
 	glUseProgram(vel_program);
-	uploadUniformFloatToShader(vel_program, "time", time);
+	uploadUniformFloatToShader(vel_program, "delta_time", time - prev_time);
 	glUseProgram(pos_program);
 	uploadUniformFloatToShader(pos_program, "time", time);
-	if (time > 1)
+	prev_time = time;
+	if (time < 2)
 	{
+		// initial positions
+		glUseProgram(simple_program);
+		int init_tex = 19;
+		glActiveTexture(GL_TEXTURE0 + init_tex);
+		uploadUniformIntToShader(simple_program, "textureUnit", init_tex);
+		useFBO(pos1FBO, NULL, NULL);
+		DrawModel(treeBillboard, simple_program, "inPosition", NULL, "inTexCoord");
+		// useFBO(pos2FBO, NULL, NULL);
+		// DrawModel(treeBillboard, simple_program, "inPosition", NULL, "inTexCoord");
+	}
+	else { // varför bara 2 droppar?? (titta lite vänster)
 		if (ping)
 		{
-			printf("ping\n");
-		// Draw p1 and v1 to p2 and v2
+			// Draw p1 and v1 to p2 and v2
 			useFBO(pos2FBO, pos1FBO, vel1FBO);
-		// Update position
+			// Update position
 			DrawModel(treeBillboard, pos_program, "inPosition", NULL, "inTexCoord");	// det verkar inte som att positionen ändras hmmmmmmm
 			useFBO(vel2FBO, pos1FBO, vel1FBO);
-		// Update velocity
+			// Update velocity
 			DrawModel(treeBillboard, vel_program, "inPosition", NULL, "inTexCoord");
 			glFlush();
 		}
 		else
 		{
-		// Same thing opposite ping-pong
-			printf("pong\n");
+			// Same thing opposite ping-pong
 			useFBO(pos1FBO, pos2FBO, vel2FBO);
 			DrawModel(treeBillboard, pos_program, "inPosition", NULL, "inTexCoord");
 			useFBO(vel1FBO, pos2FBO, vel2FBO);
 			DrawModel(treeBillboard, vel_program, "inPosition", NULL, "inTexCoord");
 			glFlush();
 		}
-	}	
+		ping = !ping; 
+	}
+		
 
-	ping = !ping; 
 
 	useFBO(NULL, pos1FBO, pos2FBO); 
 	// draw rain
 	glEnable(GL_DEPTH_TEST);		// behåll!!
 	glUseProgram(rain_program);
-	int tex = 7;
+	int tex = 19;
 	glActiveTexture(GL_TEXTURE0 + tex); //RAIN_TEX_UNIT);
     glUniform1i(glGetUniformLocation(rain_program, "tex"), tex); //RAIN_TEX_UNIT);  // texture 0 och 1 (pos och vel) är typ svarta?? dom borde vara röd respektive grön🙃
 	glActiveTexture(GL_TEXTURE0); 
@@ -139,6 +150,8 @@ void rain(GLfloat time)
 	glUniform1i(glGetUniformLocation(rain_program, "pos2"), 1); 
     glUniform1i(glGetUniformLocation(rain_program, "texSize"), 256); 	// lärdom, kolla ALLTID att man använder rätt namn på variabler 🙃🙃🙃🙃🙃🙃🙃🙃🙃
 	uploadMat4ToShader(rain_program, "world_to_view", worldCamera);
+	vec3 offset = vec3(1000, -100, 500);
+	uploadUniformVec3ToShader(rain_program, "pos_offset", offset);
 	// glActiveTexture(GL_TEXTURE0);
 	// glUniform1i(glGetUniformLocation(rain_program, "posTex"),0);
 	
