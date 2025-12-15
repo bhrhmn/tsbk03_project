@@ -2,6 +2,7 @@
 #include "lighting.h"
 #include "scene.h"
 #include "models.h"
+#include "shadows.h"
 
 Model *fireModel;
 Model *fireModel2;
@@ -36,11 +37,14 @@ void UpdateLightSources() {
     const float f3 = sin(t/2) * sin(t/3) / 10.0f;  // Smaller amplitude
     const float f4 = sin(t/3) / 10.0f;             // Smaller amplitude
 
-    fireT = T(fireStartPosition.x + fireJitterX + f4,fireStartPosition.y + fireJitterY+f3, fireStartPosition.z) * Ry(fireRotation) * S(0.1f);
-    fireT2 = T(fireStartPosition.x - fireJitterX - f4,fireStartPosition.y- fireJitterY -f3 ,fireStartPosition.z ) * Ry(fireRotation) * S(0.1f);
-    firePos = vec3(fireStartPosition.x + fireJitterX, fireStartPosition.y + 4 + fireJitterY, fireStartPosition.z);
-    glUniform3fv(glGetUniformLocation(object_shader, "firePos"), 1, &firePos.x);
+    //fireT = T(fireStartPosition.x + fireJitterX + f4,fireStartPosition.y + fireJitterY+f3, fireStartPosition.z) * Ry(fireRotation) * S(0.1f);
+    //fireT2 = T(fireStartPosition.x - fireJitterX - f4,fireStartPosition.y- fireJitterY -f3 ,fireStartPosition.z ) * Ry(fireRotation) * S(0.1f);
+    //firePos = vec3(fireStartPosition.x + fireJitterX, fireStartPosition.y + 4 + fireJitterY, fireStartPosition.z);
+    firePos = vec3(fireStartPosition.x-5, fireStartPosition.y+2, fireStartPosition.z);
+    fireT2 = T(firePos.x,firePos.y ,firePos.z ) * Ry(fireRotation) * S(0.1f);
 
+    glUniform3fv(glGetUniformLocation(object_shader, "firePos"), 1, &firePos.x);
+    glUniform3fv(glGetUniformLocation(shadow_cube_shader, "lightPos"), 1, &firePos.x);
     float fireIntensity = 1.5f + flicker(t, 1.0f);
     fireColor = vec3(242.f/256, 125.f/256, 12.f/256) * fireIntensity;
     glUniform3fv(glGetUniformLocation(object_shader, "fireColor"), 1, &fireColor.x);
@@ -49,11 +53,12 @@ void UpdateLightSources() {
 void initLighting() {
     firePos = vec3(fireStartPosition.x, fireStartPosition.y, fireStartPosition.z);
     moonLookAt = cabinCenter;
-    fireLookAt = vec3(cabinCenter.x, cabinCenter.y + 20, cabinCenter.z);
+    //fireLookAt = vec3(cabinCenter.x, cabinCenter.y + 20, cabinCenter.z);
     glUniform3fv(glGetUniformLocation(object_shader, "firePos"), 1, &firePos.x);
     glUniform3fv(glGetUniformLocation(object_shader, "fireColor"), 1, &fireColor.x);
     glUniform3fv(glGetUniformLocation(object_shader, "moonPos"), 1, &moonPos.x);
     glUniform3fv(glGetUniformLocation(object_shader, "moonColor"), 1, &moonColor.x);
+
 }
 void UpdateMoon() {
     if (moonPos.z >= 90) return;
@@ -70,8 +75,8 @@ void blooming()
     DrawModel(squareModel, overflow_shader, "in_Position", nullptr, "in_TexCoord");
 
     glUseProgram(lowpass_shader);
-    glUniform1f(glGetUniformLocation(lowpass_shader, "windowWidth"), 1.0 /overFlowFbo->width);
-    glUniform1f(glGetUniformLocation(lowpass_shader, "windowHeight"), 1.0 /overFlowFbo->height);
+    glUniform1f(glGetUniformLocation(lowpass_shader, "windowWidth"), 1.0f /overFlowFbo->width);
+    glUniform1f(glGetUniformLocation(lowpass_shader, "windowHeight"), 1.0f /overFlowFbo->height);
 
     // ping-pong
     for (int i {0}; i < 100; i++)

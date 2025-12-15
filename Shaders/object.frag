@@ -23,41 +23,29 @@ in vec4 lightSourceCoord;
 in vec4 lightSourceCoordMoon;
 in vec3 fragPosWorld;
 
+// In object.frag, replace setFireShadow with this debug version:
 void setFireShadow(inout float shadow, inout vec3 diff_color_fire){
-
-	vec3 fireLocation = normalize(vec3((world_To_View *vec4(firePos, 1.0)) - SurfacePos));
-	diff_color_fire = (max(0.0, dot(normalize(transformedNormal), fireLocation)) * fireColor);
-
-	vec3 fragToLight = fragPosWorld - firePos;
-
-	// Sample from depth cube map
-	float closestDepth = texture(shadowCubeMap, fragToLight).r;
-
-	// Re-transform back to original value [0,far_plane]
-	closestDepth *= far_plane;
-
-	// Get current linear depth
+	// 1. Vector from Fragment to Light
+	vec3 fragToLight = firePos - fragPosWorld; // Vector FROM light TO fragment
 	float currentDepth = length(fragToLight);
 
-	// Test for shadows
-	float bias = 0.05;
-	if(currentDepth - bias > closestDepth){
-		shadow -= 0.3f;
+	// 2. Retrieve Closest Depth (Normalized [0, 1] value)
+	float closestDepthNormalized = texture(shadowCubeMap, fragToLight).r;
+
+	// 3. Un-normalize the stored depth to get World Units
+	// The stored value must be multiplied by far_plane to get world units.
+	float closestDepthWorld = closestDepthNormalized * far_plane;
+
+	float bias = 0.05; // Use a reasonable bias
+
+	// Compare World Units (current fragment) vs. World Units (stored depth)
+	if (currentDepth > closestDepthWorld + bias) {
+		shadow = 0.0;
 	}
-}
 
-void setFireShadow2(inout float shadow, inout vec3 diff_color_fire){
-	vec3 fragToLight = fragPosWorld - firePos;
-
-	// Sample from depth cube map
-	float closestDepth = texture(shadowCubeMap, fragToLight).r;
-
-	// DEBUG: Show the raw depth value from cube map
-	// If this shows mostly black/dark, depth values are very small
-	// If this shows mostly white, depth values are close to 1.0
-	diff_color_fire = vec3(closestDepth);
-
-	return; // Skip lighting and shadow calculation for now
+	// Keep normal lighting calculation
+	vec3 fireLocation = normalize(vec3((world_To_View * vec4(firePos, 1.0)) - SurfacePos));
+	diff_color_fire = (max(0.0, dot(normalize(transformedNormal), fireLocation)) * fireColor);
 }
 
 void setMoonShadow(inout float shadow, inout vec3 diff_color_moon){

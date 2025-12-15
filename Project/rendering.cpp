@@ -12,7 +12,7 @@ void DrawFloor(GLuint shader)
     glUniform1i(glGetUniformLocation(shader, "texUnit"), 21);
     uploadMat4ToShader(shader, "model_To_World", floorT);
     DrawModel(floorObj, shader, "in_Position", "inNormal", "inTexCord");
-    printError("DrawCabin");
+    printError("DrawFloor");
 }
 
 
@@ -22,7 +22,7 @@ void DrawRoof(GLuint shader)
     glUniform1i(glGetUniformLocation(shader, "texUnit"), 21);
     uploadMat4ToShader(shader, "model_To_World", roofT);
     DrawModel(roof, shader, "in_Position", "inNormal", "inTexCord");
-    printError("DrawCabin");
+    printError("DrawRoof");
 }
 
 
@@ -31,7 +31,7 @@ void DrawCabin(GLuint shader){
     glUniform1i(glGetUniformLocation(shader, "texUnit"), 20);
     uploadMat4ToShader(shader, "model_To_World", cabinT);
 	DrawModel(cabin, shader, "in_Position", "inNormal", "inTexCord");
-    printError("drawCabin");
+    printError("DrawCabin");
 }
 
 
@@ -61,6 +61,7 @@ void DrawLog(GLuint shader){
 
 void DrawSofa(GLuint shader){
     glActiveTexture(GL_TEXTURE4);
+    printError("DrawSofa");
     glUniform1i(glGetUniformLocation(shader, "texUnit"), 4);
 	uploadMat4ToShader(shader, "model_To_World", sofaT);
 	DrawModel(sofa, shader, "in_Position", "inNormal", "inTexCord");
@@ -185,6 +186,7 @@ void UpdateWolf() {
 }
 
 void drawObjects(GLuint shader){
+    //DrawFire();
     glUseProgram(shader);
     DrawGround(shader);
     DrawCabin(shader);

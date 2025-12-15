@@ -8,9 +8,9 @@
 inline unsigned int depthCubeMap;
 
 inline float aspect = WINDOW_HEIGHT / WINDOW_HEIGHT;
-inline float nearFire = 1.0f;
-inline float farFire = 250.0f;
-inline mat4 shadowProj = perspective(90.0f, aspect, nearFire, farFire);
+inline float nearFire = 0.1f;
+inline float far_plane = 500.0f;
+inline mat4 shadowProj = perspective(90.0f, aspect, nearFire, far_plane);
 inline mat4 shadowTransforms[6];
 
 

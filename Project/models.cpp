@@ -59,7 +59,7 @@ void InstantiateModels() {
             squareIndices, 4, 6);
 
     FireplaceT = T(35,-5,25) * Ry(-M_PI/2) * S(9);
-    tableT = T(15.5, -15.5, 30.0) * Ry(0.000) * S(8.000);
+    tableT = T(70.0, -15.5, 30.0) * Ry(0.000) * S(8.000);
     sofaT = T(-11.5, -8.5, 29.5) * Ry(1.571) * S(8.000);
     roofT = T(-15,2,10)*Ry(M_PI*3/2)* S(5.8);
     totalGround = T(0,-10,0);
@@ -69,6 +69,7 @@ void InstantiateModels() {
     fireT = T(40.5, -5.0, 29.0) * Ry(-1.571) * S(0.1);
     fireT2 = T(41.0, -5.0, 29.8) * Ry(-1.571) * S(0.8);
     logT = T(40.0, -7.0, 29.0) * Ry(-3.271)* S(0.025);
+    //fireStartPosition = vec3(40.5, -5.3, 29.0);
     fireStartPosition = vec3(40.5, -5.3, 29.0);
     fireRotation = atan2(fireT.m[2], fireT.m[0]);
 
@@ -92,7 +93,7 @@ void InstantiateModels() {
     treeMat[11] = T(100, -5, 80);
 
 
-    modelT = &roofT; // change to desired model
+    modelT = &tableT; // change to desired model
     currentScale = modelT->m[5];
     currentRy = atan2(modelT->m[2]* currentScale, modelT->m[0]* currentScale);
     currentTX = modelT->m[3];

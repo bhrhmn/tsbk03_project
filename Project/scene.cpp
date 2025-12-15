@@ -8,7 +8,7 @@
 #include "shadows.h"
 //#include "sounds.h"
 
-FBOstruct *fireFbo, *moonFbo, *bloomFbo, *overFlowFbo, *tempFbo, *shadowCubeFBO;
+FBOstruct *moonFbo, *bloomFbo, *overFlowFbo, *tempFbo, *shadowCubeFBO;
 
 GLuint shybox_shader;
 GLuint object_shader;
@@ -23,7 +23,6 @@ GLuint shadow_cube_shader;
 
 GLfloat t = 0;
 
-
 void OnTimer(int value) {
     glutPostRedisplay();
     glutTimerFunc(20, &OnTimer, value);
@@ -36,7 +35,8 @@ void init() {
     glClearColor(0.8,0.8,0.8,0);
 
     // Load and compile shader
-	shadow_cube_shader = loadShadersG("Shaders/shadow_cube.vert", "Shaders/shadow_cube.frag", "Shaders/shadow_cube.geom");
+	shadow_cube_shader = loadShadersG("Shaders/shadow_cube.vert","Shaders/shadow_cube.frag", "Shaders/shadow_cube.geom");
+	//shadow_cube_shader = loadShaders("Shaders/shadow_cube.vert","Shaders/shadow_cube.frag");
     shybox_shader = loadShaders("Shaders/skybox.vert", "Shaders/skybox.frag");
     shadow_shader = loadShaders("Shaders/shadow.vert", "Shaders/shadow.frag");
     object_shader = loadShaders("Shaders/object.vert", "Shaders/object.frag");
@@ -45,13 +45,12 @@ void init() {
     lowpass_shader = loadShaders("Shaders/lowpassfilter.vert", "Shaders/lowpassfilter.frag");
     bloom_shader = loadShaders("Shaders/overflow.vert", "Shaders/bloom.frag");
     printError("init shader");
+
     
     // Textures
     InstantiateTextures();
     printError("Init Textures");
 
-
-    
     // Models
     InstantiateModels();
     printError("Init Models");
@@ -63,8 +62,6 @@ void init() {
 	shadowProjectionMatrixFire = perspective(45, WINDOW_WIDTH/WINDOW_HEIGHT, 10, 100);
 	uploadMat4ToShader(shadow_shader, "projectionMatrix", shadowProjectionMatrixFire);
 	uploadMat4ToShader(shadow_shader, "scaleBiasMatrix", scaleBiasMatrix);
-
-
 
     glUseProgram(tree_shader);
     glUniformMatrix4fv(glGetUniformLocation(tree_shader, "projectionMatrix"), 1, GL_TRUE, projectionMatrix.m);
@@ -79,8 +76,6 @@ void init() {
     // initFireplaceSound();
 
     // init fbos
-    glActiveTexture(GL_TEXTURE13);
-    fireFbo = initFBO2(WINDOW_WIDTH, WINDOW_HEIGHT, 0, 1);
     glActiveTexture(GL_TEXTURE14);
     moonFbo = initFBO2(WINDOW_WIDTH, WINDOW_HEIGHT, 0, 1);
     glActiveTexture(GL_TEXTURE16);
@@ -89,13 +84,13 @@ void init() {
     overFlowFbo = initFBO2(WINDOW_WIDTH, WINDOW_HEIGHT, 0, 1);
     glActiveTexture(GL_TEXTURE18);
     tempFbo = initFBO2(WINDOW_WIDTH, WINDOW_HEIGHT, 0, 1);
-	glActiveTexture(GL_TEXTURE19);
+	// Cube shadow FBO - use TEXTURE13 (was fireFbo's unit)
+	glActiveTexture(GL_TEXTURE0 + TEX_UNIT); // Use TEX_UNIT (13) for consistency
+	printf("cube fbo texture: %d",GL_TEXTURE0 + TEX_UNIT);
 	shadowCubeFBO = initCubeFBO(WINDOW_HEIGHT);
 
     printError("init arrays");
 }
-
-
 void display()
 {
 	printError("pre display");
@@ -104,18 +99,18 @@ void display()
     t = (GLfloat)glutGet(GLUT_ELAPSED_TIME)/1000;
     glEnable(GL_DEPTH_TEST);
 
-    //draw using object shader
+	renderCubeShadowMap();
+
 	glUseProgram(object_shader);
+	glUniform1f(glGetUniformLocation(object_shader, "far_plane"), far_plane);
     
     UpdateLightSources();
     UpdateWolf();
-    //fireShadow();
-	renderCubeShadowMap();
-    moonShadow();
+    //moonShadow();
 
     //2. Render from camera.
     // With bloom
-	useFBO(bloomFbo, shadowCubeFBO, moonFbo);
+	useFBO(bloomFbo, nullptr, moonFbo);
     // Without bloom, also remove blooming() function call 
 	//useFBO(NULL, fireFbo, moonFbo);
 	
@@ -127,9 +122,9 @@ void display()
     glUseProgram(object_shader);
 
 	//load both fbo depth maps to shader
-	glUniform1i(glGetUniformLocation(object_shader, "textureUnit"),TEX_UNIT);
+	glUniform1i(glGetUniformLocation(object_shader, "shadowCubeMap"),TEX_UNIT);
 	glActiveTexture(GL_TEXTURE0 + TEX_UNIT);
-	glBindTexture(GL_TEXTURE_2D,shadowCubeFBO->depth);
+	glBindTexture(GL_TEXTURE_CUBE_MAP,shadowCubeFBO->depth);
 
 	glUniform1i(glGetUniformLocation(object_shader, "textureUnitMoon"),MOON_TEX_UNIT);
 	glActiveTexture(GL_TEXTURE0 + MOON_TEX_UNIT);
@@ -143,8 +138,6 @@ void display()
 
     drawObjects(object_shader);
 	DrawTree();
-	//DrawFire();
-	renderCubeShadowMap();
 	DrawWolf();
     blooming();
 
