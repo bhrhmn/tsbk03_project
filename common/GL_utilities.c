@@ -363,25 +363,25 @@ FBOstruct *initCubeFBO(int width)
 
     // 2. Linear Depth Cube Map (COLOR ATTACHMENT 0)
 	glGenTextures(1, &fbo->depth);
-	glBindTexture(GL_TEXTURE_CUBE_MAP, fbo->depth);;
+	glBindTexture(GL_TEXTURE_CUBE_MAP, fbo->depth);
 
 	for (unsigned int i = 0; i < 6; ++i) {
 		// Use GL_DEPTH_COMPONENT for standard, non-linear Z-depth
 		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_DEPTH_COMPONENT, // Internal format
 				  width, width, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL); // Format and Type
 	}
-    // Set texture parameters (NEAREST, CLAMP_TO_EDGE)
+
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
 
 	glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, fbo->depth, 0);
 
     // 3. Traditional Depth Buffer (DEPTH ATTACHMENT)
-    // NOTE: This assumes 'renderbuffer' is a member of FBOstruct.
 	glDrawBuffer(GL_NONE);
 	glReadBuffer(GL_NONE);
 

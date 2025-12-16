@@ -40,7 +40,7 @@ void UpdateLightSources() {
     //fireT = T(fireStartPosition.x + fireJitterX + f4,fireStartPosition.y + fireJitterY+f3, fireStartPosition.z) * Ry(fireRotation) * S(0.1f);
     //fireT2 = T(fireStartPosition.x - fireJitterX - f4,fireStartPosition.y- fireJitterY -f3 ,fireStartPosition.z ) * Ry(fireRotation) * S(0.1f);
     //firePos = vec3(fireStartPosition.x + fireJitterX, fireStartPosition.y + 4 + fireJitterY, fireStartPosition.z);
-    firePos = vec3(fireStartPosition.x-5, fireStartPosition.y+2, fireStartPosition.z);
+    //firePos = vec3(fireStartPosition.x-5, fireStartPosition.y+2, fireStartPosition.z);
     fireT2 = T(firePos.x,firePos.y ,firePos.z ) * Ry(fireRotation) * S(0.1f);
 
     glUniform3fv(glGetUniformLocation(object_shader, "firePos"), 1, &firePos.x);

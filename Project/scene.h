@@ -30,7 +30,6 @@ inline mat4 projectionMatrix = perspective(45.0f, WINDOW_WIDTH/WINDOW_HEIGHT, ne
 inline mat4 scaleBiasMatrix = T(0.5, 0.5, 0.0) * S(0.5, 0.5, 1.0);
 
 inline mat4 modelViewMatrix;
-inline mat4 shadowProjectionMatrixFire;
 
 
 // Vertex data

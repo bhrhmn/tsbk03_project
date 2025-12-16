@@ -8,8 +8,8 @@
 
 void DrawFloor(GLuint shader)
 {
-    glActiveTexture(GL_TEXTURE21);
-    glUniform1i(glGetUniformLocation(shader, "texUnit"), 21);
+    glActiveTexture(GL_TEXTURE3);
+    glUniform1i(glGetUniformLocation(shader, "texUnit"), 3);
     uploadMat4ToShader(shader, "model_To_World", floorT);
     DrawModel(floorObj, shader, "in_Position", "inNormal", "inTexCord");
     printError("DrawFloor");
@@ -186,7 +186,7 @@ void UpdateWolf() {
 }
 
 void drawObjects(GLuint shader){
-    //DrawFire();
+    DrawFire();
     glUseProgram(shader);
     DrawGround(shader);
     DrawCabin(shader);

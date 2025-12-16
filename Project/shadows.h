@@ -2,7 +2,7 @@
 #define SHADOWS_H
 
 #include "scene.h"
-#include "VectorUtils4.h"
+//#include "VectorUtils4.h"
 #define TEX_UNIT 0
 #define MOON_TEX_UNIT 1
 inline unsigned int depthCubeMap;
@@ -10,7 +10,7 @@ inline unsigned int depthCubeMap;
 inline float aspect = WINDOW_HEIGHT / WINDOW_HEIGHT;
 inline float nearFire = 0.1f;
 inline float far_plane = 500.0f;
-inline mat4 shadowProj = perspective(90.0f, aspect, nearFire, far_plane);
+inline mat4 shadowProj = perspective(90.0f, 1.f, nearFire, far_plane);
 inline mat4 shadowTransforms[6];
 
 

@@ -36,7 +36,6 @@ void init() {
 
     // Load and compile shader
 	shadow_cube_shader = loadShadersG("Shaders/shadow_cube.vert","Shaders/shadow_cube.frag", "Shaders/shadow_cube.geom");
-	//shadow_cube_shader = loadShaders("Shaders/shadow_cube.vert","Shaders/shadow_cube.frag");
     shybox_shader = loadShaders("Shaders/skybox.vert", "Shaders/skybox.frag");
     shadow_shader = loadShaders("Shaders/shadow.vert", "Shaders/shadow.frag");
     object_shader = loadShaders("Shaders/object.vert", "Shaders/object.frag");
@@ -59,8 +58,6 @@ void init() {
     glUniformMatrix4fv(glGetUniformLocation(shybox_shader, "projectionMatrix"), 1, GL_TRUE, projectionMatrix.m);
 
 	glUseProgram(shadow_shader);
-	shadowProjectionMatrixFire = perspective(45, WINDOW_WIDTH/WINDOW_HEIGHT, 10, 100);
-	uploadMat4ToShader(shadow_shader, "projectionMatrix", shadowProjectionMatrixFire);
 	uploadMat4ToShader(shadow_shader, "scaleBiasMatrix", scaleBiasMatrix);
 
     glUseProgram(tree_shader);

@@ -18,36 +18,32 @@ out vec4 outColor;
 in vec3 transformedNormal;
 in vec2 outTexCord;
 in vec4 SurfacePos;
-in vec4 lightSourceCoord;
 
 in vec4 lightSourceCoordMoon;
 in vec3 fragPosWorld;
 
-// In object.frag, replace setFireShadow with this debug version:
+
 void setFireShadow(inout float shadow, inout vec3 diff_color_fire){
-	// 1. Vector from Fragment to Light
-	vec3 fragToLight = firePos - fragPosWorld; // Vector FROM light TO fragment
+	vec3 fragToLight = fragPosWorld - firePos;
 	float currentDepth = length(fragToLight);
-
-	// 2. Retrieve Closest Depth (Normalized [0, 1] value)
 	float closestDepthNormalized = texture(shadowCubeMap, fragToLight).r;
-
-	// 3. Un-normalize the stored depth to get World Units
-	// The stored value must be multiplied by far_plane to get world units.
 	float closestDepthWorld = closestDepthNormalized * far_plane;
 
-	float bias = 0.05; // Use a reasonable bias
+	float bias = 0.01f;
 
-	// Compare World Units (current fragment) vs. World Units (stored depth)
-	if (currentDepth > closestDepthWorld + bias) {
-		shadow = 0.0;
+	// Check if fragment is within range
+	if (currentDepth > far_plane) {
+		shadow = 0.0; // Outside the shadow map range = dark
+	} else if (currentDepth > closestDepthWorld + bias) {
+		shadow = 0.0f; // In Shadow
+	} else {
+		shadow = 1.0f; // Lit
 	}
 
-	// Keep normal lighting calculation
+	// Standard Lighting Calculation
 	vec3 fireLocation = normalize(vec3((world_To_View * vec4(firePos, 1.0)) - SurfacePos));
 	diff_color_fire = (max(0.0, dot(normalize(transformedNormal), fireLocation)) * fireColor);
 }
-
 void setMoonShadow(inout float shadow, inout vec3 diff_color_moon){
 	vec3 moonLocation = normalize(vec3((world_To_View *vec4(moonPos, 1.0)) - SurfacePos));
 	diff_color_moon = (max(0.0, dot(normalize(transformedNormal), moonLocation)) * moonColor);
