@@ -31,7 +31,7 @@ typedef struct Triangle
 #define CYLINDER_SEGMENT_LENGTH 0.37
 #define kMaxRow 100
 #define kMaxCorners 8
-#define kMaxBones 2
+#define kMaxBones 4
 #define kMaxg_poly ((kMaxRow-1) * kMaxCorners * 2)
 #ifndef Pi
 #define Pi 3.1416
@@ -41,6 +41,7 @@ typedef struct Triangle
 #endif
 
 #define BONE_LENGTH 4.0
+#define MAX_VERTICES 3000
 
 Triangle g_poly[kMaxg_poly];
 
@@ -60,107 +61,7 @@ Model *cylinderModel; // Collects all the above for drawing with glDrawElements
 
 mat4 modelViewMatrixB, projectionMatrixB;
 
-///////////////////////////////////////////////////
-//		I N I T  B O N E  W E I G H T S
-// Desc:  initierar benvikterna
-//
-void initBoneWeights(void)
-{
-	long	row, corner;
-	int bone;
 
-	// Set values for all vertices in the mesh
-	for (row = 0; row < kMaxRow; row++)
-		for (corner = 0; corner < kMaxCorners; corner++)
-		{
-			float boneWeights[kMaxBones];
-			float totalBoneWeight = 0.f;
-
-			float maxBoneWeight = 0.f;
-
-			for (bone = 0; bone < kMaxBones; bone++)
-			{
-				float bonePos = BONE_LENGTH * bone;
-				float boneDist = fabs(bonePos - g_vertsOrg[row][corner].x);
-				float boneWeight = (BONE_LENGTH - boneDist) / (BONE_LENGTH);
-				if (boneWeight < 0)
-					boneWeight = 0;
-				boneWeights[bone] = boneWeight;
-				totalBoneWeight += boneWeight;
-
-				if (maxBoneWeight < boneWeight)
-					maxBoneWeight = boneWeight;
-			}
-
-			g_boneWeightVis[row][corner].x = 0;
-			g_boneWeightVis[row][corner].y = 0;
-			for (bone = 0; bone < kMaxBones; bone++)
-			{
-				g_boneWeights[row][corner][bone] = boneWeights[bone] / totalBoneWeight;
-
-				if (bone & 1) g_boneWeightVis[row][corner].x += g_boneWeights[row][corner][bone]; // Copy data to here to visualize your weights or anything else
-				if ((bone+1) & 1) g_boneWeightVis[row][corner].y += g_boneWeights[row][corner][bone]; // Copy data to here to visualize your weightss
-			}
-		}
-}
-
-
-
-///////////////////////////////////////////////////
-//		B U I L D  C Y L I N D E R
-// Desc: Builds the geometry
-//
-void BuildCylinder()
-{
-  long	row, corner, cornerIndex;
-
-  // Sets the values for all vertices in the mesh
-  for (row = 0; row < kMaxRow; row++)
-    for (corner = 0; corner < kMaxCorners; corner++)
-      {
-          g_vertsOrg[row][corner].x = (float) row * CYLINDER_SEGMENT_LENGTH;
-          g_vertsOrg[row][corner].y = cos(corner * 2*Pi / kMaxCorners);
-          g_vertsOrg[row][corner].z = sin(corner * 2*Pi / kMaxCorners);
-
-          g_normalsOrg[row][corner].x = 0;
-          g_normalsOrg[row][corner].y = cos(corner * 2*Pi / kMaxCorners);
-          g_normalsOrg[row][corner].z = sin(corner * 2*Pi / kMaxCorners);
-      };
-
-  // g_poly sets the indicies for the triangles
-  for (row = 0; row < kMaxRow-1; row++)
-    for (corner = 0; corner < kMaxCorners; corner++)
-      {
-	// Quads built from two triangles
-
-	if (corner < kMaxCorners-1)
-	  {
-	    cornerIndex = row * kMaxCorners + corner;
-	    g_poly[cornerIndex * 2].v1 = cornerIndex;
-	    g_poly[cornerIndex * 2].v2 = cornerIndex + 1;
-	    g_poly[cornerIndex * 2].v3 = cornerIndex + kMaxCorners + 1;
-
-	    g_poly[cornerIndex * 2 + 1].v1 = cornerIndex;
-	    g_poly[cornerIndex * 2 + 1].v2 = cornerIndex + kMaxCorners + 1;
-	    g_poly[cornerIndex * 2 + 1].v3 = cornerIndex + kMaxCorners;
-	  }
-	else
-	  { // Special case: Last in the turn, go over the edge properly
-	    cornerIndex = row * kMaxCorners + corner;
-	    g_poly[cornerIndex * 2].v1 = cornerIndex;
-	    g_poly[cornerIndex * 2].v2 = cornerIndex + 1 - kMaxCorners;
-	    g_poly[cornerIndex * 2].v3 = cornerIndex + kMaxCorners + 1 - kMaxCorners;
-
-	    g_poly[cornerIndex * 2 + 1].v1 = cornerIndex;
-	    g_poly[cornerIndex * 2 + 1].v2 = cornerIndex + kMaxCorners + 1 - kMaxCorners;
-	    g_poly[cornerIndex * 2 + 1].v3 = cornerIndex + kMaxCorners;
-	  }
-      }
-
-  // Put a copy of the original in g_vertsRes
-  memcpy(g_vertsRes,  g_vertsOrg, kMaxRow * kMaxCorners* sizeof(vec3));
-  memcpy(g_normalsRes,  g_normalsOrg, kMaxRow * kMaxCorners* sizeof(vec3));
-}
 
 
 //////////////////////////////////////
@@ -189,8 +90,10 @@ void setupBones(void)
 {
 	int bone;
 
-	g_bones[0].pos = vec3(15.5, -15.5, 30.0);
-	g_bones[1].pos = vec3(15, -15.5, 30.0);
+	g_bones[0].pos = vec3(0.01, 0.3, 0.75);
+	g_bones[1].pos = vec3(0.01, 0.02, 0.75);
+	g_bones[2].pos = vec3(40, -20, 0);
+	g_bones[3].pos = vec3(-10, -80, -10);
 
 	for (bone = 0; bone < kMaxBones; bone++)
 	{
@@ -199,151 +102,134 @@ void setupBones(void)
 }
 
 
-///////////////////////////////////////////////////////
-//		D E F O R M	C Y L I N D E R
-//
-// Desc:	deform the cylinder mesh according to the skeleton
-void DeformCylinder()
+
+float objWeight[MAX_VERTICES][kMaxBones];
+vec3 g_vertsResObj[MAX_VERTICES];
+
+
+void ConnectVertToBone(Model *model)
 {
-	// vec3 v1, v2;
-	int row, corner;
+	vec3* verticesArray = model->vertexArray;
+	printf("Vertices: ");
+	printVec3(*verticesArray);
+	memset(objWeight, 0, sizeof(objWeight));
 
-	// för samtliga vertexar
-	for (row = 0; row < kMaxRow; row++)
+	int maxVerts = model->numVertices;
+	if (maxVerts > MAX_VERTICES) maxVerts = MAX_VERTICES;
+
+	for (int vertex = 0; vertex < maxVerts; vertex++)
 	{
-		for (corner = 0; corner < kMaxCorners; corner++)
+		float total = 0;
+		for (int bone = 0; bone < kMaxBones; bone++){
+			vec3 relpos = g_bones[bone].pos - model->vertexArray[vertex];
+			if (vertex < MAX_VERTICES && relpos.y < 50.f && relpos.y > -50.f
+				&& relpos.x < 50.f && relpos.x > -50.f)
+			{
+				objWeight[vertex][bone] = 1.0f;
+				total += 1.0f;
+			}
+			else if (vertex < MAX_VERTICES && relpos.y < 4.f && relpos.y > -4.f
+				&& relpos.x < 4.f && relpos.x > -4.f)
+			{
+				objWeight[vertex][bone] = 0.2f;
+				total += 0.2f;
+			}
+		}
+		if (total > 0.0f)
 		{
-			g_vertsRes[row][corner] = g_vertsOrg[row][corner];
+			for (int b = 0; b < kMaxBones; b++)
+				objWeight[vertex][b] /= total;
+		}
 
-			// PART 2
-			// Rotate the vertice:
-			g_vertsRes[row][corner] -= (1-skinningWeight[row]) * g_bones[0].pos + skinningWeight[row] * g_bones[1].pos;
-			g_vertsRes[row][corner] = (1.0f-skinningWeight[row]) * g_bones[0].rot * g_vertsRes[row][corner] + skinningWeight[row] * g_bones[1].rot * g_vertsRes[row][corner];
-			// Translate the vertice:
-			g_vertsRes[row][corner] += (1-skinningWeight[row]) * g_bones[0].pos + skinningWeight[row] * g_bones[1].pos;
+	}
+}
 
+Model *wolf;
+void changeMesh(Model *model)
+{
+	int maxVerts = model->numVertices;
+	if (maxVerts > MAX_VERTICES) maxVerts = MAX_VERTICES;
+
+	for (int i = 0; i < maxVerts; i++)
+	{
+
+		vec3 objPos = model->vertexArray[i];
+
+		float weightSum = 0.0f;
+		for (int b = 0; b < kMaxBones; b++)
+			weightSum += objWeight[i][b];
+
+		if (weightSum == 0.0f)
+		{
+			g_vertsResObj[i] = objPos;
+			continue;
+		}
+
+		vec3 result = vec3(0,0,0);
+
+		for (int b = 0; b < kMaxBones; b++)
+		{
+			float w = objWeight[i][b];
+			if (w == 0.0f) continue;
+
+			vec3 q = objPos - g_bonesRes[b].pos;
+			q = g_bonesRes[b].rot * q;
+			q += g_bonesRes[b].pos;
+
+			result += w * q;
+		}
+
+		g_vertsResObj[i] = result;
+
+		if (i == 0)
+		{
+			printf("orig: %f %f %f  ->  new: %f %f %f\n",
+				objPos.x, objPos.y, objPos.z,
+				g_vertsResObj[i].x,
+				g_vertsResObj[i].y,
+				g_vertsResObj[i].z);
 		}
 	}
 }
 
 
-
-/////////////////////////////////////////////
-//		A N I M A T E  B O N E S
-// Desc: A simple animation of the skeleton.
-//       changes the "rot" by a sin function by the time
-void animateBones(void)
+void animateObj(GLuint shader)
 {
-	int bone;
-	// How much for each joint? Feel free to edit.
-	float angleScales[10] = { 1.f, 1.f, 1.f, 1.f, 1.f, 1.f, 1.f, 1.f, 1.f, 1.f };
+	float t = glutGet(GLUT_ELAPSED_TIME) / 1000.0f;
+	float a = sinf(t) * 0.5f;
 
-	float time = glutGet(GLUT_ELAPSED_TIME) / 1000.0;
-	// How much to rotate?
-	float angle = sin(time * 3.f) / 2.0f;
+	memcpy(g_bonesRes, g_bones, sizeof(g_bones));
+	g_bonesRes[2].rot = Rz(-a);
+	g_bonesRes[3].rot = Rz(a);
 
-	memcpy(&g_bonesRes, &g_bones, kMaxBones*sizeof(Bone));
+	changeMesh(wolf); // calculates g_vertsResObj for all vertices
 
-	g_bonesRes[0].rot = Rz(angle * angleScales[0]);
+	// upload all vertices
+	int numVerts = wolf->numVertices;
+	glBindVertexArray(wolf->vao);
+	glBindBuffer(GL_ARRAY_BUFFER, wolf->vb);
+	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vec3) * numVerts, g_vertsResObj);
 
-	for (bone = 1; bone < kMaxBones; bone++)
-		g_bonesRes[bone].rot = Rz(angle * angleScales[bone]);
+	DrawModel(wolf, shader, "in_Position", "inNormal", "inTexCoord");
 }
 
 
-///////////////////////////////////////////////
-//		S E T  B O N E  R O T A T I O N
-// Desc: sets the bone rotation in the vertex shader.
-// (Not mandatory.)
-void setBoneRotation(void)
-{
-}
 
 
-///////////////////////////////////////////////
-//		 S E T  B O N E  L O C A T I O N
-// Desc: sets the bone translation in the vertex shader.
-// (Not mandatory.)
-void setBoneLocation(void)
-{
-}
-
-
-///////////////////////////////////////////////
-//		 D R A W  C Y L I N D E R
-// Desc: Upload and draw
-void DrawCylinder()
-{
-  animateBones();
-
-  // ---------=========  UPG 2 (extra) ===========---------
-  // Move the vertex calculations from DeformCylinder into a vertex shader.
-  // The current one is "shader.vert"
-
-  DeformCylinder();
-
-  setBoneLocation();
-  setBoneRotation();
-
-// update cylinder vertices:
-	glBindVertexArray(cylinderModel->vao);
-	glBindBuffer(GL_ARRAY_BUFFER, cylinderModel->vb);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vec3)*kMaxRow*kMaxCorners, g_vertsRes, GL_DYNAMIC_DRAW);
-
-	DrawModel(cylinderModel, g_shader, "in_Position", "in_Normal", "in_TexCoord");
-}
-
-
-void DisplayWindow()
-{
-	mat4 m;
-
-    glClearColor(0.5, 0.5, 0.9, 1);
-    glClear(GL_COLOR_BUFFER_BIT+GL_DEPTH_BUFFER_BIT);
-
-    m = projectionMatrixB * modelViewMatrixB;
-    glUniformMatrix4fv(glGetUniformLocation(g_shader, "matrix"), 1, GL_TRUE, m.m);
-
-    DrawCylinder();
-
-    glutSwapBuffers();
-};
-
-void keyboardFunc( unsigned char key, int x, int y)
-{
-  if(key == 27)	//Esc
-    exit(1);
-}
-
-void reshape(GLsizei w, GLsizei h)
-{
-	vec3 cam = vec3(16,0,30);
-	vec3 look = vec3(16,0,0);
-
-    glViewport(0, 0, w, h);
-    GLfloat ratio = (GLfloat) w / (GLfloat) h;
-    projectionMatrixB = perspective(90, ratio, 0.1, 1000);
-	modelViewMatrixB = lookAt(cam.x, cam.y, cam.z,
-											look.x, look.y, look.z,
-											0,1,0);
-}
 
 /////////////////////////////////////////
 //		M A I N
 //
 void ball(Model *model)
 {
-
+	wolf = model;
   // Set up depth buffer
   glEnable(GL_DEPTH_TEST);
   // initiering
-  //BuildCylinder();
   setupBones();
-  initBoneWeights();
-	vec3* verticesArray = model->vertexArray;
-	printf("Vertices: ");
-	printVec3(*verticesArray);
 
+	ConnectVertToBone(model);
+	changeMesh(model);
 
 
 	// Build Model from cylinder data

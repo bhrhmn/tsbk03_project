@@ -76,7 +76,7 @@ void InstantiateModels() {
 
     window3T = T(50.0, 7.5, 46.5) * Ry(-3.142) * S(5.800);
     window4T = T(49.5, 8.0, 16.0) * Ry(-3.142) * S(5.800);
-    wolfObjT = T(15.5, -15.5, 30.0)  * Ry(-3.142) * S(0.2);
+    wolfObjT = T(0, -3, 0)   * S(0.2);
 
     totalGround = T(0,-10,0);
 

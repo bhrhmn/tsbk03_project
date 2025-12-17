@@ -7,6 +7,7 @@
 #include "LittleOBJLoader.h"
 
 void ball(Model *model);
+void animateObj(GLuint shader);
 
 
 #endif //SCENEPROJECT_BALLANIMATION_H

@@ -2,6 +2,8 @@
 #include "models.h"
 #include "camera.h"
 #include "scene.h"
+#include "BallAnimation.h"
+
 
 void DrawCabin(GLuint shader){
     glActiveTexture(GL_TEXTURE20);
@@ -204,18 +206,19 @@ void UpdateWolf() {
 void drawObjects(GLuint shader){
     glUseProgram(shader);
     DrawGround(shader);
-    DrawCabin(shader);
-    DrawFireplace(shader);
-    DrawSofa(shader);
-    DrawTable(shader);
+    //DrawCabin(shader);
+    //DrawFireplace(shader);
+    //DrawSofa(shader);
+    //DrawTable(shader);
     DrawLog(shader);
-    DrawDoor(shader);
-    DrawFloor(shader);
-    DrawRoof(shader);
-    DrawWindow(shader, window1T ,wind1 );
-    DrawWindow(shader, window2T ,wind1 );
-    DrawWindow(shader, window3T ,wind1 );
-    DrawWindow(shader, window4T ,wind1 );
+    //DrawDoor(shader);
+    //DrawFloor(shader);
+    //DrawRoof(shader);
+    //DrawWindow(shader, window1T ,wind1 );
+    //DrawWindow(shader, window2T ,wind1 );
+    //DrawWindow(shader, window3T ,wind1 );
+    //DrawWindow(shader, window4T ,wind1 );
     DrawWolfObj(shader);
 
+    animateObj(shader);
 }
