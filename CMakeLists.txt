@@ -31,6 +31,7 @@ set(SOURCES
         common/Windows/MicroGlut.c
         Project/animation.cpp
         Project/animation.h
+        Project/rain.cpp
 )
 
 # Create executable

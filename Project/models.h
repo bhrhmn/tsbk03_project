@@ -34,7 +34,7 @@ extern unsigned int doorTex;
 extern unsigned int newCabinTex;
 extern unsigned int roofTex;
 extern unsigned int windowTex;
-
+extern unsigned int rainTex;
 
 extern const int FOREST_SIZE;
 extern mat4 treeMat[12]; // FOREST_SIZE = 12

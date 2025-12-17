@@ -26,6 +26,8 @@
 #define TEX_UNIT 0
 #define MOON_TEX_UNIT 1
 #define BLOOM_TEX_UNIT 16
+#define RAIN_TEX_UNIT 30
+
 
 inline mat4 projectionMatrix = perspective(45.0f, WINDOW_WIDTH/WINDOW_HEIGHT, near, far);
 
@@ -111,7 +113,7 @@ extern GLuint lowpass_shader;
 extern GLuint bloom_shader;
 
 // FBOs
-extern FBOstruct *fireFbo, *moonFbo, *bloomFbo, *overFlowFbo, *tempFbo;
+extern FBOstruct *fireFbo, *moonFbo, *bloomFbo, *overFlowFbo, *tempFbo, *pos1FBO, *pos2FBO, *vel1FBO, *vel2FBO;
 
 // Time
 extern GLfloat t;

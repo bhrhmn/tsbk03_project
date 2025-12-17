@@ -35,6 +35,8 @@ unsigned int wolfTex;
 unsigned int doorTex;
 unsigned int roofTex;
 unsigned int windowTex;
+unsigned int rainTex;
+unsigned int noiseTex;
 
 // for moving model
 mat4* modelT;
@@ -43,6 +45,7 @@ float currentTY;
 float currentTZ;
 float currentRy;
 float currentScale;
+
 
 void InstantiateModels() {
     ground = LoadDataToModel(vertices, vertex_normals, tex_coords, vertex_normals, indices, 4, 6);
@@ -202,7 +205,7 @@ void InstantiateTextures() {
     glBindTexture(GL_TEXTURE_2D, myTex2);
 
     glActiveTexture(GL_TEXTURE7);
-    LoadTGATextureSimple("Models/flames.tga", &maskrosTex);
+    LoadTGATextureSimple("Models/maskros512.tga", &maskrosTex);
     glBindTexture(GL_TEXTURE_2D, maskrosTex);
 
     glActiveTexture(GL_TEXTURE8);
@@ -250,6 +253,13 @@ void InstantiateTextures() {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
+    glActiveTexture(GL_TEXTURE0 + RAIN_TEX_UNIT);
+    LoadTGATextureSimple("Models/waterdroplet.tga", &rainTex);
+    glBindTexture(GL_TEXTURE_2D, rainTex);
+
+    glActiveTexture(GL_TEXTURE19);
+    LoadTGATextureSimple("Models/noise_colors.tga", &noiseTex);
+    glBindTexture(GL_TEXTURE_2D, noiseTex);
 
     glActiveTexture(GL_TEXTURE13);
 
