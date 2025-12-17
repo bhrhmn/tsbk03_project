@@ -37,6 +37,7 @@ unsigned int roofTex;
 unsigned int windowTex;
 unsigned int rainTex;
 unsigned int noiseTex;
+unsigned int tableTex;
 
 // for moving model
 mat4* modelT;
@@ -188,6 +189,10 @@ void MoveModel() {
 
 void InstantiateTextures() {
 
+    glActiveTexture(GL_TEXTURE2);
+    LoadTGATextureSimple("Models/WoodCabinDif.tga", &tableTex);
+    glBindTexture(GL_TEXTURE_2D, tableTex);
+    
     glActiveTexture(GL_TEXTURE3);
     LoadTGATextureSimple("Models/stonebrick.tga", &fireplacetex);
     glBindTexture(GL_TEXTURE_2D, fireplacetex);
