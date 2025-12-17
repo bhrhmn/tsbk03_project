@@ -7,6 +7,9 @@
 
 #include <string>
 #include <vector>
+#include <glm/vec2.hpp>
+#include <glm/vec3.hpp>
+#include <ShaderHandler.h>
 
 #include "VectorUtils4.h"
 #include "MicroGlut.h"
@@ -15,12 +18,12 @@
 
 //Help functions for vertexes,
 struct Vertex {
-    vec3 Position;
-    vec3 Normal;
-    vec2 TexCoords;
-    vec3 Tangent;
+    glm::vec3 Position;
+    glm::vec3 Normal;
+    glm::vec2 TexCoords;
+    glm::vec3 Tangent;
     // bitangent
-    vec3 Bitangent;
+    glm::vec3 Bitangent;
     //bone indexes which will influence this vertex
     int m_BoneIDs[MAX_BONE_INFLUENCE];
     //weights from each bone
@@ -30,9 +33,10 @@ struct Vertex {
 struct Texture {
     unsigned int id;
     std::string type;
+    std::string path;
 };
 
-class Mesh
+class MeshOGL
 {
 
 public:
@@ -43,7 +47,7 @@ public:
 
     unsigned int VAO;
 
-    Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std::vector<Texture> textures)
+    MeshOGL(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std::vector<Texture> textures)
     {
         this->vertices = vertices;
         this->indices = indices;
@@ -52,7 +56,7 @@ public:
         setupMesh();
     }
 
-    void Draw(Shader &shader);
+    void Draw(ShaderHandler &shader);
 
 private:
     //  render data

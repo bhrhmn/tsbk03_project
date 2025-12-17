@@ -2,15 +2,20 @@
 #define MAIN
 #include "scene.h"
 
+#include <iostream>
 #include "camera.h"
 #include "models.h"
 #include "rendering.h"
 #include "lighting.h"
+
 #include "shadows.h"
+#include "model.h"
 //#include "sounds.h"
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
+
+#include "ShaderHandler.h"
 
 FBOstruct *fireFbo, *moonFbo, *bloomFbo, *overFlowFbo, *tempFbo;
 
@@ -45,6 +50,13 @@ void init() {
     lowpass_shader = loadShaders("Shaders/lowpassfilter.vert", "Shaders/lowpassfilter.frag");
     bloom_shader = loadShaders("Shaders/overflow.vert", "Shaders/bloom.frag");
     printError("init shader");
+
+
+	ShaderHandler ourShader("1.model_loading.vs", "1.model_loading.fs");
+
+	// load models
+	// -----------
+	ModelOGL ourModel("Models/backpack.obj");
     
     // Textures
     InstantiateTextures();
@@ -175,6 +187,8 @@ int main(int argc, char *argv[])
 
 	animationInit();
     init();
+
+
 
 	glutDisplayFunc(display); 
 

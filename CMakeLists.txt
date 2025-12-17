@@ -1,14 +1,11 @@
 cmake_minimum_required(VERSION 3.20)
 project(SceneProject)
 
-# Set vcpkg toolchain
-#set(CMAKE_TOOLCHAIN_FILE "C:/Users/lunas/Documents/tsbk03_project/vcpkg/scripts/buildsystems/vcpkg.cmake")
-set(CMAKE_TOOLCHAIN_FILE "C:/Users/jorun/Kod/vcpkg/scripts/buildsystems/vcpkg.cmake")
-
+# Use C++17
 set(CMAKE_CXX_STANDARD 17)
 enable_language(C)
 
-# Find packages - ADD GLEW
+# Find packages
 find_package(GLEW REQUIRED)
 find_package(SFML 3.0 COMPONENTS Audio Graphics Window System REQUIRED)
 find_package(OpenGL REQUIRED)
@@ -16,8 +13,10 @@ find_package(OpenGL REQUIRED)
 message(STATUS "GLEW found: ${GLEW_FOUND}")
 message(STATUS "SFML found: ${SFML_FOUND}")
 
-# Relative path to assimp installation, change this to your own local.
-set(ASSIMP_ROOT "C:/Users/jorun/Kod/assimp-install")
+# Manually set Assimp paths
+set(ASSIMP_INCLUDE_DIR "C:/Users/Luna/Code/assimp-mingw/include")
+set(ASSIMP_LIBRARY "C:/Users/Luna/Code/assimp-mingw/lib/libassimp.a")
+set(ZLIB_LIBRARY "C:/Users/Luna/Code/assimp-mingw/lib/libzlibstatic.a")  # Add zlib
 
 # Source files
 set(SOURCES
@@ -34,38 +33,50 @@ set(SOURCES
         common/Windows/MicroGlut.c
         Project/doorAnimation.cpp
         Project/doorAnimation.h
-        Project/mesh.cpp
-        Project/mesh.h
+        Project/meshOGL.cpp
+        Project/meshOGL.h
+        Project/ShaderHandler.cpp
+        Project/ShaderHandler.h
+        Project/model.cpp
+        Project/model.h
 )
 
 # Create executable
 add_executable(scene ${SOURCES})
-
-# Link libraries - ADD GLEW
-
-
-# Windows-specific libraries
-if(WIN32)
-    target_link_libraries(scene
-            opengl32
-            glu32
-            gdi32
-            winmm
-            GLEW::GLEW
-            ${ASSIMP_ROOT}/lib/libassimpd.dll.a  # link the debug static/dynamic lib
-    )
-
-    target_compile_definitions(scene PRIVATE
-            _CRT_SECURE_NO_WARNINGS
-            GL_GLEXT_PROTOTYPES
-            GLEW_STATIC      # Add this for static linking
-    )
-endif()
 
 # Include directories
 target_include_directories(scene PRIVATE
         common
         common/Windows
         Project
-        ${ASSIMP_ROOT}/include
+        ${ASSIMP_INCLUDE_DIR}
 )
+
+# Link libraries
+target_link_libraries(scene PRIVATE
+        opengl32
+        glu32
+        gdi32
+        winmm
+        GLEW::GLEW
+        SFML::Audio
+        SFML::Graphics
+        SFML::Window
+        SFML::System
+        ${ASSIMP_LIBRARY}
+        ${ZLIB_LIBRARY}  # Link zlib
+)
+
+# Windows-specific definitions
+if(WIN32)
+    target_compile_definitions(scene PRIVATE
+            _CRT_SECURE_NO_WARNINGS
+            GL_GLEXT_PROTOTYPES
+            GLEW_STATIC
+    )
+endif()
+
+# Debug messages
+message(STATUS "Assimp include dir: ${ASSIMP_INCLUDE_DIR}")
+message(STATUS "Assimp library: ${ASSIMP_LIBRARY}")
+message(STATUS "Zlib library: ${ZLIB_LIBRARY}")
