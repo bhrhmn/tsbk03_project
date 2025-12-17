@@ -8,6 +8,9 @@
 #include "lighting.h"
 #include "shadows.h"
 //#include "sounds.h"
+#include <assimp/Importer.hpp>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
 
 FBOstruct *fireFbo, *moonFbo, *bloomFbo, *overFlowFbo, *tempFbo;
 
@@ -142,21 +145,37 @@ void display()
 	glutSwapBuffers();
 }
 
+void animationInit()
+{
+	Assimp::Importer importer;
+	const aiScene* animScene = importer.ReadFile(
+		"animation1.glb",
+		aiProcess_Triangulate | aiProcess_FlipUVs
+	);
+	if(!animScene || animScene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !animScene->mRootNode)
+	{
+		printError("Animation load error");
+		return;
+	}
+
+}
+
 
 
 int main(int argc, char *argv[])
 {
 	glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
-
+	;
 	glutInitContextVersion(3, 2);
 	glutInitWindowSize(WINDOW_WIDTH, WINDOW_HEIGHT);
 	glutCreateWindow ("Cosy Cabin");
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
 
+	animationInit();
     init();
-   
+
 	glutDisplayFunc(display); 
 
 	glutMainLoop();

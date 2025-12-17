@@ -3,7 +3,7 @@
 #include "lighting.h"
 #include "models.h"
 #include "scene.h"
-#include "animation.h"
+#include "doorAnimation.h"
 // Camera variables
 vec3 worldCameraP = { 25.0f, 8.0f, 0.0f };
 vec3 worldCameraL = { 30.0f, 8.0f, 25.0f };

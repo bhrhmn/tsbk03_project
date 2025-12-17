@@ -16,6 +16,9 @@ find_package(OpenGL REQUIRED)
 message(STATUS "GLEW found: ${GLEW_FOUND}")
 message(STATUS "SFML found: ${SFML_FOUND}")
 
+# Relative path to assimp installation, change this to your own local.
+set(ASSIMP_ROOT "C:/Users/jorun/Kod/assimp-install")
+
 # Source files
 set(SOURCES
         Project/scene.cpp
@@ -29,8 +32,10 @@ set(SOURCES
         common/LoadTGA.c
         common/lodepng.cpp
         common/Windows/MicroGlut.c
-        Project/animation.cpp
-        Project/animation.h
+        Project/doorAnimation.cpp
+        Project/doorAnimation.h
+        Project/mesh.cpp
+        Project/mesh.h
 )
 
 # Create executable
@@ -47,6 +52,7 @@ if(WIN32)
             gdi32
             winmm
             GLEW::GLEW
+            ${ASSIMP_ROOT}/lib/libassimpd.dll.a  # link the debug static/dynamic lib
     )
 
     target_compile_definitions(scene PRIVATE
@@ -61,4 +67,5 @@ target_include_directories(scene PRIVATE
         common
         common/Windows
         Project
+        ${ASSIMP_ROOT}/include
 )
