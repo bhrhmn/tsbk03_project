@@ -133,6 +133,11 @@ void display()
     //Using the projTex (object) shader
     glUseProgram(object_shader);
 
+    moveCamera();
+    
+    uploadMat4ToShader(object_shader, "world_To_View", worldCamera);
+    DrawSkyBox();
+    
 	//load both fbo depth maps to shader
 	glUniform1i(glGetUniformLocation(object_shader, "textureUnit"),TEX_UNIT);
 	glActiveTexture(GL_TEXTURE0 + TEX_UNIT);
@@ -141,18 +146,12 @@ void display()
 	glUniform1i(glGetUniformLocation(object_shader, "textureUnitMoon"),MOON_TEX_UNIT);
 	glActiveTexture(GL_TEXTURE0 + MOON_TEX_UNIT);
 	glBindTexture(GL_TEXTURE_2D,moonFbo->depth);
-
-    moveCamera();
-
-    uploadMat4ToShader(object_shader, "world_To_View", worldCamera);
-    DrawSkyBox();
-
     drawObjects(object_shader);
 	DrawTree();
 	DrawFire();
 	DrawWolf();
     blooming();
-
+    
     rain(t); 
 
 	glutSwapBuffers();

@@ -7,11 +7,30 @@ unsigned int vertexArrayObjID;
 GLuint rain_program, pos_program, vel_program, simple_program;
 GLfloat slope = 10;
 GLfloat a = 0.5;
-GLuint count = 5000;
+GLuint count = 256*256;
 GLuint tex;
 GLfloat prev_time = 0.0;
+Model *squareM;
+#define pSize 0.01f
+
+GLfloat vertices2[] = {	-1.0f,-1.0f,0.0f,
+						-1.0f,1.0f,0.0f,
+						1.0f,1.0f,0.0f,
+						1.0f,-1.0f,0.0f};
+GLfloat texcoord2[] = {	0.0f, 0.0f,
+						0.0f, 1.0f,
+						1.0f, 1.0f,
+						1.0f, 0.0f};
+GLuint indices2[] = {0,1,3, 3,1,2};
+
+GLfloat particleVertices[] = {
+						-pSize,-pSize,0.0f,
+						-pSize,pSize,0.0f,
+						pSize, pSize,0.0f,
+						pSize,-pSize,0.0f};
 
 bool ping = true;
+int init_positions_tex = 19;
 
 void DrawModelInstanced(Model *m, GLuint program, const char* vertexVariableName, const char* normalVariableName, const char* texCoordVariableName, int count)
 {
@@ -64,6 +83,8 @@ void DrawModelInstanced(Model *m, GLuint program, const char* vertexVariableName
 void rain_init() 
 {
 
+	squareM = LoadDataToModel((vec3 *)vertices2, NULL, (vec2 *)texcoord2, NULL, indices2, 4, 6);
+
     rain_program = loadShaders("Shaders/instancing.vert", "Shaders/instancing.frag");
 	pos_program = loadShaders("Shaders/minimal.vert", "Shaders/pos.frag");
 	vel_program = loadShaders("Shaders/minimal.vert", "Shaders/vel.frag");
@@ -71,9 +92,15 @@ void rain_init()
 	
 	uploadUniformIntToShader(pos_program, "posTex", 0);
 	uploadUniformIntToShader(pos_program, "velTex", 1);
-	uploadUniformIntToShader(vel_program, "posTex", 0);
+	uploadUniformIntToShader(pos_program, "startPosTex", init_positions_tex);
 	uploadUniformIntToShader(vel_program, "velTex", 1);
-	uploadUniformIntToShader(rain_program, "posTex", 0);
+	int tex = 19;
+    uploadUniformIntToShader(rain_program, "tex", tex); 
+	uploadUniformIntToShader(rain_program, "pos1", 0); 
+	uploadUniformIntToShader(rain_program, "pos2", 1); 
+
+    uploadUniformFloatToShader(rain_program, "texSize", 256.0); 	
+
 	
 	glUseProgram(rain_program);
     glUniformMatrix4fv(glGetUniformLocation(rain_program, "projectionMatrix"), 1, GL_TRUE, projectionMatrix);
@@ -83,82 +110,61 @@ void rain_init()
 
 void rain(GLfloat time) 
 {
-
-	// don't forget chmod +x efter merge
-
-	glClearColor(0.2,0.2,0.5,0);
-	//glEnable(GL_DEPTH_TEST);
-    glDisable(GL_CULL_FACE);  	// behåll!!
-	glDisable(GL_DEPTH_TEST);	// behåll!!
-	//glEnable(GL_BLEND);
-	//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glDisable(GL_CULL_FACE);  	
+	glDisable(GL_DEPTH_TEST);	
 
 	// update position
-	glUseProgram(vel_program);
-	uploadUniformFloatToShader(vel_program, "delta_time", time - prev_time);
-	glUseProgram(pos_program);
-	uploadUniformFloatToShader(pos_program, "time", time);
-	prev_time = time;
-	if (time < 2)
+	if (time < 1)
 	{
-		// initial positions
+		// write initial positions
 		glUseProgram(simple_program);
-		int init_tex = 19;
-		glActiveTexture(GL_TEXTURE0 + init_tex);
-		uploadUniformIntToShader(simple_program, "textureUnit", init_tex);
+		glActiveTexture(GL_TEXTURE0 + init_positions_tex);
+		uploadUniformIntToShader(simple_program, "textureUnit", init_positions_tex);
 		useFBO(pos1FBO, NULL, NULL);
-		DrawModel(treeBillboard, simple_program, "inPosition", NULL, "inTexCoord");
-		// useFBO(pos2FBO, NULL, NULL);
-		// DrawModel(treeBillboard, simple_program, "inPosition", NULL, "inTexCoord");
+		DrawModel(squareM, simple_program, "inPosition", NULL, "inTexCoord");
+		useFBO(pos2FBO, NULL, NULL);
+		DrawModel(squareM, simple_program, "inPosition", NULL, "inTexCoord");	
 	}
-	else { // varför bara 2 droppar?? (titta lite vänster)
+	else { 
 		if (ping)
 		{
-			// Draw p1 and v1 to p2 and v2
+			uploadUniformFloatToShader(pos_program, "time", time);
 			useFBO(pos2FBO, pos1FBO, vel1FBO);
 			// Update position
-			DrawModel(treeBillboard, pos_program, "inPosition", NULL, "inTexCoord");	// det verkar inte som att positionen ändras hmmmmmmm
+			DrawModel(squareM, pos_program, "inPosition", NULL, "inTexCoord");	
+			
+			uploadUniformFloatToShader(vel_program, "delta_time", time - prev_time);
 			useFBO(vel2FBO, pos1FBO, vel1FBO);
 			// Update velocity
-			DrawModel(treeBillboard, vel_program, "inPosition", NULL, "inTexCoord");
+			DrawModel(squareM, vel_program, "inPosition", NULL, "inTexCoord");
 			glFlush();
 		}
 		else
 		{
-			// Same thing opposite ping-pong
+			// pong
+			// Same thing but opposite 
+			uploadUniformFloatToShader(pos_program, "time", time);
 			useFBO(pos1FBO, pos2FBO, vel2FBO);
-			DrawModel(treeBillboard, pos_program, "inPosition", NULL, "inTexCoord");
+			DrawModel(squareM, pos_program, "inPosition", NULL, "inTexCoord");
+
+			uploadUniformFloatToShader(vel_program, "delta_time", time - prev_time);
 			useFBO(vel1FBO, pos2FBO, vel2FBO);
-			DrawModel(treeBillboard, vel_program, "inPosition", NULL, "inTexCoord");
+			DrawModel(squareM, vel_program, "inPosition", NULL, "inTexCoord");
 			glFlush();
 		}
 		ping = !ping; 
 	}
+	prev_time = time;
 		
-
-
-	useFBO(NULL, pos1FBO, pos2FBO); 
 	// draw rain
-	glEnable(GL_DEPTH_TEST);		// behåll!!
-	glUseProgram(rain_program);
-	int tex = 19;
-	glActiveTexture(GL_TEXTURE0 + tex); //RAIN_TEX_UNIT);
-    glUniform1i(glGetUniformLocation(rain_program, "tex"), tex); //RAIN_TEX_UNIT);  // texture 0 och 1 (pos och vel) är typ svarta?? dom borde vara röd respektive grön🙃
-	glActiveTexture(GL_TEXTURE0); 
-	glUniform1i(glGetUniformLocation(rain_program, "pos1"), 0); 
-	glActiveTexture(GL_TEXTURE1); 
-	glUniform1i(glGetUniformLocation(rain_program, "pos2"), 1); 
-    glUniform1i(glGetUniformLocation(rain_program, "texSize"), 256); 	// lärdom, kolla ALLTID att man använder rätt namn på variabler 🙃🙃🙃🙃🙃🙃🙃🙃🙃
+	glEnable(GL_DEPTH_TEST);	
+	useFBO(NULL, pos1FBO, pos2FBO); 
 	uploadMat4ToShader(rain_program, "world_to_view", worldCamera);
 	vec3 offset = vec3(1000, -100, 500);
 	uploadUniformVec3ToShader(rain_program, "pos_offset", offset);
-	// glActiveTexture(GL_TEXTURE0);
-	// glUniform1i(glGetUniformLocation(rain_program, "posTex"),0);
-	
-	glBindVertexArray(vertexArrayObjID);
-	
-	DrawModelInstanced(treeBillboard, rain_program, "inPosition", "inNormal", "inTexCord", count);
-	
-    // glEnable(GL_CULL_FACE); // TA BORT
+	// glBindVertexArray(vertexArrayObjID); 
+    glClear(GL_DEPTH_BUFFER_BIT);
+	DrawModelInstanced(squareM, rain_program, "inPosition", "inNormal", "inTexCoord", count);
+
 	printError("rain in display()\n");
 }
