@@ -7,11 +7,11 @@
 
 // Model pointers
 extern Model *ground, *skybox, *sofa, *table, *cabin, *fireplace, *newCabin, *roof, *floorObj, *wind1, *wind2, *wind3, *wind4;
-extern Model *treeBillboard, *tree_log, *door, *squareModel;
+extern Model *treeBillboard, *tree_log, *door, *squareModel, *wolfObj;
 
 // Transformation matrices
 extern mat4 totalGround, cabinT, FireplaceT, tableT, sofaT, newCabinT, mainCottageT, roofT, floorT, window1T, window2T, window3T, window4T;
-extern mat4 fireT, fireT2, logT, wolfT, doorT;
+extern mat4 fireT, fireT2, logT, wolfT, doorT, wolfObjT;
 extern vec3 fireStartPosition;
 extern vec3 cabinCenter;
 extern float fireRotation;

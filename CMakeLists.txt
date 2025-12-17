@@ -33,12 +33,8 @@ set(SOURCES
         common/Windows/MicroGlut.c
         Project/doorAnimation.cpp
         Project/doorAnimation.h
-        Project/meshOGL.cpp
-        Project/meshOGL.h
-        Project/ShaderHandler.cpp
-        Project/ShaderHandler.h
-        Project/model.cpp
-        Project/model.h
+        Project/BallAnimation.cpp
+        Project/BallAnimation.h
 )
 
 # Create executable

@@ -21,6 +21,15 @@ void DrawWindow(GLuint shader, mat4 windowTranslation, Model *window)
     printError("DrawCabin");
 }
 
+void DrawWolfObj(GLuint shader)
+{
+    glActiveTexture(GL_TEXTURE22);
+    glUniform1i(glGetUniformLocation(shader, "texUnit"), 22);
+    uploadMat4ToShader(shader, "model_To_World", wolfObjT);
+    DrawModel(wolfObj, shader, "in_Position", "inNormal", "inTexCord");
+    printError("DrawCabin");
+}
+
 
 void DrawFloor(GLuint shader)
 {
@@ -207,5 +216,6 @@ void drawObjects(GLuint shader){
     DrawWindow(shader, window2T ,wind1 );
     DrawWindow(shader, window3T ,wind1 );
     DrawWindow(shader, window4T ,wind1 );
+    DrawWolfObj(shader);
 
 }
