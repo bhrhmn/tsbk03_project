@@ -68,7 +68,6 @@ void InstantiateModels() {
     fireT = T(40.5, -5.0, 29.0) * Ry(-1.571) * S(0.1);
     fireT2 = T(41.0, -5.0, 29.8) * Ry(-1.571) * S(0.8);
     //logT = T(0.5, -7.0, 29.0) * Ry(-3.271)* S(0.025);
-    //fireStartPosition = vec3(0.f, 0.f, 0.f);
     fireStartPosition = vec3(0.5, -2.3, 29.0);
 
     fireRotation = atan2(fireT.m[2], fireT.m[0]);
@@ -103,7 +102,6 @@ void InstantiateModels() {
 }
 
 void moveFires() {
-    //FireplaceT = T(41.5, -8.5, 27.5) * Ry(-M_PI/2) * S(9);
     fireT = T(currentTX, currentTY+2.7f, currentTZ) * Ry(currentRy) * S(0.1);
     fireT2 = T(currentTX - 0.5f, currentTY+2.7f, currentTZ + 0.8f) * Ry(currentRy) * S(0.1);
     logT = T(currentTX, currentTY+1.f, currentTZ) * Ry(currentRy-1.7f) * S(0.025);

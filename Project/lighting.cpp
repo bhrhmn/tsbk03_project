@@ -33,17 +33,16 @@ void UpdateLightSources() {
     const float fireJitterX = flicker(t, 0.1f);
     const float fireJitterY = flicker(t, 0.1f);
 
-    // Fire animation updates - use smaller values to prevent runaway
-    const float f4 = sin(t/3) / 10.0f;             // Smaller amplitude
+    const float f4 = sin(t/3) / 10.0f;
 
     fireT = T(fireStartPosition.x + fireJitterX + f4 +1,fireStartPosition.y + fireJitterY - 3, fireStartPosition.z -1) * Ry(fireRotation+ M_PI/2) * S(0.1f);
     fireT2 = T(fireStartPosition.x - fireJitterX - f4+1,fireStartPosition.y + fireJitterY - 3 ,fireStartPosition.z -1) * Ry(fireRotation) * S(0.1f);
     firePos = vec3(fireStartPosition.x + fireJitterX, fireStartPosition.y + fireJitterY, fireStartPosition.z);
+    float fireIntensity = 1.5f + flicker(t, 1.0f);
+    fireColor = vec3(242.f/256, 125.f/256, 12.f/256) * fireIntensity;
 
     glUniform3fv(glGetUniformLocation(object_shader, "firePos"), 1, &firePos.x);
     glUniform3fv(glGetUniformLocation(shadow_cube_shader, "lightPos"), 1, &firePos.x);
-    float fireIntensity = 1.5f + flicker(t, 1.0f);
-    fireColor = vec3(242.f/256, 125.f/256, 12.f/256) * fireIntensity;
     glUniform3fv(glGetUniformLocation(object_shader, "fireColor"), 1, &fireColor.x);
     UpdateMoon();
 }

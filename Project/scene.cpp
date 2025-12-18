@@ -81,8 +81,8 @@ void init() {
     overFlowFbo = initFBO2(WINDOW_WIDTH, WINDOW_HEIGHT, 0, 1);
     glActiveTexture(GL_TEXTURE18);
     tempFbo = initFBO2(WINDOW_WIDTH, WINDOW_HEIGHT, 0, 1);
-	// Cube shadow FBO - use TEXTURE13 (was fireFbo's unit)
-	glActiveTexture(GL_TEXTURE0 + TEX_UNIT); // Use TEX_UNIT (13) for consistency
+	// Cube shadow FBO
+	glActiveTexture(GL_TEXTURE0 + TEX_UNIT);
 	printf("cube fbo texture: %d",GL_TEXTURE0 + TEX_UNIT);
 	shadowCubeFBO = initCubeFBO(WINDOW_HEIGHT);
 
