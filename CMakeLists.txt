@@ -29,9 +29,8 @@ set(SOURCES
         common/LoadTGA.c
         common/lodepng.cpp
         common/Windows/MicroGlut.c
-        Project/animation.cpp
-        Project/animation.h
-        Project/rain.cpp
+        Project/BallAnimation.cpp
+        Project/doorAnimation.cpp
 )
 
 # Create executable

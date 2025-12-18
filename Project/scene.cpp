@@ -2,15 +2,18 @@
 #define MAIN
 #include "scene.h"
 
+#include <iostream>
 #include "camera.h"
 #include "models.h"
 #include "rendering.h"
 #include "lighting.h"
+
 #include "shadows.h"
-#include "rain.h"
 //#include "sounds.h"
 
-FBOstruct *fireFbo, *moonFbo, *bloomFbo, *overFlowFbo, *tempFbo, *pos1FBO, *pos2FBO, *vel1FBO, *vel2FBO;
+
+
+FBOstruct *fireFbo, *moonFbo, *bloomFbo, *overFlowFbo, *tempFbo;
 
 GLuint shybox_shader;
 GLuint object_shader;
@@ -43,7 +46,9 @@ void init() {
     lowpass_shader = loadShaders("Shaders/lowpassfilter.vert", "Shaders/lowpassfilter.frag");
     bloom_shader = loadShaders("Shaders/overflow.vert", "Shaders/bloom.frag");
     printError("init shader");
-    
+
+
+
     // Textures
     InstantiateTextures();
     printError("Init Textures");
@@ -86,13 +91,7 @@ void init() {
     overFlowFbo = initFBO2(WINDOW_WIDTH, WINDOW_HEIGHT, 0, 1);
     glActiveTexture(GL_TEXTURE18);
     tempFbo = initFBO2(WINDOW_WIDTH, WINDOW_HEIGHT, 0, 1);
-    pos1FBO = initFBO(WINDOW_WIDTH, WINDOW_HEIGHT, 0);
-    pos2FBO = initFBO(WINDOW_WIDTH, WINDOW_HEIGHT, 0);
-    vel1FBO = initFBO(WINDOW_WIDTH, WINDOW_HEIGHT, 0);
-    vel2FBO = initFBO(WINDOW_WIDTH, WINDOW_HEIGHT, 0);
 
-    rain_init();
-    
     printError("init arrays");
 }
 
@@ -126,11 +125,6 @@ void display()
     //Using the projTex (object) shader
     glUseProgram(object_shader);
 
-    moveCamera();
-    
-    uploadMat4ToShader(object_shader, "world_To_View", worldCamera);
-    DrawSkyBox();
-    
 	//load both fbo depth maps to shader
 	glUniform1i(glGetUniformLocation(object_shader, "textureUnit"),TEX_UNIT);
 	glActiveTexture(GL_TEXTURE0 + TEX_UNIT);
@@ -151,11 +145,10 @@ void display()
 	DrawFire();
 	DrawWolf();
     blooming();
-    
-    rain(t); 
-
 	glutSwapBuffers();
 }
+
+
 
 
 
@@ -163,7 +156,7 @@ int main(int argc, char *argv[])
 {
 	glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
-
+	;
 	glutInitContextVersion(3, 2);
 	glutInitWindowSize(WINDOW_WIDTH, WINDOW_HEIGHT);
 	glutCreateWindow ("Cosy Cabin");
@@ -171,7 +164,9 @@ int main(int argc, char *argv[])
     glEnable(GL_CULL_FACE);
 
     init();
-   
+
+
+
 	glutDisplayFunc(display); 
 
 	glutMainLoop();

@@ -2,6 +2,8 @@
 #include "models.h"
 #include "camera.h"
 #include "scene.h"
+#include "BallAnimation.h"
+
 
 void DrawCabin(GLuint shader){
     glActiveTexture(GL_TEXTURE20);
@@ -18,6 +20,15 @@ void DrawWindow(GLuint shader, mat4 windowTranslation, Model *window)
     glUniform1i(glGetUniformLocation(shader, "texUnit"), 22);
     uploadMat4ToShader(shader, "model_To_World", windowTranslation);
     DrawModel(window, shader, "in_Position", "inNormal", "inTexCord");
+    printError("DrawCabin");
+}
+
+void DrawWolfObj(GLuint shader)
+{
+    glActiveTexture(GL_TEXTURE22);
+    glUniform1i(glGetUniformLocation(shader, "texUnit"), 22);
+    uploadMat4ToShader(shader, "model_To_World", wolfObjT);
+    DrawModel(wolfObj, shader, "in_Position", "inNormal", "inTexCord");
     printError("DrawCabin");
 }
 
@@ -190,6 +201,7 @@ void UpdateWolf() {
     int re_enter_speed = 2000;
     int pos = (int)(t*speed) % re_enter_speed;
     wolfT = start_position * T(0, 0, -pos) * Ry(M_PI_2*3) * Rx(M_PI) * S(0.4);
+    wolfObjT = start_position * T(3, -13, -pos) * Ry(M_PI_2*2) * S(0.2);
 }
 
 void drawObjects(GLuint shader){
@@ -207,5 +219,7 @@ void drawObjects(GLuint shader){
     DrawWindow(shader, window2T ,wind1 );
     DrawWindow(shader, window3T ,wind1 );
     DrawWindow(shader, window4T ,wind1 );
+    DrawWolfObj(shader);
 
+    animateObj(shader);
 }

@@ -2,13 +2,14 @@
 
 #include "MicroGlut.h"
 #include "scene.h"
+#include "BallAnimation.h"
 
 // Model variables
 Model *ground, *skybox, *sofa, *table, *cabin, *fireplace, *roof, *floorObj, *wind1, *wind2, *wind3, *wind4;
-Model *treeBillboard, *tree_log, *door, *squareModel;
+Model *treeBillboard, *tree_log, *door, *squareModel, *wolfObj;
 
 mat4 totalGround, cabinT, FireplaceT, tableT, sofaT, roofT, floorT, window1T, window2T, window3T, window4T;
-mat4 fireT, fireT2, logT, wolfT, doorT, newCabinT;
+mat4 fireT, fireT2, logT, wolfT, doorT, newCabinT, wolfObjT;
 vec3 fireStartPosition, cabinCenter;
 
 float fireRotation;
@@ -60,6 +61,10 @@ void InstantiateModels() {
     floorObj = LoadModel("Models/floor.obj");
     roof = LoadModel("Models/roof.obj");
     wind1 = LoadModel("Models/window.obj");
+    wolfObj = LoadModel("Models/Wolf.obj");
+
+    printf("ball");
+    ball(wolfObj);
 
     squareModel = LoadDataToModel(
             reinterpret_cast<vec3 *>(square), nullptr, reinterpret_cast<vec2 *>(squareTexCoord), nullptr,
@@ -74,6 +79,7 @@ void InstantiateModels() {
 
     window3T = T(50.0, 7.5, 46.5) * Ry(-3.142) * S(5.800);
     window4T = T(49.5, 8.0, 16.0) * Ry(-3.142) * S(5.800);
+    wolfObjT = T(0, -3, 0)   * S(0.2);
 
     totalGround = T(0,-10,0);
 
@@ -111,7 +117,7 @@ void InstantiateModels() {
     treeMat[11] = T(100, -5, 80);
 
 
-    modelT = &window4T; // change to desired model
+    modelT = &wolfObjT; // change to desired model
     currentScale = modelT->m[5];
     currentRy = atan2(modelT->m[2]* currentScale, modelT->m[0]* currentScale);
     currentTX = modelT->m[3];
