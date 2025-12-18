@@ -90,10 +90,10 @@ void setupBones(void)
 {
 	int bone;
 
-	g_bones[0].pos = vec3(0.01, 0.3, 0.75);
-	g_bones[1].pos = vec3(0.01, 0.02, 0.75);
-	g_bones[2].pos = vec3(40, -20, 0);
-	g_bones[3].pos = vec3(-10, -80, -10);
+	g_bones[0].pos = vec3(10, -0, 10);
+	g_bones[1].pos = vec3(-10, -0, 10);
+	g_bones[2].pos = vec3(10, -0, -10);
+	g_bones[3].pos = vec3(-10, -0, -10);
 
 	for (bone = 0; bone < kMaxBones; bone++)
 	{
@@ -199,8 +199,18 @@ void animateObj(GLuint shader)
 	float a = sinf(t) * 0.5f;
 
 	memcpy(g_bonesRes, g_bones, sizeof(g_bones));
-	g_bonesRes[2].rot = Rz(-a);
-	g_bonesRes[3].rot = Rz(a);
+	//g_bonesRes[2].rot = Rz(-a);
+	//g_bonesRes[3].rot = Rz(a);
+	float swing = cosf(t * 5.0f) * 0.5f; // faster swing for running
+
+	// front-left leg
+	g_bonesRes[2].rot = Ry(swing);
+	// front-right leg
+	g_bonesRes[3].rot = Ry(-swing);
+	// back-left leg
+	g_bonesRes[1].rot = Ry(-swing);
+	// back-right leg
+	g_bonesRes[0].rot = Ry(swing);
 
 	changeMesh(wolf); // calculates g_vertsResObj for all vertices
 
