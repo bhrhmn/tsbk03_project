@@ -9,6 +9,7 @@
 #include "lighting.h"
 
 #include "shadows.h"
+#include "sounds.h"
 //#include "sounds.h"
 
 FBOstruct *moonFbo, *bloomFbo, *overFlowFbo, *tempFbo, *shadowCubeFBO;
@@ -72,7 +73,7 @@ void init() {
     
     // Start timer
     glutTimerFunc(20, &OnTimer, 0);
-    // initFireplaceSound();
+    //initFireplaceSound();
 
     // init fbos
     glActiveTexture(GL_TEXTURE14);

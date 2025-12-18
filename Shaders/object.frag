@@ -78,6 +78,6 @@ void main(void)
 	setFireShadow(shadow, diff_color_fire);
 	setMoonShadow(shadow, diff_color_moon);
 
-	outColor =  shadow * vec4(diff_color_fire*0.8 + diff_color_moon,1.0) * texture(texUnit, outTexCord);
+	outColor =  shadow * vec4(diff_color_fire*0.8 + diff_color_moon*0.7,1.0) * texture(texUnit, outTexCord);
 
 }

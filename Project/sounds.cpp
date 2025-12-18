@@ -1,4 +1,5 @@
 #include <cstdio>
+#include "sounds.h"
 sf::Sound* fireSound = nullptr;
 
 void initFireplaceSound() {
@@ -9,6 +10,6 @@ void initFireplaceSound() {
     }
 
     fireSound = new sf::Sound(buffer);
-    fireSound->setLoop(true);
+    fireSound->setLooping(true);
     fireSound->play();
 }

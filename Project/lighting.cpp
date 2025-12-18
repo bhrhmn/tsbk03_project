@@ -35,7 +35,7 @@ void UpdateLightSources() {
 
     const float f4 = sin(t/3) / 10.0f;
 
-    fireT = T(fireStartPosition.x + fireJitterX + f4 +1,fireStartPosition.y + fireJitterY - 3, fireStartPosition.z -1) * Ry(fireRotation+ M_PI/2) * S(0.1f);
+    fireT = T(fireStartPosition.x + fireJitterX + f4 +1,fireStartPosition.y + fireJitterY - 3 + f4, fireStartPosition.z -1) * Ry(fireRotation+ M_PI/2) * S(0.1f);
     fireT2 = T(fireStartPosition.x - fireJitterX - f4+1,fireStartPosition.y + fireJitterY - 3 ,fireStartPosition.z -1) * Ry(fireRotation) * S(0.1f);
     firePos = vec3(fireStartPosition.x + fireJitterX, fireStartPosition.y + fireJitterY, fireStartPosition.z);
     float fireIntensity = 1.5f + flicker(t, 1.0f);
