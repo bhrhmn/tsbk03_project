@@ -18,7 +18,7 @@ void renderCubeShadowMap() {
     glBindFramebuffer(GL_FRAMEBUFFER, shadowCubeFBO->fb);
     glViewport(0, 0, SHADOW_CUBE_SIZE, SHADOW_CUBE_SIZE);
     glClear(GL_DEPTH_BUFFER_BIT);
-
+    glDisable(GL_CULL_FACE);
     glUseProgram(shadow_cube_shader);
     vec3 lightPos = firePos;
 

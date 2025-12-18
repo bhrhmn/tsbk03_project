@@ -103,7 +103,7 @@ void display()
     
     UpdateLightSources();
     UpdateWolf();
-    //moonShadow();
+    moonShadow();
 
     //2. Render from camera.
     // With bloom

@@ -20,11 +20,11 @@ in vec2 outTexCord;
 in vec4 SurfacePos;
 
 in vec4 lightSourceCoordMoon;
-in vec3 fragPosWorld;
+in vec4 fragPosWorld;
 
 
 void setFireShadow(inout float shadow, inout vec3 diff_color_fire){
-	vec3 fragToLight = fragPosWorld - firePos;
+	vec3 fragToLight = vec3(fragPosWorld - vec4(firePos,1.0f));
 	float currentDepth = length(fragToLight);
 	float closestDepthNormalized = texture(shadowCubeMap, fragToLight).r;
 	float closestDepthWorld = closestDepthNormalized * far_plane;
@@ -33,9 +33,9 @@ void setFireShadow(inout float shadow, inout vec3 diff_color_fire){
 
 	// Check if fragment is within range
 	if (currentDepth > far_plane) {
-		shadow = 0.0; // Outside the shadow map range = dark
+		shadow -=0; // Outside the shadow map range = dark
 	} else if (currentDepth > closestDepthWorld + bias) {
-		shadow = 0.0f; // In Shadow
+		shadow -= 0.4f; // In Shadow
 	} else {
 		shadow = 1.0f; // Lit
 	}
@@ -45,8 +45,21 @@ void setFireShadow(inout float shadow, inout vec3 diff_color_fire){
 	diff_color_fire = (max(0.0, dot(normalize(transformedNormal), fireLocation)) * fireColor);
 }
 void setMoonShadow(inout float shadow, inout vec3 diff_color_moon){
+	vec3 L = normalize(vec3((world_To_View * vec4(moonPos, 1.0)) - SurfacePos));
+	vec3 N = normalize(transformedNormal);
+
+	// Calculate lighting intensity
+	float NdotL = max(0.0, dot(N, L));
+	diff_color_moon = NdotL * moonColor;
+
+	// If the surface faces away from the light, skip
+	if (NdotL <= 0.0) {
+		return; // It's already dark, don't run shadow logic
+	}
+
+
 	vec3 moonLocation = normalize(vec3((world_To_View *vec4(moonPos, 1.0)) - SurfacePos));
-	diff_color_moon = (max(0.0, dot(normalize(transformedNormal), moonLocation)) * moonColor);
+	//diff_color_moon = (max(0.0, dot(normalize(transformedNormal), moonLocation)) * moonColor);
 
 	float biasMoon = max(0.005 * (1.0 - dot(normalize(transformedNormal), moonLocation)), 0.001);
 	vec4 shadowCoordinateWdivideMoon = lightSourceCoordMoon / lightSourceCoordMoon.w;
@@ -63,17 +76,16 @@ void setMoonShadow(inout float shadow, inout vec3 diff_color_moon){
 		shadow -= 0.3;
 	}
 }
-
 void main(void)
 {
 	float shadow = 1.0;
 	vec3 diff_color_fire, diff_color_moon;
 
 	setFireShadow(shadow, diff_color_fire);
-	//setMoonShadow(shadow, diff_color_moon);
+	setMoonShadow(shadow, diff_color_moon);
 
-	//outColor =  shadow * vec4(diff_color_fire*0.8 + diff_color_moon,1.0) * texture(texUnit, outTexCord);
-	outColor =  shadow * vec4(diff_color_fire*0.8,1.0) * texture(texUnit, outTexCord);
+	outColor =  shadow * vec4(diff_color_fire*0.8 + diff_color_moon,1.0) * texture(texUnit, outTexCord);
+	//outColor =  shadow * vec4(diff_color_fire*0.8,1.0) * texture(texUnit, outTexCord);
 
 
 }

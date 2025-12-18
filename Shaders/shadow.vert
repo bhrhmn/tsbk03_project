@@ -1,17 +1,10 @@
 #version 150
 
 in vec3 in_Position;
-in vec3 inNormal; 
-in vec2 inTexCord;
-
-out vec2 texCoord;
-
-uniform mat4 projectionMatrix;
+in vec3 inNormal;
 uniform mat4 lightViewProjMatrix;
 
-uniform mat4 world_To_View;
 uniform mat4 model_To_World;
-
 
 
 void main(void)

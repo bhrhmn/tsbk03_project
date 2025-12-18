@@ -94,7 +94,7 @@ void InstantiateModels() {
     treeMat[11] = T(100, -5, 80);
 
 
-    modelT = &floorT; // change to desired model
+    modelT = &tableT; // change to desired model
     currentScale = modelT->m[5];
     currentRy = atan2(modelT->m[2]* currentScale, modelT->m[0]* currentScale);
     currentTX = modelT->m[3];
