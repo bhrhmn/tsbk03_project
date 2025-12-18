@@ -3,6 +3,7 @@
 #include "lighting.h"
 #include "models.h"
 #include "scene.h"
+#include "doorAnimation.h"
 // Camera variables
 vec3 worldCameraP = { 25.0f, 8.0f, 0.0f };
 vec3 worldCameraL = { 30.0f, 8.0f, 25.0f };
@@ -17,6 +18,8 @@ bool inCabin(vec3 newCameraP){
     return !(newCameraP.x < minX || newCameraP.x > maxX || 
              newCameraP.z < minZ || newCameraP.z > maxZ);
 }
+
+
 
 void moveCamera(){
     vec3 direction = normalize(worldCameraL - worldCameraP);
@@ -80,5 +83,5 @@ void moveCamera(){
         worldCameraL = fireLookAt;
     }
     worldCamera = lookAtv(worldCameraP, worldCameraL, worldCameraV);
-
+    openDoor();
 }

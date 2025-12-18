@@ -2,13 +2,16 @@
 
 #include "MicroGlut.h"
 #include "scene.h"
+#include "BallAnimation.h"
 
 // Model variables
 Model *ground, *skybox, *sofa, *table, *cabin, *fireplace, *roof, *floorObj, *wind1, *wind2, *wind3, *wind4;
-Model *treeBillboard, *tree_log, *door, *squareModel;
-mat4 totalGround, cabinT, FireplaceT, tableT, sofaT, roofT, floorT, windowT;
-mat4 fireT, fireT2, logT, wolfT, doorT;
+Model *treeBillboard, *tree_log, *door, *squareModel, *wolfObj;
+
+mat4 totalGround, cabinT, FireplaceT, tableT, sofaT, roofT, floorT, window1T, window2T, window3T, window4T;
+mat4 fireT, fireT2, logT, wolfT, doorT, newCabinT, wolfObjT;
 vec3 fireStartPosition, cabinCenter;
+
 float fireRotation;
 const int FOREST_SIZE = 12;
 mat4 treeMat[FOREST_SIZE];
@@ -32,6 +35,9 @@ unsigned int logTex;
 unsigned int wolfTex;
 unsigned int doorTex;
 unsigned int roofTex;
+unsigned int windowTex;
+unsigned int rainTex;
+unsigned int noiseTex;
 
 // for moving model
 mat4* modelT;
@@ -40,6 +46,7 @@ float currentTY;
 float currentTZ;
 float currentRy;
 float currentScale;
+
 
 void InstantiateModels() {
     ground = LoadDataToModel(vertices, vertex_normals, tex_coords, vertex_normals, indices, 4, 6);
@@ -53,6 +60,11 @@ void InstantiateModels() {
     cabin = LoadModel("Models/maincottage.obj");
     floorObj = LoadModel("Models/floor.obj");
     roof = LoadModel("Models/roof.obj");
+    wind1 = LoadModel("Models/window.obj");
+    wolfObj = LoadModel("Models/Wolf.obj");
+
+    printf("ball");
+    ball(wolfObj);
 
     squareModel = LoadDataToModel(
             reinterpret_cast<vec3 *>(square), nullptr, reinterpret_cast<vec2 *>(squareTexCoord), nullptr,
@@ -61,6 +73,13 @@ void InstantiateModels() {
     tableT = T(13.5, -15.5, -1.0) * Ry(0.000) * S(8.000);
     sofaT = T(-25.5, -8.5, 29.5) * Ry(1.571) * S(8.000);
     roofT = T(-15,2,10)*Ry(M_PI*3/2)* S(5.8);
+    window1T = T(-52.5, 8.0, 17.5) * Ry(-0.000) * S(5.800);
+    window2T = T(-52.5, 7.5, 48.5) * Ry(0.000) * S(5.800);
+
+    window3T = T(50.0, 7.5, 46.5) * Ry(-3.142) * S(5.800);
+    window4T = T(49.5, 8.0, 16.0) * Ry(-3.142) * S(5.800);
+    wolfObjT = T(0, -3, 0)   * S(0.2);
+
     totalGround = T(0,-10,0);
 
     //fireplace
@@ -74,10 +93,16 @@ void InstantiateModels() {
 
     wolfT = T(150, 3.5, 0) * Ry(M_PI_2*3) * Rx(M_PI) * S(0.4);
     doorT = T(-5.0, -2.0, -3.5) * Ry(-1.571) * S(5.800);
+
     cabinT = T(-15,2,10)*Ry(M_PI*3/2)* S(5.8);
     floorT = T(-15,2,10)*Ry(M_PI*3/2)* S(5.8);
 
     cabinCenter = vec3(tableT.m[3], tableT.m[7], tableT.m[11]);
+
+    newCabinT = T(-15,2,10)*Ry(M_PI*3/2)* S(5.8);
+    floorT = T(-15,2,10)*Ry(M_PI*3/2)* S(5.8);
+
+
 
     treeMat[0] = T(150, -5, -10);
     treeMat[1] = T(200, -5, 20);
@@ -186,7 +211,7 @@ void InstantiateTextures() {
     glBindTexture(GL_TEXTURE_2D, myTex2);
 
     glActiveTexture(GL_TEXTURE7);
-    LoadTGATextureSimple("Models/flames.tga", &maskrosTex);
+    LoadTGATextureSimple("Models/maskros512.tga", &maskrosTex);
     glBindTexture(GL_TEXTURE_2D, maskrosTex);
 
     glActiveTexture(GL_TEXTURE8);
@@ -217,6 +242,10 @@ void InstantiateTextures() {
     LoadTGATextureSimple("Models/roof.tga", &roofTex);
     glBindTexture(GL_TEXTURE_2D, roofTex);
 
+    glActiveTexture(GL_TEXTURE22);
+    LoadTGATextureSimple("Models/window.tga", &windowTex);
+    glBindTexture(GL_TEXTURE_2D, windowTex);
+
     glActiveTexture(GL_TEXTURE12);
     // LoadTGATextureSimple("Models/wolf.tga", &wolfTex);
     // glBindTexture(GL_TEXTURE_2D, wolfTex);
@@ -230,6 +259,13 @@ void InstantiateTextures() {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
+    glActiveTexture(GL_TEXTURE0 + RAIN_TEX_UNIT);
+    LoadTGATextureSimple("Models/waterdroplet.tga", &rainTex);
+    glBindTexture(GL_TEXTURE_2D, rainTex);
+
+    glActiveTexture(GL_TEXTURE19);
+    LoadTGATextureSimple("Models/noise_colors.tga", &noiseTex);
+    glBindTexture(GL_TEXTURE_2D, noiseTex);
 
     glActiveTexture(GL_TEXTURE13);
 

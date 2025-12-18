@@ -1,10 +1,13 @@
 
 #define MAIN
 #include "scene.h"
+
+#include <iostream>
 #include "camera.h"
 #include "models.h"
 #include "rendering.h"
 #include "lighting.h"
+
 #include "shadows.h"
 //#include "sounds.h"
 
@@ -45,7 +48,6 @@ void init() {
     bloom_shader = loadShaders("Shaders/overflow.vert", "Shaders/bloom.frag");
     printError("init shader");
 
-    
     // Textures
     InstantiateTextures();
     printError("Init Textures");
@@ -100,7 +102,7 @@ void display()
 
 	glUseProgram(object_shader);
 	glUniform1f(glGetUniformLocation(object_shader, "far_plane"), far_plane);
-    
+
     UpdateLightSources();
     UpdateWolf();
     moonShadow();
@@ -137,9 +139,10 @@ void display()
 	DrawTree();
 	DrawWolf();
     blooming();
-
 	glutSwapBuffers();
 }
+
+
 
 
 
@@ -147,7 +150,7 @@ int main(int argc, char *argv[])
 {
 	glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
-
+	;
 	glutInitContextVersion(3, 2);
 	glutInitWindowSize(WINDOW_WIDTH, WINDOW_HEIGHT);
 	glutCreateWindow ("Cosy Cabin");
@@ -155,7 +158,9 @@ int main(int argc, char *argv[])
     glEnable(GL_CULL_FACE);
 
     init();
-   
+
+
+
 	glutDisplayFunc(display); 
 
 	glutMainLoop();
