@@ -201,7 +201,7 @@ void UpdateWolf() {
     int re_enter_speed = 2000;
     int pos = (int)(t*speed) % re_enter_speed;
     wolfT = start_position * T(0, 0, -pos) * Ry(M_PI_2*3) * Rx(M_PI) * S(0.4);
-    wolfObjT = start_position * T(3, -13, -pos) * Ry(M_PI_2*2) * S(0.2);
+    wolfObjT = start_position * T(8, -13, -pos) * Ry(M_PI_2*2) * S(0.2);
 }
 
 void drawObjects(GLuint shader){

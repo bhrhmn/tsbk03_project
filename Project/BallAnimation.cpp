@@ -31,7 +31,7 @@ typedef struct Triangle
 #define CYLINDER_SEGMENT_LENGTH 0.37
 #define kMaxRow 100
 #define kMaxCorners 8
-#define kMaxBones 4
+#define kMaxBones 8
 #define kMaxg_poly ((kMaxRow-1) * kMaxCorners * 2)
 #ifndef Pi
 #define Pi 3.1416
@@ -73,6 +73,7 @@ typedef struct Bone
 {
   vec3 pos;
   mat4 rot;
+	vec3 offset;
 } Bone;
 
 
@@ -94,10 +95,15 @@ void setupBones(void)
 	g_bones[1].pos = vec3(-10, -0, 10);
 	g_bones[2].pos = vec3(10, -0, -10);
 	g_bones[3].pos = vec3(-10, -0, -10);
+	g_bones[4].pos = vec3(10, 40, 10);
+	g_bones[5].pos = vec3(-10, 40, 10);
+	g_bones[6].pos = vec3(10, 40, -10);
+	g_bones[7].pos = vec3(-10, 40, -10);
 
 	for (bone = 0; bone < kMaxBones; bone++)
 	{
 		g_bones[bone].rot = IdentityMatrix();
+		g_bones[bone].offset = vec3(0,0,0);
 	}
 }
 
@@ -199,18 +205,44 @@ void animateObj(GLuint shader)
 	float a = sinf(t) * 0.5f;
 
 	memcpy(g_bonesRes, g_bones, sizeof(g_bones));
-	//g_bonesRes[2].rot = Rz(-a);
-	//g_bonesRes[3].rot = Rz(a);
-	float swing = cosf(t * 5.0f) * 0.5f; // faster swing for running
+	float speed = 5.0f;
 
-	// front-left leg
-	g_bonesRes[2].rot = Ry(swing);
-	// front-right leg
-	g_bonesRes[3].rot = Ry(-swing);
-	// back-left leg
-	g_bonesRes[1].rot = Ry(-swing);
-	// back-right leg
-	g_bonesRes[0].rot = Ry(swing);
+	float phase = t * speed;
+
+	float hipSwing   = cosf(phase) * 0.6f;
+	float kneeBend   = fmaxf(0.0f, sinf(phase)) * 1.0f; // only when forward
+	float footLift   = fmaxf(0.0f, sinf(phase)) * 0.8f;
+
+	g_bonesRes[4].rot    = Ry(hipSwing);
+	g_bonesRes[4].offset = vec3(0, 0.1f, hipSwing * 0.5f);
+
+	g_bonesRes[0].rot    = Rx(-kneeBend);
+	g_bonesRes[0].offset = vec3(0, footLift, 0);
+
+	float phaseOpp = phase + Pi;
+
+	float hipSwingR = cosf(phaseOpp) * 0.6f;
+	float kneeBendR = fmaxf(0.0f, sinf(phaseOpp)) * 1.0f;
+	float footLiftR = fmaxf(0.0f, sinf(phaseOpp)) * 0.8f;
+
+	g_bonesRes[5].rot    = Ry(hipSwingR);
+	g_bonesRes[5].offset = vec3(0, 0.1f, hipSwingR * 0.5f);
+
+	g_bonesRes[1].rot    = Rx(-kneeBendR);
+	g_bonesRes[1].offset = vec3(0, footLiftR, 0);
+
+	float backPhase = phase + Pi * 0.25f;
+
+	float hipSwingB = cosf(backPhase) * 0.4f;
+	float kneeBendB = fmaxf(0.0f, sinf(backPhase)) * 0.8f;
+
+	g_bonesRes[6].rot = Ry(-hipSwingB);
+	g_bonesRes[2].rot = Rx(-kneeBendB);
+
+	g_bonesRes[7].rot = Ry(hipSwingB);
+	g_bonesRes[3].rot = Rx(-kneeBendB);
+
+
 
 	changeMesh(wolf); // calculates g_vertsResObj for all vertices
 
@@ -222,10 +254,6 @@ void animateObj(GLuint shader)
 
 	DrawModel(wolf, shader, "in_Position", "inNormal", "inTexCoord");
 }
-
-
-
-
 
 /////////////////////////////////////////
 //		M A I N
@@ -241,16 +269,6 @@ void ball(Model *model)
 	ConnectVertToBone(model);
 	changeMesh(model);
 
-
-	// Build Model from cylinder data
-	/*cylinderModel = LoadDataToModel(
-			(vec3*) g_vertsRes,
-			(vec3*) g_normalsRes,
-			(vec2*) g_boneWeightVis, // texCoords
-			NULL, // (GLfloat*) g_boneWeights, // colors
-			(GLuint*) g_poly, // indices
-			kMaxRow*kMaxCorners,
-			kMaxg_poly * 3);*/
 
   g_shader = loadShaders("Shaders/shadow.vert" , "Shaders/shadow.frag");
 
