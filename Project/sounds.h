@@ -7,5 +7,5 @@
 class sounds {
 };
 
-
+void initFireplaceSound();
 #endif //SCENE_SOUNDS_H

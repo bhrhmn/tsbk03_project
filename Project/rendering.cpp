@@ -2,6 +2,8 @@
 #include "models.h"
 #include "camera.h"
 #include "scene.h"
+#include "BallAnimation.h"
+
 
 void DrawCabin(GLuint shader){
     glActiveTexture(GL_TEXTURE20);
@@ -21,14 +23,23 @@ void DrawWindow(GLuint shader, mat4 windowTranslation, Model *window)
     printError("DrawCabin");
 }
 
+void DrawWolfObj(GLuint shader)
+{
+    glActiveTexture(GL_TEXTURE22);
+    glUniform1i(glGetUniformLocation(shader, "texUnit"), 22);
+    uploadMat4ToShader(shader, "model_To_World", wolfObjT);
+    DrawModel(wolfObj, shader, "in_Position", "inNormal", "inTexCord");
+    printError("DrawCabin");
+}
+
 
 void DrawFloor(GLuint shader)
 {
-    glActiveTexture(GL_TEXTURE21);
-    glUniform1i(glGetUniformLocation(shader, "texUnit"), 21);
+    glActiveTexture(GL_TEXTURE3);
+    glUniform1i(glGetUniformLocation(shader, "texUnit"), 3);
     uploadMat4ToShader(shader, "model_To_World", floorT);
     DrawModel(floorObj, shader, "in_Position", "inNormal", "inTexCord");
-    printError("DrawCabin");
+    printError("DrawFloor");
 }
 
 
@@ -38,9 +49,8 @@ void DrawRoof(GLuint shader)
     glUniform1i(glGetUniformLocation(shader, "texUnit"), 21);
     uploadMat4ToShader(shader, "model_To_World", roofT);
     DrawModel(roof, shader, "in_Position", "inNormal", "inTexCord");
-    printError("DrawCabin");
+    printError("DrawRoof");
 }
-
 
 
 void DrawDoor(GLuint shader){
@@ -69,6 +79,7 @@ void DrawLog(GLuint shader){
 
 void DrawSofa(GLuint shader){
     glActiveTexture(GL_TEXTURE4);
+    printError("DrawSofa");
     glUniform1i(glGetUniformLocation(shader, "texUnit"), 4);
 	uploadMat4ToShader(shader, "model_To_World", sofaT);
 	DrawModel(sofa, shader, "in_Position", "inNormal", "inTexCord");
@@ -190,9 +201,11 @@ void UpdateWolf() {
     int re_enter_speed = 2000;
     int pos = (int)(t*speed) % re_enter_speed;
     wolfT = start_position * T(0, 0, -pos) * Ry(M_PI_2*3) * Rx(M_PI) * S(0.4);
+    wolfObjT = start_position * T(8, -13, -pos) * Ry(M_PI_2*2) * S(0.2);
 }
 
 void drawObjects(GLuint shader){
+    DrawFire();
     glUseProgram(shader);
     DrawGround(shader);
     DrawCabin(shader);
@@ -207,5 +220,7 @@ void drawObjects(GLuint shader){
     DrawWindow(shader, window2T ,wind1 );
     DrawWindow(shader, window3T ,wind1 );
     DrawWindow(shader, window4T ,wind1 );
+    DrawWolfObj(shader);
 
+    animateObj(shader);
 }

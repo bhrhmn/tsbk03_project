@@ -2,17 +2,17 @@ cmake_minimum_required(VERSION 3.20)
 project(SceneProject)
 
 # Set vcpkg toolchain
-#set(CMAKE_TOOLCHAIN_FILE "C:/Users/lunas/Documents/tsbk03_project/vcpkg/scripts/buildsystems/vcpkg.cmake")
-set(CMAKE_TOOLCHAIN_FILE "C:/Users/jorun/Kod/vcpkg/scripts/buildsystems/vcpkg.cmake")
+set(CMAKE_TOOLCHAIN_FILE "C:/Users/lunas/Documents/tsbk03_project/vcpkg/scripts/buildsystems/vcpkg.cmake")
+#set(CMAKE_TOOLCHAIN_FILE "C:/Users/jorun/Kod/vcpkg/scripts/buildsystems/vcpkg.cmake")
 
 set(CMAKE_CXX_STANDARD 17)
 enable_language(C)
 
 # Find packages - ADD GLEW
 find_package(GLEW REQUIRED)
-find_package(SFML 3.0 COMPONENTS Audio Graphics Window System REQUIRED)
+find_package(SFML CONFIG REQUIRED COMPONENTS Audio System)
 find_package(OpenGL REQUIRED)
-
+find_package(assimp CONFIG REQUIRED)
 message(STATUS "GLEW found: ${GLEW_FOUND}")
 message(STATUS "SFML found: ${SFML_FOUND}")
 
@@ -29,9 +29,8 @@ set(SOURCES
         common/LoadTGA.c
         common/lodepng.cpp
         common/Windows/MicroGlut.c
-        Project/animation.cpp
-        Project/animation.h
-        Project/rain.cpp
+        Project/BallAnimation.cpp
+        Project/doorAnimation.cpp
 )
 
 # Create executable
@@ -48,12 +47,14 @@ if(WIN32)
             gdi32
             winmm
             GLEW::GLEW
+            assimp::assimp
+            SFML::Audio
+            SFML::System
     )
 
     target_compile_definitions(scene PRIVATE
             _CRT_SECURE_NO_WARNINGS
             GL_GLEXT_PROTOTYPES
-            GLEW_STATIC      # Add this for static linking
     )
 endif()
 

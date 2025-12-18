@@ -2,13 +2,14 @@
 
 #include "MicroGlut.h"
 #include "scene.h"
+#include "BallAnimation.h"
 
 // Model variables
 Model *ground, *skybox, *sofa, *table, *cabin, *fireplace, *roof, *floorObj, *wind1, *wind2, *wind3, *wind4;
-Model *treeBillboard, *tree_log, *door, *squareModel;
+Model *treeBillboard, *tree_log, *door, *squareModel, *wolfObj;
 
 mat4 totalGround, cabinT, FireplaceT, tableT, sofaT, roofT, floorT, window1T, window2T, window3T, window4T;
-mat4 fireT, fireT2, logT, wolfT, doorT, newCabinT;
+mat4 fireT, fireT2, logT, wolfT, doorT, newCabinT, wolfObjT;
 vec3 fireStartPosition, cabinCenter;
 
 float fireRotation;
@@ -54,42 +55,48 @@ void InstantiateModels() {
     skybox = LoadModel("skybox/skybox.obj");
     sofa = LoadModel("Models/sofa/model/SOFA.obj.obj");
     table = LoadModel("Models/Table.obj");
-    fireplace = LoadModel("Models/fireplace_blender.obj");
+    fireplace = LoadModel("Models/fireplace.obj");
     tree_log = LoadModel("Models/tree_log/low_poly_log.obj");
     door = LoadModel("Models/newdoor.obj");
     cabin = LoadModel("Models/maincottage.obj");
     floorObj = LoadModel("Models/floor.obj");
     roof = LoadModel("Models/roof.obj");
     wind1 = LoadModel("Models/window.obj");
+    wolfObj = LoadModel("Models/Wolf.obj");
+
+    printf("ball");
+    ball(wolfObj);
 
     squareModel = LoadDataToModel(
             reinterpret_cast<vec3 *>(square), nullptr, reinterpret_cast<vec2 *>(squareTexCoord), nullptr,
             squareIndices, 4, 6);
 
-    FireplaceT = T(35,-5,25) * Ry(-M_PI/2) * S(9);
-    tableT = T(15.5, -15.5, 30.0) * Ry(0.000) * S(8.000);
-    sofaT = T(-11.5, -8.5, 29.5) * Ry(1.571) * S(8.000);
+    tableT = T(13.5, -15.5, -1.0) * Ry(0.000) * S(8.000);
+    sofaT = T(-25.5, -8.5, 29.5) * Ry(1.571) * S(8.000);
     roofT = T(-15,2,10)*Ry(M_PI*3/2)* S(5.8);
     window1T = T(-52.5, 8.0, 17.5) * Ry(-0.000) * S(5.800);
     window2T = T(-52.5, 7.5, 48.5) * Ry(0.000) * S(5.800);
 
     window3T = T(50.0, 7.5, 46.5) * Ry(-3.142) * S(5.800);
     window4T = T(49.5, 8.0, 16.0) * Ry(-3.142) * S(5.800);
+    wolfObjT = T(0, -3, 0)   * S(0.2);
 
     totalGround = T(0,-10,0);
 
     //fireplace
-    FireplaceT = T(41.5, -8.0, 29.5) * Ry(-1.571) * S(9.000);
+    FireplaceT = T(0.5, -8.0, 29.0) * Ry(-1.571) * S(1.f);
     fireT = T(40.5, -5.0, 29.0) * Ry(-1.571) * S(0.1);
     fireT2 = T(41.0, -5.0, 29.8) * Ry(-1.571) * S(0.8);
-    logT = T(40.0, -7.0, 29.0) * Ry(-3.271)* S(0.025);
-    fireStartPosition = vec3(40.5, -5.3, 29.0);
+    //logT = T(0.5, -7.0, 29.0) * Ry(-3.271)* S(0.025);
+    fireStartPosition = vec3(0.5, -2.3, 29.0);
+
     fireRotation = atan2(fireT.m[2], fireT.m[0]);
 
     wolfT = T(150, 3.5, 0) * Ry(M_PI_2*3) * Rx(M_PI) * S(0.4);
     doorT = T(-5.0, -2.0, -3.5) * Ry(-1.571) * S(5.800);
 
     cabinT = T(-15,2,10)*Ry(M_PI*3/2)* S(5.8);
+    floorT = T(-15,2,10)*Ry(M_PI*3/2)* S(5.8);
 
     cabinCenter = vec3(tableT.m[3], tableT.m[7], tableT.m[11]);
 
@@ -112,7 +119,7 @@ void InstantiateModels() {
     treeMat[11] = T(100, -5, 80);
 
 
-    modelT = &window4T; // change to desired model
+    modelT = &tableT; // change to desired model
     currentScale = modelT->m[5];
     currentRy = atan2(modelT->m[2]* currentScale, modelT->m[0]* currentScale);
     currentTX = modelT->m[3];
@@ -121,7 +128,6 @@ void InstantiateModels() {
 }
 
 void moveFires() {
-    //FireplaceT = T(41.5, -8.5, 27.5) * Ry(-M_PI/2) * S(9);
     fireT = T(currentTX, currentTY+2.7f, currentTZ) * Ry(currentRy) * S(0.1);
     fireT2 = T(currentTX - 0.5f, currentTY+2.7f, currentTZ + 0.8f) * Ry(currentRy) * S(0.1);
     logT = T(currentTX, currentTY+1.f, currentTZ) * Ry(currentRy-1.7f) * S(0.025);

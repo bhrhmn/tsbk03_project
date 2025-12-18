@@ -2,7 +2,7 @@
 // Created by jorun on 2025-12-09.
 //
 
-#include "animation.h"
+#include "doorAnimation.h"
 #include "camera.h"
 #include "models.h"
 

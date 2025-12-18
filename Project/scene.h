@@ -7,21 +7,21 @@
 #endif
 #include "GL_utilities.h"
 #include "LittleOBJLoader.h"
+#include <assimp/Importer.hpp>
 #include "LoadTGA.h"  // Add this for LoadTGATextureSimple
 #include "lodepng.h"  // Add this for lodepng::decode
 
 
-// Projection parameters
-#define near 1.0
-#define far 500.0
-#define right 0.5
-#define left (-0.5)
-#define top 0.5
-#define bottom (-0.5)
+// Projection parameters (renamed to avoid conflict with GLM)
+#define SCENE_NEAR 1.0f
+#define SCENE_FAR 500.0f
+#define SCENE_RIGHT 0.5f
+#define SCENE_LEFT (-0.5f)
+#define SCENE_TOP 0.5f
+#define SCENE_BOTTOM (-0.5f)
 #define GROUND_SIZE 1000.0f
 #define WINDOW_HEIGHT 1080.0f
 #define WINDOW_WIDTH 1920.0f
-
 
 #define TEX_UNIT 0
 #define MOON_TEX_UNIT 1
@@ -29,10 +29,10 @@
 #define RAIN_TEX_UNIT 30
 
 
-inline mat4 projectionMatrix = perspective(45.0f, WINDOW_WIDTH/WINDOW_HEIGHT, near, far);
+inline mat4 projectionMatrix = perspective(45.0f, WINDOW_WIDTH/WINDOW_HEIGHT, SCENE_NEAR, SCENE_FAR);
+inline mat4 scaleBiasMatrix = T(0.5, 0.5, 0.0) * S(0.5, 0.5, 1.0);
 
 inline mat4 modelViewMatrix;
-inline mat4 shadowProjectionMatrixFire;
 
 
 // Vertex data
@@ -104,7 +104,9 @@ extern vec3 moonPos;
 extern vec3 moonColor;
 
 // Shaders
+
 extern GLuint shybox_shader;
+extern GLuint shadow_cube_shader;
 extern GLuint object_shader;
 extern GLuint shadow_shader;
 extern GLuint tree_shader;
@@ -113,7 +115,8 @@ extern GLuint lowpass_shader;
 extern GLuint bloom_shader;
 
 // FBOs
-extern FBOstruct *fireFbo, *moonFbo, *bloomFbo, *overFlowFbo, *tempFbo, *pos1FBO, *pos2FBO, *vel1FBO, *vel2FBO;
+extern FBOstruct *moonFbo, *bloomFbo, *overFlowFbo, *tempFbo, *pos1FBO, *pos2FBO, *vel1FBO, *vel2FBO;
+extern FBOstruct *shadowCubeFBO;
 
 // Time
 extern GLfloat t;

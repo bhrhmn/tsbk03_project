@@ -350,6 +350,52 @@ FBOstruct *initFBO2(int width, int height, int int_method, int create_depthimage
     return fbo;
 }
 
+
+FBOstruct *initCubeFBO(int width)
+{
+    FBOstruct *fbo = (FBOstruct *)malloc(sizeof(FBOstruct));
+    fbo->width = width;
+    fbo->height = width;
+
+    // 1. Create and Bind FBO
+    glGenFramebuffers(1, &fbo->fb);
+    glBindFramebuffer(GL_FRAMEBUFFER, fbo->fb);
+
+    // 2. Linear Depth Cube Map (COLOR ATTACHMENT 0)
+	glGenTextures(1, &fbo->depth);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, fbo->depth);
+
+	for (unsigned int i = 0; i < 6; ++i) {
+		// Use GL_DEPTH_COMPONENT for standard, non-linear Z-depth
+		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_DEPTH_COMPONENT, // Internal format
+				  width, width, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL); // Format and Type
+	}
+
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
+
+	glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, fbo->depth, 0);
+
+    // 3. Traditional Depth Buffer (DEPTH ATTACHMENT)
+	glDrawBuffer(GL_NONE);
+	glReadBuffer(GL_NONE);
+
+    // 5. Final Check
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+       fprintf(stderr, "Cube shadow FBO is NOT complete!\n");
+    } else {
+       fprintf(stderr, "Cube shadow FBO created successfully\n");
+    }
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    return fbo;
+}
+
 static int lastw = 0;
 static int lasth = 0;
 

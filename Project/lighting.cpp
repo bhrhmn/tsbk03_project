@@ -2,6 +2,7 @@
 #include "lighting.h"
 #include "scene.h"
 #include "models.h"
+#include "shadows.h"
 
 Model *fireModel;
 Model *fireModel2;
@@ -10,7 +11,7 @@ vec3 firePos;
 vec3 fireColor = vec3(2.5f, 2.7f, 2.4f);
 vec3 fireLookAt;
 
-vec3 moonPos = vec3(120.0f, 200.0f, -120.f);
+vec3 moonPos = vec3(120.0f, 100.0f, -120.f);
 vec3 moonColor = vec3(0.8f, 0.8f, 1.0f);
 vec3 moonLookAt;
 
@@ -32,33 +33,27 @@ void UpdateLightSources() {
     const float fireJitterX = flicker(t, 0.1f);
     const float fireJitterY = flicker(t, 0.1f);
 
-    // Fire animation updates - use smaller values to prevent runaway
-    const float f3 = sin(t/2) * sin(t/3) / 10.0f;  // Smaller amplitude
-    const float f4 = sin(t/3) / 10.0f;             // Smaller amplitude
+    const float f4 = sin(t/3) / 10.0f;
 
-    // Update fireT - use base position + jitter + small animation
-    fireT = T(fireStartPosition.x + fireJitterX + f4,fireStartPosition.y + fireJitterY+f3, fireStartPosition.z) * Ry(fireRotation) * S(0.1f);
-
-    // Update fireT2 - use base position + small animation
-    fireT2 = T(fireStartPosition.x - fireJitterX - f4,fireStartPosition.y- fireJitterY -f3 ,fireStartPosition.z ) * Ry(fireRotation) * S(0.1f);
-
-    // Update fire position for lighting (jittered position only)
-    firePos = vec3(fireStartPosition.x + fireJitterX, fireStartPosition.y + 4 + fireJitterY, fireStartPosition.z);
-    glUniform3fv(glGetUniformLocation(object_shader, "firePos"), 1, &firePos.x);
-
+    fireT = T(fireStartPosition.x + fireJitterX + f4 +1,fireStartPosition.y + fireJitterY - 3 + f4, fireStartPosition.z -1) * Ry(fireRotation+ M_PI/2) * S(0.1f);
+    fireT2 = T(fireStartPosition.x - fireJitterX - f4+1,fireStartPosition.y + fireJitterY - 3 ,fireStartPosition.z -1) * Ry(fireRotation) * S(0.1f);
+    firePos = vec3(fireStartPosition.x + fireJitterX, fireStartPosition.y + fireJitterY, fireStartPosition.z);
     float fireIntensity = 1.5f + flicker(t, 1.0f);
     fireColor = vec3(242.f/256, 125.f/256, 12.f/256) * fireIntensity;
+
+    glUniform3fv(glGetUniformLocation(object_shader, "firePos"), 1, &firePos.x);
+    glUniform3fv(glGetUniformLocation(shadow_cube_shader, "lightPos"), 1, &firePos.x);
     glUniform3fv(glGetUniformLocation(object_shader, "fireColor"), 1, &fireColor.x);
     UpdateMoon();
 }
 void initLighting() {
     firePos = vec3(fireStartPosition.x, fireStartPosition.y, fireStartPosition.z);
     moonLookAt = cabinCenter;
-    fireLookAt = vec3(cabinCenter.x, cabinCenter.y + 20, cabinCenter.z);
     glUniform3fv(glGetUniformLocation(object_shader, "firePos"), 1, &firePos.x);
     glUniform3fv(glGetUniformLocation(object_shader, "fireColor"), 1, &fireColor.x);
     glUniform3fv(glGetUniformLocation(object_shader, "moonPos"), 1, &moonPos.x);
     glUniform3fv(glGetUniformLocation(object_shader, "moonColor"), 1, &moonColor.x);
+
 }
 void UpdateMoon() {
     if (moonPos.z >= 90) return;
@@ -75,8 +70,8 @@ void blooming()
     DrawModel(squareModel, overflow_shader, "in_Position", nullptr, "in_TexCoord");
 
     glUseProgram(lowpass_shader);
-    glUniform1f(glGetUniformLocation(lowpass_shader, "windowWidth"), 1.0 /overFlowFbo->width);
-    glUniform1f(glGetUniformLocation(lowpass_shader, "windowHeight"), 1.0 /overFlowFbo->height);
+    glUniform1f(glGetUniformLocation(lowpass_shader, "windowWidth"), 1.0f /overFlowFbo->width);
+    glUniform1f(glGetUniformLocation(lowpass_shader, "windowHeight"), 1.0f /overFlowFbo->height);
 
     // ping-pong
     for (int i {0}; i < 200; i++)
