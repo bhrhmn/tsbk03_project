@@ -63,9 +63,6 @@ void InstantiateModels() {
     wind1 = LoadModel("Models/window.obj");
     wolfObj = LoadModel("Models/Wolf.obj");
 
-    printf("ball");
-    ball(wolfObj);
-
     squareModel = LoadDataToModel(
             reinterpret_cast<vec3 *>(square), nullptr, reinterpret_cast<vec2 *>(squareTexCoord), nullptr,
             squareIndices, 4, 6);
@@ -102,7 +99,8 @@ void InstantiateModels() {
     newCabinT = T(-15,2,10)*Ry(M_PI*3/2)* S(5.8);
     floorT = T(-15,2,10)*Ry(M_PI*3/2)* S(5.8);
 
-
+    printf("ball");
+    ball(wolfObj);
 
     treeMat[0] = T(150, -5, -10);
     treeMat[1] = T(200, -5, 20);

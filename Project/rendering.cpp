@@ -201,26 +201,30 @@ void UpdateWolf() {
     int re_enter_speed = 2000;
     int pos = (int)(t*speed) % re_enter_speed;
     wolfT = start_position * T(0, 0, -pos) * Ry(M_PI_2*3) * Rx(M_PI) * S(0.4);
-    wolfObjT = start_position * T(8, -13, -pos) * Ry(M_PI_2*2) * S(0.2);
+    //wolfObjT = start_position * T(8, -13, -pos) * Ry(M_PI_2*2) * S(0.2);
 }
 
 void drawObjects(GLuint shader){
     DrawFire();
     glUseProgram(shader);
     DrawGround(shader);
-    DrawCabin(shader);
-    DrawFireplace(shader);
-    DrawSofa(shader);
-    DrawTable(shader);
+    //DrawCabin(shader);
+    //DrawFireplace(shader);
+    //DrawSofa(shader);
+    //DrawTable(shader);
     DrawLog(shader);
-    DrawDoor(shader);
-    DrawFloor(shader);
-    DrawRoof(shader);
-    DrawWindow(shader, window1T ,wind1 );
-    DrawWindow(shader, window2T ,wind1 );
-    DrawWindow(shader, window3T ,wind1 );
-    DrawWindow(shader, window4T ,wind1 );
+    //DrawDoor(shader);
+    //DrawFloor(shader);
+    //DrawRoof(shader);
+    //DrawWindow(shader, window1T ,wind1 );
+    //DrawWindow(shader, window2T ,wind1 );
+    //DrawWindow(shader, window3T ,wind1 );
+    //DrawWindow(shader, window4T ,wind1 );
     DrawWolfObj(shader);
 
     animateObj(shader);
+    glEnable(GL_PROGRAM_POINT_SIZE);
+    glDisable(GL_DEPTH_TEST);
+
+    DrawBones();
 }

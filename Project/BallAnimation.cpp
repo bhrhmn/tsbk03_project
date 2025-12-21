@@ -17,6 +17,9 @@
 // uses framework OpenGL
 #include <string.h>
 
+#include "models.h"
+#include "scene.h"
+
 // Ref till shader
 GLuint g_shader;
 
@@ -31,7 +34,7 @@ typedef struct Triangle
 #define CYLINDER_SEGMENT_LENGTH 0.37
 #define kMaxRow 100
 #define kMaxCorners 8
-#define kMaxBones 8
+#define kMaxBones 10
 #define kMaxg_poly ((kMaxRow-1) * kMaxCorners * 2)
 #ifndef Pi
 #define Pi 3.1416
@@ -61,6 +64,10 @@ Model *cylinderModel; // Collects all the above for drawing with glDrawElements
 
 mat4 modelViewMatrixB, projectionMatrixB;
 
+//bone debug
+GLuint boneVAO = 0;
+GLuint boneVBO = 0;
+GLuint boneShader = 0;
 
 
 
@@ -71,10 +78,11 @@ mat4 modelViewMatrixB, projectionMatrixB;
 //        only supports mat4. (We could also cast from that, of course.)
 typedef struct Bone
 {
-  vec3 pos;
-  mat4 rot;
+	vec3 pos;
+	mat4 rot;
 	vec3 offset;
-} Bone;
+}
+Bone;
 
 
 ///////////////////////////////////////
@@ -87,18 +95,31 @@ Bone g_bonesRes[kMaxBones]; // For animation, change to animate
 ///////////////////////////////////////////////////////
 //		S E T U P  B O N E S
 //
-void setupBones(void)
+void setupBones(GLuint shader)
 {
 	int bone;
+	//Right front paw
+	g_bones[0].pos = vec3(5, -0, 7);
+	//Left front paw
+	g_bones[1].pos = vec3(-6, -0, 7);
+	//Right back paw
+	g_bones[2].pos = vec3(5, -0, -21);
+	//Left Back paw
+	g_bones[3].pos = vec3(-6, -0, -21);
 
-	g_bones[0].pos = vec3(10, -0, 10);
-	g_bones[1].pos = vec3(-10, -0, 10);
-	g_bones[2].pos = vec3(10, -0, -10);
-	g_bones[3].pos = vec3(-10, -0, -10);
-	g_bones[4].pos = vec3(10, 40, 10);
-	g_bones[5].pos = vec3(-10, 40, 10);
-	g_bones[6].pos = vec3(10, 40, -10);
-	g_bones[7].pos = vec3(-10, 40, -10);
+	//Right front hip
+	g_bones[4].pos = vec3(5, 17, 7);
+	//Left front hip
+	g_bones[5].pos = vec3(-6, 17, 7);
+	//Right back hip
+	g_bones[6].pos = vec3(5, 17, -17);
+	//Left back hip
+	g_bones[7].pos = vec3(-6, 17, -17);
+
+	//Right front knee
+	g_bones[8].pos = vec3(5, 5, 7);
+	//Left front knee
+	g_bones[9].pos = vec3(-6, 5, 7);
 
 	for (bone = 0; bone < kMaxBones; bone++)
 	{
@@ -108,12 +129,11 @@ void setupBones(void)
 }
 
 
-
 float objWeight[MAX_VERTICES][kMaxBones];
 vec3 g_vertsResObj[MAX_VERTICES];
 
 
-void ConnectVertToBone(Model *model)
+void ConnectVertToBone(Model* model)
 {
 	vec3* verticesArray = model->vertexArray;
 	printf("Vertices: ");
@@ -122,23 +142,33 @@ void ConnectVertToBone(Model *model)
 
 	int maxVerts = model->numVertices;
 	if (maxVerts > MAX_VERTICES) maxVerts = MAX_VERTICES;
+	mat4 invWolfT = InvertMat4(wolfObjT);
+
 
 	for (int vertex = 0; vertex < maxVerts; vertex++)
 	{
 		float total = 0;
-		for (int bone = 0; bone < kMaxBones; bone++){
-			vec3 relpos = g_bones[bone].pos - model->vertexArray[vertex];
-			if (vertex < MAX_VERTICES && relpos.y < 50.f && relpos.y > -50.f
-				&& relpos.x < 50.f && relpos.x > -50.f)
+		for (int bone = 0; bone < kMaxBones; bone++)
+		{
+			vec3 boneObjPos = MultVec3(invWolfT, g_bones[bone].pos);
+
+			vec3 relpos = boneObjPos - model->vertexArray[vertex];
+
+			if (vertex < MAX_VERTICES && relpos.y < 10.f && relpos.y > -10.f
+				&& relpos.x < 10.f && relpos.x > -10.f
+				&& relpos.z < 10.f && relpos.z > -10.f)
 			{
 				objWeight[vertex][bone] = 1.0f;
 				total += 1.0f;
+				printf("Small thresh");
 			}
-			else if (vertex < MAX_VERTICES && relpos.y < 4.f && relpos.y > -4.f
-				&& relpos.x < 4.f && relpos.x > -4.f)
+			else if (vertex < MAX_VERTICES && relpos.y < 30.f && relpos.y > -30.f
+				&& relpos.x < 20.f && relpos.x > -20.f
+				&& relpos.z < 20.f && relpos.z > -20.f)
 			{
 				objWeight[vertex][bone] = 0.2f;
 				total += 0.2f;
+				printf("big thresh");
 			}
 		}
 		if (total > 0.0f)
@@ -146,7 +176,6 @@ void ConnectVertToBone(Model *model)
 			for (int b = 0; b < kMaxBones; b++)
 				objWeight[vertex][b] /= total;
 		}
-
 	}
 }
 
@@ -178,23 +207,16 @@ void changeMesh(Model *model)
 			float w = objWeight[i][b];
 			if (w == 0.0f) continue;
 
-			vec3 q = objPos - g_bonesRes[b].pos;
-			q = g_bonesRes[b].rot * q;
-			q += g_bonesRes[b].pos;
+			vec3 q = objPos - g_bones[b].pos;   // relative to original bone
+			q = g_bonesRes[b].rot * q;          // rotate
+			q += g_bonesRes[b].pos;             // move with new bone position
+			q += g_bonesRes[b].offset;          // apply extra offset if needed
 
 			result += w * q;
 		}
 
 		g_vertsResObj[i] = result;
 
-		if (i == 0)
-		{
-			printf("orig: %f %f %f  ->  new: %f %f %f\n",
-				objPos.x, objPos.y, objPos.z,
-				g_vertsResObj[i].x,
-				g_vertsResObj[i].y,
-				g_vertsResObj[i].z);
-		}
 	}
 }
 
@@ -209,42 +231,21 @@ void animateObj(GLuint shader)
 
 	float phase = t * speed;
 
-	float hipSwing   = cosf(phase) * 0.6f;
+	float footswing = sinf(phase) * 0.2f;
+	printf("%f", footswing);
+
+	//g_bonesRes[0].rot =Rx(footswing);
+	g_bonesRes[0].offset += vec3(0.2f, 0.0f, 0.0f);
+
+	/*
+	float hipSwing   = cosf(phase) * 0.1f;
 	float kneeBend   = fmaxf(0.0f, sinf(phase)) * 1.0f; // only when forward
 	float footLift   = fmaxf(0.0f, sinf(phase)) * 0.8f;
 
-	g_bonesRes[4].rot    = Ry(hipSwing);
-	g_bonesRes[4].offset = vec3(0, 0.1f, hipSwing * 0.5f);
-
-	g_bonesRes[0].rot    = Rx(-kneeBend);
-	g_bonesRes[0].offset = vec3(0, footLift, 0);
-
-	float phaseOpp = phase + Pi;
-
-	float hipSwingR = cosf(phaseOpp) * 0.6f;
-	float kneeBendR = fmaxf(0.0f, sinf(phaseOpp)) * 1.0f;
-	float footLiftR = fmaxf(0.0f, sinf(phaseOpp)) * 0.8f;
-
-	g_bonesRes[5].rot    = Ry(hipSwingR);
-	g_bonesRes[5].offset = vec3(0, 0.1f, hipSwingR * 0.5f);
-
-	g_bonesRes[1].rot    = Rx(-kneeBendR);
-	g_bonesRes[1].offset = vec3(0, footLiftR, 0);
-
-	float backPhase = phase + Pi * 0.25f;
-
-	float hipSwingB = cosf(backPhase) * 0.4f;
-	float kneeBendB = fmaxf(0.0f, sinf(backPhase)) * 0.8f;
-
-	g_bonesRes[6].rot = Ry(-hipSwingB);
-	g_bonesRes[2].rot = Rx(-kneeBendB);
-
-	g_bonesRes[7].rot = Ry(hipSwingB);
-	g_bonesRes[3].rot = Rx(-kneeBendB);
-
-
-
+	g_bonesRes[4].rot    = Rx(hipSwing);
+*/
 	changeMesh(wolf); // calculates g_vertsResObj for all vertices
+
 
 	// upload all vertices
 	int numVerts = wolf->numVertices;
@@ -255,21 +256,69 @@ void animateObj(GLuint shader)
 	DrawModel(wolf, shader, "in_Position", "inNormal", "inTexCoord");
 }
 
+void DrawBones(void)
+{
+	glUseProgram(boneShader);
+
+	uploadMat4ToShader(boneShader, "world_To_View", worldCamera);
+	uploadMat4ToShader(boneShader, "projection", projectionMatrix);
+
+	glBindVertexArray(boneVAO);
+	glDrawArrays(GL_POINTS, 0, kMaxBones);
+	glBindVertexArray(0);
+}
+
 /////////////////////////////////////////
 //		M A I N
 //
+
+
 void ball(Model *model)
 {
 	wolf = model;
-  // Set up depth buffer
-  glEnable(GL_DEPTH_TEST);
-  // initiering
-  setupBones();
+
+	setupBones(0);
+
+	ConnectVertToBone(wolf);
+	changeMesh(wolf);
+
+	// Load bone shader
+	boneShader = loadShaders("Shaders/bone.vert", "Shaders/bone.frag");
+
+	// Create VAO/VBO
+	glGenVertexArrays(1, &boneVAO);
+	glGenBuffers(1, &boneVBO);
+
+	glBindVertexArray(boneVAO);
+	glBindBuffer(GL_ARRAY_BUFFER, boneVBO);
+
+	vec3 bonePositions[kMaxBones];
+	for(int i=0; i<kMaxBones; i++)
+		bonePositions[i] = g_bones[i].pos;
+
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vec3) * kMaxBones, bonePositions, GL_STATIC_DRAW);
+
+
+	// Attribute 0 = position
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(vec3), (void*)0);
+	glEnableVertexAttribArray(0);
+
+	glBindVertexArray(0);
+}
+
+
+/*
+void ball(Model *model)
+{
+	wolf = model;
+	glEnable(GL_DEPTH_TEST);
+
+
+	g_shader = loadShaders("Shaders/shadow.vert" , "Shaders/shadow.frag");
+	setupBones(g_shader);
 
 	ConnectVertToBone(model);
 	changeMesh(model);
 
-
-  g_shader = loadShaders("Shaders/shadow.vert" , "Shaders/shadow.frag");
-
 }
+*/

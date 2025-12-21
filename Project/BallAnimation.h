@@ -8,6 +8,7 @@
 
 void ball(Model *model);
 void animateObj(GLuint shader);
+void DrawBones();
 
 
 #endif //SCENEPROJECT_BALLANIMATION_H
