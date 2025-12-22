@@ -29,7 +29,7 @@ set(SOURCES
         common/LoadTGA.c
         common/lodepng.cpp
         common/Windows/MicroGlut.c
-        Project/BallAnimation.cpp
+        Project/wolfAnimation.cpp
         Project/doorAnimation.cpp
 )
 

@@ -2,7 +2,7 @@
 #include "models.h"
 #include "camera.h"
 #include "scene.h"
-#include "BallAnimation.h"
+#include "wolfAnimation.h"
 
 
 void DrawCabin(GLuint shader){

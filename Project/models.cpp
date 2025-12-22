@@ -2,7 +2,7 @@
 
 #include "MicroGlut.h"
 #include "scene.h"
-#include "BallAnimation.h"
+#include "wolfAnimation.h"
 
 // Model variables
 Model *ground, *skybox, *sofa, *table, *cabin, *fireplace, *roof, *floorObj, *wind1, *wind2, *wind3, *wind4;

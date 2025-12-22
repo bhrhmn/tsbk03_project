@@ -2,7 +2,7 @@
 // Created by Luna on 2025-12-17.
 //
 
-#include "BallAnimation.h"
+#include "wolfAnimation.h"
 
 
 
@@ -31,7 +31,8 @@ GLuint boneShader;
 Model *wolf;
 
 mat4 inverseBindPose[kMaxBones];
-
+float Weights[MAX_VERTICES][kMaxBones];
+vec3 g_vertsRes[MAX_VERTICES];
 
 //////////////////////////////////////
 //		B O N E
@@ -143,15 +144,14 @@ void setupBones(GLuint shader)
 }
 
 
-float objWeight[MAX_VERTICES][kMaxBones];
-vec3 g_vertsResObj[MAX_VERTICES];
 
 
-void ConnectVertToBone(Model* model)
+
+void CalculateWeights(Model* model)
 {
 	vec3* verticesArray = model->vertexArray;
 	printVec3(*verticesArray);
-	memset(objWeight, 0, sizeof(objWeight));
+	memset(Weights, 0, sizeof(Weights));
 
 	int maxVerts = model->numVertices;
 	if (maxVerts > MAX_VERTICES) maxVerts = MAX_VERTICES;
@@ -171,21 +171,21 @@ void ConnectVertToBone(Model* model)
 				&& relpos.x < 10.f && relpos.x > -10.f
 				&& relpos.z < 10.f && relpos.z > -10.f)
 			{
-				objWeight[vertex][bone] = 1.0f;
+				Weights[vertex][bone] = 1.0f;
 				total += 1.0f;
 			}
 			else if (vertex < MAX_VERTICES && relpos.y < 30.f && relpos.y > -30.f
 				&& relpos.x < 25.f && relpos.x > -25.f
 				&& relpos.z < 30.f && relpos.z > -30.f)
 			{
-				objWeight[vertex][bone] = 0.2f;
+				Weights[vertex][bone] = 0.2f;
 				total += 0.2f;
 			}
 			else if (vertex < MAX_VERTICES && relpos.y < 60.f && relpos.y > -60.f
 				&& relpos.x < 30.f && relpos.x > -30.f
 				&& relpos.z < 60.f && relpos.z > -60.f)
 			{
-				objWeight[vertex][bone] = 0.05f;
+				Weights[vertex][bone] = 0.05f;
 				total += 0.05f;
 			}
 
@@ -193,7 +193,7 @@ void ConnectVertToBone(Model* model)
 		if (total > 0.0f)
 		{
 			for (int b = 0; b < kMaxBones; b++)
-				objWeight[vertex][b] /= total;
+				Weights[vertex][b] /= total;
 		}
 	}
 
@@ -202,7 +202,7 @@ void ConnectVertToBone(Model* model)
 		float total = 0;
 		for (int bone = 0; bone < kMaxBones; bone++)
 		{
-			total += objWeight[vertex][bone];
+			total += Weights[vertex][bone];
 		}
 		if (total < 0.99f) // Not properly normalized or no weights
 		{
@@ -251,7 +251,7 @@ void changeMesh()
 		// Apply skinning using bone transforms and inverse bind poses
 		for (int i = 0; i < kMaxBones; i++)
 		{
-			if (objWeight[vert][i] == 0.0f) continue;
+			if (Weights[vert][i] == 0.0f) continue;
 
 			// Transform vertex to bone local space using inverse bind pose
 			vec4 localPos = inverseBindPose[i] * v4;
@@ -259,9 +259,9 @@ void changeMesh()
 			// Transform local position by current bone transform
 			vec4 transformed = boneTransform[i] * localPos;
 
-			finalPos = finalPos + objWeight[vert][i] * SetVector(transformed.x, transformed.y, transformed.z);
+			finalPos = finalPos + Weights[vert][i] * SetVector(transformed.x, transformed.y, transformed.z);
 		}
-		g_vertsResObj[vert] = finalPos;
+		g_vertsRes[vert] = finalPos;
 	}
 }
 
@@ -295,7 +295,6 @@ void updateBones(GLuint shader)
 	g_bonesRes[9].rot = Rx (-kneeBendL);
 	g_bonesRes[5].rot = Rx (hipSwingL);
 
-
 	//Right back leg
 	g_bonesRes[14].rot = Rx (footswingL);
 	g_bonesRes[10].rot = Rx (-kneeBendL);
@@ -312,13 +311,13 @@ void updateBones(GLuint shader)
 	//Head
 	g_bonesRes[2].rot = Rx (hipSwingL);
 
-	changeMesh(); // calculates g_vertsResObj for all vertices
+	changeMesh(); // calculates g_vertsRes for all vertices
 
 	// upload all vertices
 	int numVerts = wolf->numVertices;
 	glBindVertexArray(wolf->vao);
 	glBindBuffer(GL_ARRAY_BUFFER, wolf->vb);
-	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vec3) * numVerts, g_vertsResObj);
+	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vec3) * numVerts, g_vertsRes);
 
 	DrawModel(wolf, shader, "in_Position", "inNormal", "inTexCoord");
 }
@@ -339,6 +338,7 @@ void DrawBones()
 
 /*
  * Uses bone shaders to show positions of bones. Must be used together with drawBones() in rendering.cpp.
+ * Also, stop the wolf from moving in UpdateWolf (WolfObjT).
  */
 
 void boneDebug()
@@ -371,7 +371,7 @@ void ball(Model *model)
 
 	setupBones(0);
 
-	ConnectVertToBone(wolf);
+	CalculateWeights(wolf);
 	changeMesh();
 
 	// Load bone shader
