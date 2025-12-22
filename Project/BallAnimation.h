@@ -7,7 +7,7 @@
 #include "LittleOBJLoader.h"
 
 void ball(Model *model);
-void animateObj(GLuint shader);
+void updateBones(GLuint shader);
 void DrawBones();
 
 
