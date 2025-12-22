@@ -91,6 +91,7 @@ void init() {
 
     printError("init arrays");
 }
+
 void display()
 {
 	printError("pre display");

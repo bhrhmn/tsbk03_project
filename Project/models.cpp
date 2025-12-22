@@ -101,7 +101,7 @@ void InstantiateModels() {
     newCabinT = T(-15,2,10)*Ry(M_PI*3/2)* S(5.8);
     floorT = T(-15,2,10)*Ry(M_PI*3/2)* S(5.8);
 
-    ball(wolfObj);
+    wolfAnimation(wolfObj);
 
     treeMat[0] = T(150, -5, -10);
     treeMat[1] = T(200, -5, 20);

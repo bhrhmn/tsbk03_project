@@ -90,17 +90,14 @@ void setupBindPoseInverse()
 ///////////////////////////////////////////////////////
 //		S E T U P  B O N E S
 //
-void setupBones(GLuint shader)
+void setupBones()
 {
 	//Hip Core
 	g_bones[0].pos = vec3(0, 20, -15);
-
 	//Neck
 	g_bones[1].pos = vec3(0, 20, 10);
-
 	//Head
 	g_bones[2].pos = vec3(0, 30, 22);
-
 	//Tail
 	g_bones[3].pos = vec3(0, 14, -28);
 
@@ -113,12 +110,10 @@ void setupBones(GLuint shader)
 	//Left back hip
 	g_bones[7].pos = vec3(-6, 17, -17);
 
-
 	//Right front knee
 	g_bones[8].pos = vec3(5, 5, 7);
 	//Left front knee
 	g_bones[9].pos = vec3(-6, 5, 7);
-
 
 	//Right Back knee
 	g_bones[10].pos = vec3(5, 5, -22);
@@ -142,9 +137,6 @@ void setupBones(GLuint shader)
 
 	setupBindPoseInverse();
 }
-
-
-
 
 
 void CalculateWeights(Model* model)
@@ -178,8 +170,8 @@ void CalculateWeights(Model* model)
 				&& relpos.x < 25.f && relpos.x > -25.f
 				&& relpos.z < 30.f && relpos.z > -30.f)
 			{
-				Weights[vertex][bone] = 0.2f;
-				total += 0.2f;
+				Weights[vertex][bone] = 0.5f;
+				total += 0.5f;
 			}
 			else if (vertex < MAX_VERTICES && relpos.y < 60.f && relpos.y > -60.f
 				&& relpos.x < 30.f && relpos.x > -30.f
@@ -365,18 +357,16 @@ void boneDebug()
 //		M A I N
 /////////////////////////////////////////
 
-void ball(Model *model)
+void wolfAnimation(Model *model)
 {
 	wolf = model;
-
-	setupBones(0);
+	setupBones();
 
 	CalculateWeights(wolf);
-	changeMesh();
 
 	// Load bone shader
 	boneShader = loadShaders("Shaders/bone.vert", "Shaders/bone.frag");
 
 	//Uncomment this as well as drawBones in rendering.cpp make bone positions visible
-	//boneDebug();
+	boneDebug();
 }
