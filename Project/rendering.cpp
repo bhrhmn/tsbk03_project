@@ -2,7 +2,7 @@
 #include "models.h"
 #include "camera.h"
 #include "scene.h"
-#include "BallAnimation.h"
+#include "wolfAnimation.h"
 
 
 void DrawCabin(GLuint shader){
@@ -221,6 +221,11 @@ void drawObjects(GLuint shader){
     DrawWindow(shader, window3T ,wind1 );
     DrawWindow(shader, window4T ,wind1 );
     DrawWolfObj(shader);
+    updateBones(shader);
 
-    animateObj(shader);
+    //Uncomment this for bones debugging
+    //glEnable(GL_PROGRAM_POINT_SIZE);
+    //glDisable(GL_DEPTH_TEST);
+    //DrawBones();
+
 }

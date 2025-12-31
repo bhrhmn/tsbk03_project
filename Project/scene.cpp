@@ -70,7 +70,7 @@ void init() {
 	glUniformMatrix4fv(glGetUniformLocation(object_shader, "projectionMatrix"), 1, GL_TRUE, projectionMatrix.m);
 	uploadMat4ToShader(object_shader, "scaleBiasMatrix", scaleBiasMatrix);
 	initLighting();
-    
+
     // Start timer
     glutTimerFunc(20, &OnTimer, 0);
     //initFireplaceSound();
@@ -91,6 +91,7 @@ void init() {
 
     printError("init arrays");
 }
+
 void display()
 {
 	printError("pre display");
@@ -111,9 +112,9 @@ void display()
     //2. Render from camera.
     // With bloom
 	useFBO(bloomFbo, nullptr, moonFbo);
-    // Without bloom, also remove blooming() function call 
+    // Without bloom, also remove blooming() function call
 	//useFBO(NULL, fireFbo, moonFbo);
-	
+
     glViewport(0,0,WINDOW_WIDTH,WINDOW_HEIGHT);
     glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -162,7 +163,7 @@ int main(int argc, char *argv[])
 
 
 
-	glutDisplayFunc(display); 
+	glutDisplayFunc(display);
 
 	glutMainLoop();
 	return 0;

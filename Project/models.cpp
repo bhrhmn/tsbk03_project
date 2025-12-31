@@ -2,7 +2,7 @@
 
 #include "MicroGlut.h"
 #include "scene.h"
-#include "BallAnimation.h"
+#include "wolfAnimation.h"
 
 // Model variables
 Model *ground, *skybox, *sofa, *table, *cabin, *fireplace, *roof, *floorObj, *wind1, *wind2, *wind3, *wind4;
@@ -64,8 +64,7 @@ void InstantiateModels() {
     wind1 = LoadModel("Models/window.obj");
     wolfObj = LoadModel("Models/Wolf.obj");
 
-    printf("ball");
-    ball(wolfObj);
+
 
     squareModel = LoadDataToModel(
             reinterpret_cast<vec3 *>(square), nullptr, reinterpret_cast<vec2 *>(squareTexCoord), nullptr,
@@ -103,7 +102,7 @@ void InstantiateModels() {
     newCabinT = T(-15,2,10)*Ry(M_PI*3/2)* S(5.8);
     floorT = T(-15,2,10)*Ry(M_PI*3/2)* S(5.8);
 
-
+    wolfAnimation(wolfObj);
 
     treeMat[0] = T(150, -5, -10);
     treeMat[1] = T(200, -5, 20);
@@ -117,7 +116,6 @@ void InstantiateModels() {
     treeMat[9] = T(130, -5, 0);
     treeMat[10] = T(150, -5, 70);
     treeMat[11] = T(100, -5, 80);
-
 
     modelT = &tableT; // change to desired model
     currentScale = modelT->m[5];

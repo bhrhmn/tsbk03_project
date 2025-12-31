@@ -6,8 +6,9 @@
 #define SCENEPROJECT_BALLANIMATION_H
 #include "LittleOBJLoader.h"
 
-void ball(Model *model);
-void animateObj(GLuint shader);
+void wolfAnimation(Model *model);
+void updateBones(GLuint shader);
+void DrawBones();
 
 
 #endif //SCENEPROJECT_BALLANIMATION_H
