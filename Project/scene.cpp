@@ -10,9 +10,10 @@
 
 #include "shadows.h"
 #include "sounds.h"
-//#include "sounds.h"
+#include "rain.h"
 
-FBOstruct *moonFbo, *bloomFbo, *overFlowFbo, *tempFbo, *shadowCubeFBO;
+
+FBOstruct *moonFbo, *bloomFbo, *overFlowFbo, *tempFbo, *shadowCubeFBO, *pos1FBO, *pos2FBO, *vel1FBO, *vel2FBO;
 
 GLuint shybox_shader;
 GLuint object_shader;
@@ -79,15 +80,21 @@ void init() {
     glActiveTexture(GL_TEXTURE14);
     moonFbo = initFBO2(WINDOW_WIDTH, WINDOW_HEIGHT, 0, 1);
     glActiveTexture(GL_TEXTURE16);
-    bloomFbo = initFBO2(WINDOW_WIDTH, WINDOW_HEIGHT, 0, 1);
+    bloomFbo = initFBO(WINDOW_WIDTH, WINDOW_HEIGHT, 0);
     glActiveTexture(GL_TEXTURE17);
-    overFlowFbo = initFBO2(WINDOW_WIDTH, WINDOW_HEIGHT, 0, 1);
+    overFlowFbo = initFBO(WINDOW_WIDTH, WINDOW_HEIGHT, 0);
     glActiveTexture(GL_TEXTURE18);
-    tempFbo = initFBO2(WINDOW_WIDTH, WINDOW_HEIGHT, 0, 1);
+    tempFbo = initFBO(WINDOW_WIDTH, WINDOW_HEIGHT, 0);
+    pos1FBO = initFBO(WINDOW_WIDTH, WINDOW_HEIGHT, 0);
+    pos2FBO = initFBO(WINDOW_WIDTH, WINDOW_HEIGHT, 0);
+    vel1FBO = initFBO(WINDOW_WIDTH, WINDOW_HEIGHT, 0);
+    vel2FBO = initFBO(WINDOW_WIDTH, WINDOW_HEIGHT, 0);
 	// Cube shadow FBO
 	glActiveTexture(GL_TEXTURE0 + TEX_UNIT);
 	printf("cube fbo texture: %d",GL_TEXTURE0 + TEX_UNIT);
 	shadowCubeFBO = initCubeFBO(WINDOW_HEIGHT);
+
+    rain_init();
 
     printError("init arrays");
 }
@@ -141,6 +148,9 @@ void display()
 	DrawTree();
 	DrawWolf();
     blooming();
+
+    rain(t);
+    
 	glutSwapBuffers();
 }
 

@@ -7,7 +7,7 @@
 #endif
 #include "GL_utilities.h"
 #include "LittleOBJLoader.h"
-#include <assimp/Importer.hpp>
+//#include <assimp/Importer.hpp>
 #include "LoadTGA.h"  // Add this for LoadTGATextureSimple
 #include "lodepng.h"  // Add this for lodepng::decode
 

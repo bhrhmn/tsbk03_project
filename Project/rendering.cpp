@@ -161,7 +161,7 @@ void DrawFire(){
     glDisable(GL_CULL_FACE);
     glUseProgram(tree_shader);
     uploadMat4ToShader(tree_shader, "world_To_View", worldCamera);
-    vec4 shade = vec4(1.4, 1.2, 1.0, 1.0);
+    vec4 shade = vec4(1.8, 1.6, 1.0, 1.0);
     glUniform4fv(glGetUniformLocation(tree_shader, "shade"), 1, &shade.x); // color of shadow
 
     //fire 1

@@ -7,7 +7,7 @@ unsigned int vertexArrayObjID;
 GLuint rain_program, pos_program, vel_program, simple_program;
 GLfloat slope = 10;
 GLfloat a = 0.5;
-GLuint count = 5000;
+GLuint count = 256*256;
 GLuint tex;
 GLfloat prev_time = 0.0;
 Model *squareM;

@@ -74,7 +74,7 @@ void blooming()
     glUniform1f(glGetUniformLocation(lowpass_shader, "windowHeight"), 1.0f /overFlowFbo->height);
 
     // ping-pong
-    for (int i {0}; i < 200; i++)
+    for (int i {0}; i < 50; i++)
     {
         useFBO(tempFbo, overFlowFbo, NULL);
         glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
